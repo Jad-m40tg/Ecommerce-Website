@@ -1,0 +1,128 @@
+// server.js — Express 5 application entry point.
+// Sets up security headers, CORS, body parsing, rate limiting,
+// static file serving, all API routes, SPA fallback, and error handling.
+
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const path = require('path');
+const { PORT, CORS_ORIGIN } = require('./config');
+
+const app = express();
+
+// Security headers via Helmet (Content-Security-Policy, X-Frame-Options, etc.)
+// 'unsafe-inline' for scripts is required because all 20 HTML files use inline <script> blocks.
+// A future improvement would be extracting all JS to external files and removing 'unsafe-inline'.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"]
+    }
+  }
+}));
+
+// Cross-Origin Resource Sharing — restricts who can call this API.
+// 'credentials: true' allows the Authorization header for admin JWT tokens.
+app.use(cors({
+  origin: CORS_ORIGIN,
+  credentials: true
+}));
+
+// Body parsing — JSON and URL-encoded form data.
+// 1MB limit prevents memory exhaustion from oversized payloads.
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// Rate limiters — prevent brute-force attacks and abuse.
+// loginLimiter: max 10 requests per 15 min per IP on the login endpoint.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many login attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// checkoutLimiter is defined inside routes/orders.js and applied there.
+
+// Static files — serves uploaded images from the uploads/ directory.
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Serves all frontend HTML pages and assets from the public/ directory.
+// 'index: false' prevents serving index.html at '/' (we handle that via SPA fallback).
+// 'extensions: ["html"]' allows /althome without the .html extension.
+app.use(express.static(path.join(__dirname, 'public'), {
+  index: false,
+  extensions: ['html']
+}));
+
+// ============================================================
+// API ROUTES — all under /api
+// ============================================================
+
+// Simple test endpoint to verify the server is reachable.
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'hello from backend', status: 'success' });
+});
+
+// Health check endpoint for monitoring.
+app.get('/api/health', (req, res) => res.json({ ok: true }));
+
+// Apply rate limiter specifically to the login route (must be before the auth router).
+app.use('/api/auth/login', loginLimiter);
+
+// Mount all route modules under their respective /api paths.
+app.use('/api/auth', require('./routes/auth'));         // Admin login/logout/me
+app.use('/api/admin', require('./routes/admin'));       // Admin profile & password
+app.use('/api/products', require('./routes/products')); // Product browsing + CRUD
+
+// Checkout rate limiter is applied inside routes/orders.js before the POST handler.
+app.use('/api/orders', require('./routes/orders'));     // Customer checkout + admin order management
+
+app.use('/api/customers', require('./routes/customers')); // Admin customer list
+app.use('/api/analytics', require('./routes/analytics')); // Admin analytics dashboard
+app.use('/api/settings', require('./routes/settings'));   // Store settings (public + admin)
+app.use('/api/categories', require('./routes/categories')); // Category browsing + CRUD
+app.use('/api/reviews', require('./routes/reviews'));     // Product reviews (public + admin)
+app.use('/api/upload', require('./routes/upload'));       // Admin image upload
+
+// ============================================================
+// SPA FALLBACK — serves althome.html for all non-API, non-upload routes.
+// This allows client-side routing (e.g. /products, /checkout) to work
+// by always returning the main HTML page, which handles routing via JS.
+// Express 5 requires named wildcards (*path, not just *).
+// ============================================================
+app.get('*path', (req, res) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+    return res.status(404).json({ error: 'Endpoint not found' });
+  }
+  res.sendFile(path.join(__dirname, 'public', 'althome.html'));
+});
+
+// Global error handler — catches unhandled errors from all routes.
+// Returns structured JSON error responses instead of crashing the server.
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  
+  // Multer-specific errors (file too large, wrong type, etc.)
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ error: 'File too large' });
+  }
+  if (err.name === 'MulterError') {
+    return res.status(400).json({ error: 'File upload error' });
+  }
+  
+  // Generic 500 error — no internal details leaked to the client
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// Start the HTTP server on the configured port.
+app.listen(PORT, () => {
+  console.log(`Server is active at http://localhost:${PORT}`);
+});

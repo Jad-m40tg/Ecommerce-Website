@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Editor — Havenwood Admin</title>
+  <meta name="description" content="Create or edit a Havenwood product: details, pricing, inventory, media and status." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — identical to the storefront + admin
+       ============================================================ */
+    :root {
+      --warm-white: #faf7f2;
+      --cream:      #f3eee6;
+      --beige:      #e8e0d3;
+      --charcoal:   #2b2926;
+      --gray:       #6f6a62;
+      --wood:       #a67c52;
+      --sage:       #6b7f5e;
+      --sage-dark:  #576a4c;
+      --white:      #fffdf9;
+      --success:    #6b7f5e;
+      --warning:    #c98a3a;
+      --danger:     #b3532e;
+
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 6px 24px rgba(43, 41, 38, 0.08);
+      --shadow-lift: 0 16px 40px rgba(43, 41, 38, 0.14);
+
+      --sidebar-w: 250px;
+      --topbar-h: 72px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--warm-white);
+      color: var(--charcoal);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.55;
+    }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; line-height: 1.2; }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font-family: inherit; }
+    img { display: block; max-width: 100%; }
+
+    /* ============================================================
+       APP SHELL
+       ============================================================ */
+    .app { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+
+    .sidebar {
+      background: var(--white);
+      border-right: 1px solid var(--beige);
+      padding: 24px 18px;
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    .sidebar .brand {
+      font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700;
+      padding: 4px 8px 22px; border-bottom: 1px solid var(--beige); margin-bottom: 18px;
+    }
+    .sidebar .brand span { color: var(--sage); }
+    .nav-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gray); padding: 6px 10px; margin-top: 6px;
+    }
+    .side-nav { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .side-nav a {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: var(--radius-md);
+      color: var(--gray); font-size: 14.5px; font-weight: 500;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    }
+    .side-nav a:hover { background: var(--cream); color: var(--charcoal); transform: translateX(2px); }
+    .side-nav a.active { background: var(--charcoal); color: var(--warm-white); }
+    .side-nav a.active svg { color: var(--warm-white); }
+    .side-nav svg { color: var(--gray); flex-shrink: 0; }
+    .side-nav a:hover svg { color: var(--charcoal); }
+    .sidebar-foot { margin-top: auto; padding-top: 18px; border-top: 1px solid var(--beige); }
+    .sidebar-foot a.logout { color: var(--danger); }
+    .sidebar-foot a.logout svg { color: var(--danger); }
+    .sidebar-foot a.logout:hover { background: rgba(179, 83, 46, 0.08); color: var(--danger); }
+
+    .main-col { min-width: 0; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 40; height: var(--topbar-h);
+      background: rgba(250, 247, 242, 0.85);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--beige);
+      display: flex; align-items: center; gap: 20px; padding: 0 32px;
+    }
+    .search { position: relative; flex: 1; max-width: 460px; }
+    .search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gray); }
+    .search input {
+      width: 100%; padding: 10px 14px 10px 40px;
+      border: 1.5px solid var(--beige); border-radius: var(--radius-pill);
+      background: var(--white); font-size: 14px; color: var(--charcoal);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .search input:focus { outline: none; border-color: var(--sage); box-shadow: 0 0 0 4px rgba(107, 127, 94, 0.12); }
+    .top-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .icon-btn {
+      position: relative; width: 40px; height: 40px; border-radius: var(--radius-pill);
+      border: 1.5px solid var(--beige); background: var(--white); color: var(--charcoal);
+      display: grid; place-items: center; cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .icon-btn:hover { background: var(--cream); border-color: var(--charcoal); }
+    .icon-btn .dot { position: absolute; top: 8px; right: 9px; width: 8px; height: 8px; background: var(--wood); border-radius: 50%; border: 2px solid var(--white); }
+    .admin-chip {
+      display: flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px;
+      border-radius: var(--radius-pill); background: var(--white); border: 1.5px solid var(--beige);
+      cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .admin-chip:hover { background: var(--cream); border-color: var(--charcoal); }
+    .admin-chip .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--sage); color: var(--white); display: grid; place-items: center; font-weight: 600; font-size: 13px; }
+    .admin-chip .who { line-height: 1.15; }
+    .admin-chip .who strong { display: block; font-size: 13.5px; color: var(--charcoal); }
+    .admin-chip .who span { display: block; font-size: 11.5px; color: var(--gray); }
+
+    /* ============================================================
+       CONTENT
+       ============================================================ */
+    .content { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+
+    .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .page-head h1 { font-size: clamp(24px, 3vw, 32px); color: var(--charcoal); }
+    .page-head p { color: var(--gray); font-size: 14.5px; margin-top: 4px; }
+    .breadcrumb { font-size: 13px; color: var(--gray); margin-bottom: 2px; }
+    .breadcrumb a:hover { color: var(--sage); }
+
+    .quick-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .qa-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-radius: var(--radius-pill);
+      border: 1.5px solid var(--charcoal); background: transparent; color: var(--charcoal);
+      font-size: 13.5px; font-weight: 600; cursor: pointer;
+      transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
+    }
+    .qa-btn:hover { background: var(--charcoal); color: var(--warm-white); transform: translateY(-1px); }
+    .qa-btn.primary { background: var(--sage); border-color: var(--sage); color: var(--white); }
+    .qa-btn.primary:hover { background: var(--sage-dark); border-color: var(--sage-dark); }
+    .qa-btn.danger { border-color: var(--danger); color: var(--danger); }
+    .qa-btn.danger:hover { background: var(--danger); border-color: var(--danger); color: var(--white); }
+
+    /* ============================================================
+       EDITOR LAYOUT
+       ============================================================ */
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    .panel {
+      background: var(--white); border: 1px solid var(--beige);
+      border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-soft);
+    }
+    .panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px; color: var(--charcoal);
+      padding-bottom: 14px; margin-bottom: 20px;
+      border-bottom: 1px solid var(--beige);
+    }
+
+    /* Form fields */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 18px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label {
+      font-size: 13px; font-weight: 600; color: var(--charcoal);
+    }
+    .field .hint { font-size: 12px; color: var(--gray); font-weight: 400; margin-left: 6px; }
+    .input, .textarea, select.input {
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid var(--beige); border-radius: var(--radius-md);
+      background: var(--warm-white); font-size: 14px; color: var(--charcoal);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
+    .input:focus, .textarea:focus, select.input:focus {
+      outline: none; border-color: var(--sage); box-shadow: 0 0 0 4px rgba(107, 127, 94, 0.12);
+    }
+    .with-prefix { position: relative; }
+    .with-prefix .prefix {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--gray); font-size: 14px; pointer-events: none;
+    }
+    .with-prefix .input { padding-left: 30px; }
+
+    /* Chips (colors / sizes / tags) */
+    .chips-input { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px; border: 1.5px solid var(--beige); border-radius: var(--radius-md); background: var(--warm-white); }
+    .chip {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 10px; border-radius: var(--radius-pill);
+      background: var(--cream); color: var(--charcoal); font-size: 13px; font-weight: 500;
+    }
+    .chip .x { cursor: pointer; color: var(--gray); display: inline-flex; }
+    .chip .x:hover { color: var(--danger); }
+    .chip .swatch { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+    .chips-input input {
+      flex: 1; min-width: 120px; border: none; background: transparent;
+      font-size: 14px; color: var(--charcoal); padding: 6px; outline: none;
+    }
+    .chips-input input::placeholder { color: var(--gray); }
+
+    /* Toggle switch */
+    .switch-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      padding: 14px 0; border-bottom: 1px solid var(--beige);
+    }
+    .switch-row:last-child { border-bottom: none; }
+    .switch-row .switch-label strong { display: block; font-size: 14px; font-weight: 600; color: var(--charcoal); }
+    .switch-row .switch-label span { font-size: 12.5px; color: var(--gray); }
+    .switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch .track {
+      position: absolute; inset: 0; cursor: pointer;
+      background: var(--beige); border-radius: var(--radius-pill);
+      transition: background 0.25s ease;
+    }
+    .switch .track::before {
+      content: ""; position: absolute; left: 3px; top: 3px;
+      width: 20px; height: 20px; background: var(--white); border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.25s ease;
+    }
+    .switch input:checked + .track { background: var(--sage); }
+    .switch input:checked + .track::before { transform: translateX(20px); }
+    .switch input:focus-visible + .track { box-shadow: 0 0 0 4px rgba(107, 127, 94, 0.2); }
+
+    /* Image upload dropzone */
+    .dropzone {
+      border: 2px dashed var(--beige); border-radius: var(--radius-md);
+      padding: 28px 20px; text-align: center; cursor: pointer;
+      background: var(--warm-white); transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .dropzone:hover, .dropzone.drag { border-color: var(--sage); background: var(--cream); }
+    .dropzone svg { color: var(--sage); margin-bottom: 8px; }
+    .dropzone p { font-size: 13.5px; color: var(--gray); }
+    .dropzone strong { color: var(--charcoal); }
+    .thumbs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; margin-top: 16px; }
+    .img-thumb { position: relative; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--beige); background: var(--cream); }
+    .img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .img-thumb .rm {
+      position: absolute; top: 4px; right: 4px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(43, 41, 38, 0.7); color: var(--white);
+      border: none; cursor: pointer; display: grid; place-items: center; font-size: 13px;
+    }
+    .img-thumb .rm:hover { background: var(--danger); }
+
+    /* Status select */
+    select.input { appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236f6a62' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+    }
+
+    /* Contained action bar (sits inside the content area, not floating) */
+    .editor-actions {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 18px 22px;
+      background: var(--white);
+      border: 1px solid var(--beige);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      margin-top: 4px;
+    }
+    .editor-actions .spacer { flex: 1; }
+
+    /* Toast */
+    .toast {
+      position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 20px);
+      background: var(--charcoal); color: var(--warm-white);
+      padding: 13px 22px; border-radius: var(--radius-pill);
+      font-size: 14px; font-weight: 500; box-shadow: var(--shadow-lift);
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; z-index: 90;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 1080px) {
+      .editor-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 860px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+      .side-nav { flex-direction: row; overflow-x: auto; gap: 6px; }
+      .side-nav a { white-space: nowrap; }
+      .nav-label, .sidebar-foot { display: none; }
+      .sidebar .brand { border-bottom: none; padding-bottom: 12px; margin-bottom: 8px; }
+      .topbar { padding: 0 20px; gap: 10px; }
+      .admin-chip .who { display: none; }
+      .content { padding: 20px; }
+    }
+    @media (max-width: 720px) {
+      .sidebar { display: none; }
+      .topbar { grid-template-columns: 1fr auto; }
+      .content { margin-left: 0; padding: 18px; }
+      .who { display: none; }
+    }
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .page-head { gap: 12px; }
+    }
+    @media (max-width: 520px) {
+      .search { display: none; }
+    }
+    @media (max-width: 400px) {
+      .panel { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <!-- ============================================================
+         SIDEBAR
+         ============================================================ -->
+    <aside class="sidebar">
+      <div class="brand">Haven<span>wood</span></div>
+
+      <span class="nav-label">Main</span>
+      <ul class="side-nav">
+        <li><a class="active" href="admin-dashboard.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a></li>
+        <li><a class="active" href="admin-products.html"
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+          Products
+        </a></li>
+        <li><a href="admin-profile.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>
+          Profile
+        </a></li>
+        <li><a href="admin-products.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Categories
+        </a></li>
+        <li><a href="admin-orders.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Orders
+        </a></li>
+        <li><a href="admin-customers.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Customers
+        </a></li>
+        <li><a href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>
+          Analytics
+        </a></li>
+      </ul>
+
+      <span class="nav-label" style="margin-top:16px">System</span>
+      <ul class="side-nav">
+        <li><a href="admin-settings.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+          Settings
+        </a></li>
+      </ul>
+
+      <div class="sidebar-foot">
+        <ul class="side-nav">
+          <li><a href="admin-login.html" class="logout">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+            Logout
+          </a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- ============================================================
+         MAIN COLUMN
+         ============================================================ -->
+    <div class="main-col">
+
+      <header class="topbar">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" placeholder="Search products, orders, customers…" />
+        </div>
+
+        <div class="top-actions">
+          <button class="icon-btn" aria-label="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="dot"></span>
+          </button>
+          <div class="admin-chip" role="button" tabindex="0" aria-label="Admin profile">
+            <div class="avatar">EM</div>
+            <div class="who">
+              <strong>Emma Miller</strong>
+              <span>Store admin</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+
+        <!-- Page head -->
+        <section class="page-head">
+          <div>
+            <div class="breadcrumb"><a href="admin-products.html">Products</a> / <span id="bcTitle">New Product</span></div>
+            <h1 id="pageTitle">Add Product</h1>
+            <p>Fill in the details below to create or update a product.</p>
+          </div>
+          <div class="quick-actions">
+            <button class="qa-btn" id="saveDraftBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+              Save Draft
+            </button>
+            <button class="qa-btn primary" id="publishBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              Publish
+            </button>
+          </div>
+        </section>
+
+        <!-- Editor -->
+        <form id="editorForm" novalidate>
+          <div class="editor-grid">
+
+            <!-- LEFT: main details -->
+            <div style="display:flex; flex-direction:column; gap:22px;">
+              <section class="panel">
+                <h2 class="panel-title">General</h2>
+                <div class="form-grid">
+                  <div class="field full">
+                    <label for="pName">Product Name</label>
+                    <input class="input" type="text" id="pName" placeholder="e.g. Marlow Linen Sofa" />
+                  </div>
+
+                  <div class="field full">
+                    <label for="pDesc">Description</label>
+                    <textarea class="textarea" id="pDesc" placeholder="Describe the product, materials, dimensions…"></textarea>
+                  </div>
+
+                  <div class="field">
+                    <label for="pSku">SKU</label>
+                    <input class="input" type="text" id="pSku" placeholder="HW-SOF-001" />
+                  </div>
+
+                  <div class="field">
+                    <label for="pBrand">Brand</label>
+                    <input class="input" type="text" id="pBrand" placeholder="Havenwood" />
+                  </div>
+
+                  <div class="field">
+                    <label for="pPrice">Price ($)<span class="hint">regular</span></label>
+                    <div class="with-prefix">
+                      <span class="prefix">$</span>
+                      <input class="input" type="number" id="pPrice" min="0" step="0.01" placeholder="0.00" />
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="pDiscount">Discount Price ($)<span class="hint">optional</span></label>
+                    <div class="with-prefix">
+                      <span class="prefix">$</span>
+                      <input class="input" type="number" id="pDiscount" min="0" step="0.01" placeholder="0.00" />
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="pCategory">Category</label>
+                    <select class="input" id="pCategory">
+                      <option value="seating">Seating</option>
+                      <option value="tables">Tables &amp; Desks</option>
+                      <option value="bedroom">Bedroom</option>
+                      <option value="lighting">Lighting &amp; Décor</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="pStock">Stock Quantity</label>
+                    <input class="input" type="number" id="pStock" min="0" step="1" placeholder="0" />
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <h2 class="panel-title">Variants &amp; Tags</h2>
+                <div class="field full" style="margin-bottom:18px;">
+                  <label>Colors <span class="hint">type and press Enter</span></label>
+                  <div class="chips-input" id="colorsWrap" data-key="colors">
+                    <input type="text" placeholder="Add a color…" aria-label="Add color" />
+                  </div>
+                </div>
+                <div class="field full" style="margin-bottom:18px;">
+                  <label>Sizes <span class="hint">type and press Enter</span></label>
+                  <div class="chips-input" id="sizesWrap" data-key="sizes">
+                    <input type="text" placeholder="Add a size…" aria-label="Add size" />
+                  </div>
+                </div>
+                <div class="field full">
+                  <label>Tags <span class="hint">type and press Enter</span></label>
+                  <div class="chips-input" id="tagsWrap" data-key="tags">
+                    <input type="text" placeholder="Add a tag…" aria-label="Add tag" />
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <h2 class="panel-title">Images</h2>
+                <div class="dropzone" id="dropzone">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                  <p><strong>Click to upload</strong> or drag &amp; drop images here</p>
+                  <p>JPG, PNG or WebP — up to 5 MB each</p>
+                </div>
+                <input type="file" id="fileInput" accept="image/*" multiple hidden />
+                <div class="thumbs-grid" id="thumbsGrid"></div>
+              </section>
+            </div>
+
+            <!-- RIGHT: publishing -->
+            <div style="display:flex; flex-direction:column; gap:22px; position:sticky; top: calc(var(--topbar-h) + 24px);">
+              <section class="panel">
+                <h2 class="panel-title">Publishing</h2>
+                <div class="field full" style="margin-bottom:16px;">
+                  <label for="pStatus">Product Status</label>
+                  <select class="input" id="pStatus">
+                    <option value="active">Active</option>
+                    <option value="draft">Draft</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+
+                <div class="switch-row">
+                  <div class="switch-label">
+                    <strong>Featured Product</strong>
+                    <span>Show on the homepage highlights</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="pFeatured" />
+                    <span class="track"></span>
+                  </label>
+                </div>
+
+                <div class="switch-row">
+                  <div class="switch-label">
+                    <strong>On Sale</strong>
+                    <span>Display sale badge on storefront</span>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="pSale" />
+                    <span class="track"></span>
+                  </label>
+                </div>
+              </section>
+
+              <section class="panel">
+                <h2 class="panel-title">Danger Zone</h2>
+                <button type="button" class="qa-btn danger" id="deleteBtn" style="width:100%; justify-content:center;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                  Delete Product
+                </button>
+              </section>
+            </div>
+          </div>
+
+          <!-- Action bar -->
+          <div class="editor-actions">
+            <span class="spacer"></span>
+            <a href="admin-products.html" class="qa-btn">Cancel</a>
+            <button type="button" class="qa-btn" id="saveDraftBtn2">Save Draft</button>
+            <button type="button" class="qa-btn primary" id="publishBtn2">Publish</button>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /* ---------- Demo source data (mirrors admin-products.html) ---------- */
+    const PRODUCTS = [
+      { id: 'sofa-marlow',  name: 'Marlow Linen Sofa',      sku: 'HW-SOF-001', category: 'seating',  brand: 'Havenwood', price: 1299, old: 1599, stock: 24, colors: ['Natural Linen', 'Sage Green'], sizes: ['3-Seater'], tags: ['bestseller', 'linen'], status: 'active',  featured: true,  sale: true },
+      { id: 'chair-sage',   name: 'Sage Curve Armchair',    sku: 'HW-CHA-014', category: 'seating',  brand: 'Havenwood', price: 549,  old: null, stock: 8,  colors: ['Sage Green'], sizes: ['Standard'], tags: ['new'], status: 'active',  featured: false, sale: false },
+      { id: 'table-arden',  name: 'Arden Oak Dining Table', sku: 'HW-TBL-007', category: 'tables',   brand: 'Havenwood', price: 899,  old: null, stock: 0,  colors: ['Natural Oak'], sizes: ['6-Seat'], tags: ['oak'], status: 'active',  featured: false, sale: false },
+      { id: 'desk-walden',  name: 'Walden Walnut Desk',     sku: 'HW-DSK-003', category: 'tables',   brand: 'Havenwood', price: 649,  old: 749,  stock: 15, colors: ['Warm Walnut'], sizes: ['Large'], tags: ['wood'], status: 'active',  featured: false, sale: true },
+      { id: 'bed-haven',    name: 'Haven Upholstered Bed',  sku: 'HW-BED-009', category: 'bedroom',  brand: 'Havenwood', price: 1099, old: null, stock: 5,  colors: ['Natural Linen'], sizes: ['Queen', 'King'], tags: ['bedroom'], status: 'active',  featured: true,  sale: false },
+      { id: 'lamp-lumen',   name: 'Lumen Linen Floor Lamp', sku: 'HW-LMP-021', category: 'lighting', brand: 'Havenwood', price: 229,  old: null, stock: 42, colors: ['Natural Linen'], sizes: ['Standard'], tags: ['lighting'], status: 'active',  featured: false, sale: false },
+      { id: 'shelf-nordic', name: 'Nordic Oak Bookshelf',   sku: 'HW-SHL-012', category: 'tables',   brand: 'Nordic', price: 479,  old: null, stock: 3,  colors: ['Natural Oak'], sizes: ['Standard'], tags: ['storage'], status: 'draft', featured: false, sale: false },
+      { id: 'decor-terra',  name: 'Terra Vase Duo',         sku: 'HW-DCR-018', category: 'lighting', brand: 'Havenwood', price: 89,   old: 119,  stock: 60, colors: ['Terracotta'], sizes: ['Standard'], tags: ['decor'], status: 'active', featured: false, sale: true },
+      { id: 'rug-woven',    name: 'Woven Jute Area Rug',    sku: 'HW-RUG-025', category: 'bedroom',  brand: 'Havenwood', price: 319,  old: null, stock: 0,  colors: ['Cream'], sizes: ['5x8'], tags: ['rug'], status: 'archived', featured: false, sale: false },
+      { id: 'stool-pine',   name: 'Pine Foot Stool',        sku: 'HW-STL-031', category: 'seating',  brand: 'Havenwood', price: 129,  old: null, stock: 11, colors: ['Wood Tan'], sizes: ['Standard'], tags: ['small'], status: 'active', featured: false, sale: false }
+    ];
+
+    const params = new URLSearchParams(window.location.search);
+    const editingId = params.get('edit');
+    const current = editingId ? PRODUCTS.find(function (p) { return p.id === editingId; }) : null;
+
+    /* ---------- Populate for editing ---------- */
+    if (current) {
+      document.getElementById('pageTitle').textContent = 'Edit Product';
+      document.getElementById('bcTitle').textContent = current.name || 'Edit';
+      document.getElementById('pName').value = current.name || '';
+      document.getElementById('pDesc').value = current.desc || '';
+      document.getElementById('pSku').value = current.sku || '';
+      document.getElementById('pBrand').value = current.brand || '';
+      document.getElementById('pPrice').value = current.price != null ? current.price : '';
+      document.getElementById('pDiscount').value = current.old != null ? current.old : '';
+      document.getElementById('pCategory').value = current.category || 'seating';
+      document.getElementById('pStock').value = current.stock != null ? current.stock : '';
+      document.getElementById('pStatus').value = current.status || 'active';
+      document.getElementById('pFeatured').checked = !!current.featured;
+      document.getElementById('pSale').checked = !!current.sale;
+      if (current.colors) current.colors.forEach(function (c) { addChip('colors', c); });
+      if (current.sizes) current.sizes.forEach(function (c) { addChip('sizes', c); });
+      if (current.tags) current.tags.forEach(function (c) { addChip('tags', c); });
+    }
+
+    /* ---------- Toast ---------- */
+    let toastTimer = null;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200);
+    }
+
+    /* ---------- Chips ---------- */
+    const chipData = { colors: [], sizes: [], tags: [] };
+    const COLOR_NAMES = { 'natural linen':'#e8e0d3', 'sage green':'#6b7f5e', 'natural oak':'#c9a97a', 'warm walnut':'#7a5539', 'charcoal':'#2b2926', 'terracotta':'#a67c52', 'cream':'#f3eee6', 'wood tan':'#a67c52' };
+
+    function addChip(key, value) {
+      value = (value || '').trim();
+      if (!value) return false;
+      if (chipData[key].includes(value)) return false;
+      chipData[key].push(value);
+
+      const wrap = document.getElementById(key + 'Wrap');
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+
+      if (key === 'colors') {
+        const hex = COLOR_NAMES[value.toLowerCase()] || '#cbb79a';
+        chip.innerHTML = '<span class="swatch" style="background:' + hex + '"></span>' + escapeHtml(value) + '<span class="x" aria-label="Remove">' + xSvg() + '</span>';
+      } else {
+        chip.innerHTML = escapeHtml(value) + '<span class="x" aria-label="Remove">' + xSvg() + '</span>';
+      }
+
+      const x = chip.querySelector('.x');
+      x.addEventListener('click', function () {
+        chipData[key] = chipData[key].filter(function (v) { return v !== value; });
+        chip.remove();
+      });
+
+      wrap.insertBefore(chip, wrap.querySelector('input'));
+      return true;
+    }
+
+    function xSvg() {
+      return '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+    }
+    function escapeHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    ['colors', 'sizes', 'tags'].forEach(function (key) {
+      const wrap = document.getElementById(key + 'Wrap');
+      const input = wrap.querySelector('input');
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          if (addChip(key, input.value)) input.value = '';
+        } else if (e.key === 'Backspace' && !input.value && chipData[key].length) {
+          chipData[key].pop();
+          wrap.querySelectorAll('.chip').forEach(function (c, i) { if (i === chipData[key].length) c.remove(); });
+        }
+      });
+    });
+
+    /* ---------- Image upload ---------- */
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const thumbsGrid = document.getElementById('thumbsGrid');
+    const uploadedImages = [];
+
+    dropzone.addEventListener('click', function () { fileInput.click(); });
+    dropzone.addEventListener('dragover', function (e) { e.preventDefault(); dropzone.classList.add('drag'); });
+    dropzone.addEventListener('dragleave', function () { dropzone.classList.remove('drag'); });
+    dropzone.addEventListener('drop', function (e) {
+      e.preventDefault(); dropzone.classList.remove('drag');
+      handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', function () { handleFiles(fileInput.files); fileInput.value = ''; });
+
+    function handleFiles(files) {
+      Array.prototype.forEach.call(files, function (file) {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const src = e.target.result;
+          uploadedImages.push(src);
+          renderThumb(src);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    function renderThumb(src) {
+      const div = document.createElement('div');
+      div.className = 'img-thumb';
+      div.innerHTML = '<img src="' + src + '" alt="Product image" /><button type="button" class="rm" aria-label="Remove image">×</button>';
+      div.querySelector('.rm').addEventListener('click', function () {
+        const i = uploadedImages.indexOf(src);
+        if (i > -1) uploadedImages.splice(i, 1);
+        div.remove();
+      });
+      thumbsGrid.appendChild(div);
+    }
+
+    /* ---------- Save / publish ---------- */
+    function collect() {
+      return {
+        name: document.getElementById('pName').value.trim(),
+        desc: document.getElementById('pDesc').value.trim(),
+        sku: document.getElementById('pSku').value.trim(),
+        brand: document.getElementById('pBrand').value.trim(),
+        price: parseFloat(document.getElementById('pPrice').value) || 0,
+        old: parseFloat(document.getElementById('pDiscount').value) || null,
+        category: document.getElementById('pCategory').value,
+        stock: parseInt(document.getElementById('pStock').value, 10) || 0,
+        status: document.getElementById('pStatus').value,
+        featured: document.getElementById('pFeatured').checked,
+        sale: document.getElementById('pSale').checked,
+        colors: chipData.colors.slice(),
+        sizes: chipData.sizes.slice(),
+        tags: chipData.tags.slice(),
+        images: uploadedImages.slice()
+      };
+    }
+
+    function validate(data) {
+      if (!data.name) return 'Product name is required.';
+      if (!data.price) return 'A regular price is required.';
+      if (data.discount > data.price) return 'Discount price cannot be higher than the regular price.';
+      return null;
+    }
+
+    function save(mode) {
+      const data = collect();
+      const err = validate(data);
+      if (err) { showToast(err); return; }
+      data.status = mode === 'publish' ? 'active' : (data.status === 'archived' ? 'archived' : 'draft');
+      // In a real app this would POST to the server. Demo only.
+      showToast(mode === 'publish' ? 'Product published' : 'Draft saved');
+      setTimeout(function () { window.location.href = 'admin-products.html'; }, 900);
+    }
+
+    document.getElementById('publishBtn').addEventListener('click', function () { save('publish'); });
+    document.getElementById('publishBtn2').addEventListener('click', function () { save('publish'); });
+    document.getElementById('saveDraftBtn').addEventListener('click', function () { save('draft'); });
+    document.getElementById('saveDraftBtn2').addEventListener('click', function () { save('draft'); });
+    document.getElementById('deleteBtn').addEventListener('click', function () {
+      if (!current) { showToast('This product has not been saved yet.'); return; }
+      showToast('Product deleted');
+      setTimeout(function () { window.location.href = 'admin-products.html'; }, 900);
+    });
+  </script>
+</body>
+</html>

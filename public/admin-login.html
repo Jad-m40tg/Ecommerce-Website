@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — Havenwood</title>
+  <meta name="description" content="Sign in to the Havenwood admin dashboard." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --warm-white:#faf7f2; --cream:#f3eee6; --beige:#e8e0d3;
+      --charcoal:#2b2926; --gray:#6f6a62; --wood:#a67c52;
+      --sage:#6b7f5e; --sage-dark:#576a4c; --white:#fffdf9;
+      --success:#6b7f5e; --warning:#c98a3a; --danger:#b3532e;
+      --radius-lg:20px; --radius-md:12px; --radius-sm:8px; --radius-pill:999px;
+      --shadow-soft:0 6px 24px rgba(43,41,38,.08);
+      --shadow-lift:0 16px 40px rgba(43,41,38,.14);
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{min-height:100%}
+    body{
+      font-family:'Inter',sans-serif; background:var(--warm-white);
+      color:var(--charcoal); -webkit-font-smoothing:antialiased; line-height:1.55;
+      display:grid; place-items:center; padding:20px;
+    }
+    h1,h2,h3{font-family:'Playfair Display',serif; line-height:1.2}
+    a{color:inherit; text-decoration:none}
+    button,input{font-family:inherit}
+
+    .login-card{
+      width:100%; max-width:420px;
+      background:var(--white); border:1px solid var(--beige);
+      border-radius:var(--radius-lg); padding:40px 36px;
+      box-shadow:var(--shadow-lift);
+      animation:pop .4s cubic-bezier(.2,.9,.3,1.1);
+    }
+    @keyframes pop{from{opacity:0; transform:translateY(16px) scale(.97)} to{opacity:1; transform:none}}
+
+    .brand{font-family:'Playfair Display',serif; font-size:28px; font-weight:700; text-align:center; margin-bottom:6px}
+    .brand span{color:var(--sage)}
+    .subtitle{text-align:center; color:var(--gray); font-size:14px; margin-bottom:32px}
+
+    .field{margin-bottom:18px}
+    .field label{display:block; font-size:12.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--gray); margin-bottom:6px}
+    .field input{
+      width:100%; padding:12px 14px;
+      border:1.5px solid var(--beige); border-radius:var(--radius-md);
+      background:var(--warm-white); font-size:14px; color:var(--charcoal);
+      transition:border-color .2s ease, box-shadow .2s ease;
+    }
+    .field input:focus{outline:none; border-color:var(--sage); box-shadow:0 0 0 4px rgba(107,127,94,.12)}
+
+    .login-btn{
+      width:100%; padding:13px; margin-top:8px;
+      border:none; border-radius:var(--radius-pill);
+      background:var(--charcoal); color:var(--warm-white);
+      font-size:15px; font-weight:600; cursor:pointer;
+      transition:background .25s ease, transform .15s ease;
+    }
+    .login-btn:hover{background:var(--sage); transform:translateY(-1px)}
+    .login-btn:disabled{opacity:.6; cursor:not-allowed; transform:none}
+
+    .hint{text-align:center; margin-top:20px; font-size:13px; color:var(--gray)}
+    .hint a{color:var(--sage); font-weight:600}
+
+    .error{background:rgba(179,83,46,.08); border:1px solid rgba(179,83,46,.25); color:var(--danger); padding:10px 14px; border-radius:var(--radius-md); font-size:13px; display:none; margin-bottom:16px}
+    .error.show{display:block}
+
+    .toast{
+      position:fixed; left:50%; bottom:32px; transform:translate(-50%, 20px);
+      background:var(--charcoal); color:var(--warm-white); padding:13px 22px;
+      border-radius:var(--radius-pill); font-size:14px; font-weight:500;
+      box-shadow:var(--shadow-lift); opacity:0; pointer-events:none;
+      transition:opacity .3s ease, transform .3s ease; z-index:90;
+    }
+    .toast.show{opacity:1; transform:translate(-50%, 0)}
+
+    @media (max-width:480px){
+      .login-card{padding:28px 22px}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="brand">Haven<span>wood</span></div>
+    <p class="subtitle">Sign in to your admin account</p>
+
+    <div class="error" id="error"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="admin@havenwood.com" autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
+      </div>
+      <button type="submit" class="login-btn" id="loginBtn">Sign In</button>
+    </form>
+
+    <p class="hint"><a href="althome.html">← Back to store</a></p>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      var token = localStorage.getItem('admin_token');
+      if (token) {
+        fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(function (r) { if (r.ok) return r.json(); throw new Error(); })
+          .then(function () { window.location.href = 'admin-dashboard.html'; })
+          .catch(function () { localStorage.removeItem('admin_token'); });
+      }
+    })();
+
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(window.__tt);
+      window.__tt = setTimeout(function () { t.classList.remove('show'); }, 2200);
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = document.getElementById('email').value.trim();
+      var pass  = document.getElementById('password').value;
+      var errEl = document.getElementById('error');
+      var btn   = document.getElementById('loginBtn');
+
+      errEl.classList.remove('show');
+      if (!email || !pass) { errEl.textContent = 'Please fill in all fields'; errEl.classList.add('show'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: pass })
+      })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        if (!res.ok) { errEl.textContent = res.data.error || res.data.message || 'Invalid credentials'; errEl.classList.add('show'); btn.disabled = false; btn.textContent = 'Sign In'; return; }
+        localStorage.setItem('admin_token', res.data.token);
+        showToast('Logged in successfully!');
+        setTimeout(function () { window.location.href = 'admin-dashboard.html'; }, 600);
+      })
+      .catch(function () {
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      });
+    });
+  </script>
+</body>
+</html>

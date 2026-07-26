@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marlow Linen Sofa — Havenwood Modern Furniture &amp; Home Décor</title>
+  <meta name="description" content="Order the Marlow Linen Sofa from Havenwood — solid hardwood frame, washable linen, 10-year warranty. Cash on delivery available." />
+
+  <!-- Same font pairing as the rest of the site -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       1. DESIGN TOKENS — mirror of index / products / product pages.
+          Do NOT change values here — mirror the homepage instead.
+       ============================================================ */
+    :root {
+      --warm-white: #faf7f2;
+      --cream:      #f3eee6;
+      --beige:      #e8e0d3;
+      --charcoal:   #2b2926;
+      --gray:       #6f6a62;
+      --wood:       #a67c52;
+      --sage:       #6b7f5e;
+      --sage-dark:  #576a4c;
+      --white:      #fffdf9;
+
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 6px 24px rgba(43, 41, 38, 0.08);
+      --shadow-lift: 0 16px 40px rgba(43, 41, 38, 0.14);
+
+      --container: 1180px;
+      --nav-height: 72px;
+    }
+
+    /* ============================================================
+       2. RESET + BASE (identical to sibling pages)
+       ============================================================ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--warm-white); }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--warm-white);
+      color: var(--charcoal);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; line-height: 1.2; }
+    img { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+
+    .container { width: min(var(--container), 92%); margin-inline: auto; }
+    .section { padding: clamp(56px, 8vw, 96px) 0; }
+
+    /* ============================================================
+       3. NAVBAR — identical to homepage
+       ------------------------------------------------------------
+       Same DNA as the homepage: sticky, glassmorphic bar
+       with pill-shaped links — re-tinted for the warm palette.
+       ============================================================ */
+
+    /* ============================================================
+       MATERIAL ICONS — Google Material Symbols base
+       ============================================================ */
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+      line-height: 1;
+    }
+
+    .navbar {
+      /* Gym-site DNA: the nav floats as its own rounded, bordered
+         bar with breathing room above it, instead of sitting flush
+         edge-to-edge. Same translucent glass effect as before. */
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      padding: 14px 0 0;
+    }
+
+    .navbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      height: var(--nav-height);
+      padding: 0 26px;
+      background: rgba(250, 247, 242, 0.82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid var(--beige);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .navbar-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+
+    .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+    .brand span { color: var(--sage); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      /* Gym-site DNA: links are bordered pills at rest, not just on hover */
+      padding: 8px 17px;
+      border: 1.5px solid var(--beige);
+      border-radius: var(--radius-pill);
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--gray);
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    }
+
+    .nav-links a:hover { background: var(--beige); color: var(--charcoal); }
+
+    .nav-links a.active { background: var(--charcoal); color: var(--warm-white); border-color: var(--charcoal); }
+
+    .cart-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      border: 1.5px solid var(--charcoal);
+      border-radius: var(--radius-pill);
+      background: transparent;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--charcoal);
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+    .cart-btn:hover { background: var(--charcoal); color: var(--warm-white); }
+
+    .cart-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      border-radius: var(--radius-pill);
+      background: var(--sage);
+      color: var(--warm-white);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .nav-search {
+      display: flex; align-items: center; justify-content: center;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      color: var(--charcoal);
+      transition: background 0.25s ease;
+    }
+    .nav-search:hover { background: var(--beige); }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 26px;
+      color: var(--charcoal);
+      flex-shrink: 0;
+    }
+
+    /* ============================================================
+       4. BUTTONS (shared)
+       ============================================================ */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 14px 30px;
+      border-radius: var(--radius-md);
+      font-size: 15px; font-weight: 600;
+      border: 1.5px solid transparent;
+      transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { background: var(--sage); color: var(--warm-white); }
+    .btn-primary:hover { background: var(--sage-dark); }
+    .btn-outline { border-color: var(--charcoal); color: var(--charcoal); background: transparent; }
+    .btn-outline:hover { background: var(--charcoal); color: var(--warm-white); }
+    .btn-icon {
+      width: 48px; height: 48px; padding: 0;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--charcoal);
+      background: transparent; color: var(--charcoal);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease;
+    }
+    .btn-icon:hover { background: var(--charcoal); color: var(--warm-white); transform: translateY(-2px); }
+
+    /* ============================================================
+       5. BREADCRUMB
+       ============================================================ */
+    .breadcrumb { padding: 20px 0 0; font-size: 13.5px; color: var(--gray); }
+    .breadcrumb a { color: var(--gray); transition: color 0.25s ease; }
+    .breadcrumb a:hover { color: var(--charcoal); }
+    .breadcrumb .sep { margin: 0 8px; color: var(--beige); }
+    .breadcrumb .current { color: var(--charcoal); font-weight: 500; }
+
+    /* ============================================================
+       6. PRODUCT DETAIL LAYOUT (matches product.html)
+       ============================================================ */
+    .product-detail {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 56px;
+      align-items: start;
+      padding: 36px 0 20px;
+    }
+
+    /* Gallery */
+    .gallery-main {
+      position: relative;
+      background: var(--cream);
+      border: 1px solid var(--beige);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+    }
+    .gallery-main img {
+      width: 100%; aspect-ratio: 1; object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .gallery-main:hover img { transform: scale(1.03); }
+    .gallery-badge {
+      position: absolute; top: 16px; left: 16px;
+      padding: 6px 14px; border-radius: var(--radius-pill);
+      background: var(--wood); color: var(--warm-white);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .gallery-thumbs {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 12px; margin-top: 14px;
+    }
+    .gallery-thumbs button {
+      padding: 0;
+      background: var(--cream);
+      border: 1.5px solid var(--beige);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: border-color 0.25s ease, transform 0.2s ease;
+    }
+    .gallery-thumbs button:hover { transform: translateY(-2px); }
+    .gallery-thumbs button.active { border-color: var(--sage); }
+    .gallery-thumbs img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+
+    /* Info column */
+    .product-info { padding-top: 4px; }
+    .info-category {
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--sage); margin-bottom: 10px;
+    }
+    .product-info h1 {
+      font-size: clamp(30px, 4vw, 44px);
+      color: var(--charcoal); margin-bottom: 14px;
+      text-wrap: balance;
+    }
+    .info-rating { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .info-rating .stars { color: var(--wood); font-size: 16px; }
+    .info-rating small { color: var(--gray); font-size: 13.5px; }
+    .info-price { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+    .info-price .price {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px; font-weight: 600; color: var(--charcoal);
+    }
+    .info-price s { font-size: 17px; color: var(--gray); }
+    .info-price .save {
+      padding: 4px 10px;
+      background: var(--wood); color: var(--warm-white);
+      border-radius: var(--radius-pill);
+      font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+    }
+    .stock-note {
+      font-size: 13px; color: var(--sage);
+      font-weight: 600; margin-bottom: 22px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .stock-note::before {
+      content: ''; width: 8px; height: 8px;
+      background: var(--sage); border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(107, 127, 94, 0.18);
+    }
+    .info-desc { color: var(--gray); font-size: 15px; margin-bottom: 26px; text-wrap: pretty; }
+
+    /* Feature bullets */
+    .feature-list {
+      list-style: none;
+      display: grid; gap: 8px;
+      margin-bottom: 26px;
+    }
+    .feature-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 14.5px; color: var(--charcoal);
+    }
+    .feature-list li::before {
+      content: '✓';
+      color: var(--sage); font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Options (color, size) */
+    .option-block { margin-bottom: 22px; }
+    .option-block label {
+      display: block;
+      font-size: 13px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--charcoal); margin-bottom: 10px;
+    }
+    .option-block label span { color: var(--gray); font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+    .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+    .swatch {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--beige);
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .swatch:hover { transform: translateY(-2px); }
+    .swatch.active {
+      border-color: var(--charcoal);
+      box-shadow: 0 0 0 3px rgba(43, 41, 38, 0.08);
+    }
+
+    .size-list { display: flex; gap: 10px; flex-wrap: wrap; }
+    .size-pill {
+      min-width: 56px;
+      padding: 10px 16px;
+      border: 1.5px solid var(--beige);
+      background: var(--white);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 600; color: var(--charcoal);
+      transition: border-color 0.25s ease, background 0.25s ease, transform 0.2s ease;
+    }
+    .size-pill:hover { transform: translateY(-2px); border-color: var(--wood); }
+    .size-pill.active { background: var(--charcoal); color: var(--warm-white); border-color: var(--charcoal); }
+
+    /* Qty + CTA row */
+    .buy-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
+    .qty {
+      display: flex; align-items: center;
+      border: 1.5px solid var(--charcoal);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .qty button {
+      width: 44px; height: 48px;
+      background: transparent; border: none;
+      font-size: 18px; font-weight: 600; color: var(--charcoal);
+      transition: background 0.25s ease;
+    }
+    .qty button:hover { background: var(--beige); }
+    .qty input {
+      width: 44px; height: 48px;
+      border: none; background: transparent;
+      text-align: center;
+      font-family: inherit; font-size: 15px; font-weight: 600;
+      color: var(--charcoal);
+      -moz-appearance: textfield;
+    }
+    .qty input::-webkit-outer-spin-button,
+    .qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .qty input:focus { outline: none; }
+
+    .buy-row .btn { flex: 1; min-width: 180px; }
+
+    /* Perks strip */
+    .perks {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      padding: 18px;
+      background: var(--cream);
+      border: 1px solid var(--beige);
+      border-radius: var(--radius-lg);
+    }
+    .perks div { text-align: center; font-size: 12.5px; color: var(--gray); line-height: 1.4; }
+    .perks b { display: block; color: var(--charcoal); font-size: 13.5px; margin-bottom: 2px; }
+
+    /* ============================================================
+       7. ORDER FORM — new section, styled with existing tokens
+       ============================================================ */
+    .order-section { padding: clamp(48px, 7vw, 80px) 0; }
+    .order-card {
+      background: var(--white);
+      border: 1px solid var(--beige);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: clamp(28px, 4vw, 48px);
+    }
+    .order-head { margin-bottom: 28px; text-align: center; }
+    .order-head .eyebrow {
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--sage); margin-bottom: 10px;
+    }
+    .order-head h2 {
+      font-size: clamp(26px, 3.4vw, 34px);
+      margin-bottom: 8px;
+    }
+    .order-head p { color: var(--gray); font-size: 15px; max-width: 520px; margin: 0 auto; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 20px;
+    }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label {
+      font-size: 12.5px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--charcoal);
+    }
+    .field label .req { color: var(--wood); margin-left: 2px; }
+    .field input, .field textarea {
+      width: 100%;
+      padding: 13px 16px;
+      background: var(--warm-white);
+      border: 1.5px solid var(--beige);
+      border-radius: var(--radius-md);
+      font-family: inherit; font-size: 14.5px; color: var(--charcoal);
+      transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+    }
+    .field textarea { min-height: 110px; resize: vertical; }
+    .field input:focus, .field textarea:focus {
+      outline: none;
+      background: var(--white);
+      border-color: var(--sage);
+      box-shadow: 0 0 0 3px rgba(107, 127, 94, 0.14);
+    }
+    .field input.error, .field textarea.error {
+      border-color: var(--wood);
+      background: #fbf3ea;
+    }
+    .field .msg {
+      font-size: 12.5px; color: var(--wood);
+      min-height: 16px;
+    }
+
+    /* Totals summary inside the form */
+    .order-summary {
+      margin-top: 24px; padding: 20px;
+      background: var(--cream);
+      border-radius: var(--radius-md);
+      display: grid; gap: 6px;
+      font-size: 14.5px; color: var(--gray);
+    }
+    .order-summary .line { display: flex; justify-content: space-between; }
+    .order-summary .total {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; color: var(--charcoal);
+      margin-top: 8px; padding-top: 12px;
+      border-top: 1px dashed var(--beige);
+    }
+    .order-summary .total span:last-child { font-weight: 600; }
+
+    .order-actions {
+      margin-top: 24px;
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .order-actions .btn { flex: 1; min-width: 200px; }
+
+    /* ============================================================
+       8. MODAL POPUP — order confirmation
+       ============================================================ */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(43, 41, 38, 0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 300;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+
+    .modal-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lift);
+      max-width: 440px; width: 100%;
+      padding: 44px 32px 32px;
+      text-align: center;
+      transform: translateY(30px) scale(0.94);
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.3s ease;
+    }
+    .modal-backdrop.open .modal-card { transform: translateY(0) scale(1); opacity: 1; }
+
+    .modal-check {
+      width: 76px; height: 76px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background: var(--sage);
+      color: var(--warm-white);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px;
+      box-shadow: 0 0 0 10px rgba(107, 127, 94, 0.15);
+      animation: pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+    }
+    @keyframes pop {
+      0%   { transform: scale(0); }
+      70%  { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    .modal-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px; margin-bottom: 10px;
+    }
+    .modal-card p { color: var(--gray); font-size: 14.5px; margin-bottom: 22px; }
+    .modal-card .btn { width: 100%; }
+
+    /* ============================================================
+       REVIEWS SECTION
+       ============================================================ */
+    .reviews-section { margin-top: 40px; }
+    .reviews-section h2 { font-size: 22px; margin-bottom: 20px; }
+    .review-form-card {
+      background: var(--white);
+      border: 1px solid var(--beige);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .review-form-card label {
+      display: block;
+      font-size: 13px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--charcoal); margin-bottom: 8px;
+    }
+    .review-form-card input,
+    .review-form-card textarea {
+      width: 100%; padding: 12px 14px;
+      background: var(--warm-white);
+      border: 1.5px solid var(--beige);
+      border-radius: var(--radius-md);
+      font-family: inherit; font-size: 14px; color: var(--charcoal);
+      transition: border-color 0.25s ease;
+    }
+    .review-form-card input:focus,
+    .review-form-card textarea:focus {
+      outline: none; border-color: var(--sage);
+    }
+    .review-form-card textarea { min-height: 80px; resize: vertical; }
+    .review-form-card .form-group { margin-bottom: 16px; }
+    .star-picker { display: flex; gap: 6px; }
+    .star-picker button {
+      background: none; border: none;
+      font-size: 24px; color: var(--beige);
+      transition: color 0.2s ease, transform 0.15s ease;
+      padding: 2px;
+    }
+    .star-picker button:hover { transform: scale(1.2); }
+    .star-picker button.filled { color: var(--wood); }
+    .review-card {
+      background: var(--white);
+      border: 1px solid var(--beige);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+    .review-card .review-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .review-card .review-name { font-weight: 600; font-size: 14.5px; }
+    .review-card .review-stars { color: var(--wood); font-size: 14px; }
+    .review-card .review-date { font-size: 12px; color: var(--gray); }
+    .review-card .review-text { font-size: 14px; color: var(--charcoal); line-height: 1.5; }
+    .review-delete-btn {
+      background: none; border: none; color: var(--gray);
+      font-size: 16px; cursor: pointer; margin-left: 6px;
+      transition: color 0.2s ease;
+    }
+    .review-delete-btn:hover { color: var(--wood); }
+    .reviews-empty {
+      text-align: center;
+      padding: 32px 20px;
+      color: var(--gray);
+      font-size: 14.5px;
+      background: var(--white);
+      border: 1px dashed var(--beige);
+      border-radius: var(--radius-lg);
+    }
+
+    /* ============================================================
+       9. FOOTER (identical to sibling pages)
+       ============================================================ */
+    .footer {
+      background: var(--charcoal); color: #cfc9bf;
+      padding: 64px 0 0; margin-top: clamp(56px, 8vw, 96px);
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 1.4fr 1fr 1fr;
+      gap: 40px; padding-bottom: 48px;
+    }
+    .footer .brand { color: var(--warm-white); margin-bottom: 14px; display: inline-block; }
+    .footer p { font-size: 14.5px; max-width: 320px; }
+    .footer h4 {
+      color: var(--warm-white);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .footer ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer ul a { font-size: 14.5px; transition: color 0.25s ease; }
+    .footer ul a:hover { color: var(--wood); }
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 253, 249, 0.12);
+      padding: 20px 0; text-align: center;
+      font-size: 13.5px; color: #96907f;
+    }
+
+    /* ============================================================
+       10. REVEAL + TOAST (shared behavior)
+       ============================================================ */
+    .reveal {
+      opacity: 0; transform: translateY(26px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translate(-50%, 80px);
+      background: var(--charcoal); color: var(--warm-white);
+      padding: 13px 26px; border-radius: var(--radius-pill);
+      font-size: 14px; font-weight: 600;
+      box-shadow: var(--shadow-lift);
+      opacity: 0;
+      transition: transform 0.35s ease, opacity 0.35s ease;
+      z-index: 200; pointer-events: none;
+    }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+    /* ============================================================
+       11. RESPONSIVE
+       ============================================================ */
+    @media (max-width: 960px) {
+      .product-detail { grid-template-columns: 1fr; gap: 36px; }
+      .perks { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .menu-toggle { display: block; }
+      .container { padding: 0 18px; }
+      .nav-links {
+        position: absolute; top: calc(var(--nav-height) + 14px); left: 0; right: 0;
+        flex-direction: column; align-items: stretch;
+        background: var(--warm-white);
+        border-bottom: 1px solid var(--beige);
+        padding: 12px 4%;
+        display: none;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { display: block; text-align: center; }
+      .buy-row .btn { flex: 1 1 100%; }
+      .order-actions .btn { flex: 1 1 100%; }
+      .product-card { flex: 0 0 240px; }
+    }
+    @media (max-width: 500px) {
+      .navbar-inner { padding: 0 14px; gap: 12px; }
+      .brand { font-size: 20px; }
+      .cart-btn { font-size: 12px; padding: 7px 12px; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer p { max-width: 100%; }
+    }
+    @media (max-width: 400px) {
+      .container { padding: 0 14px; }
+      .brand { font-size: 18px; }
+      .nav-search { width: 36px; height: 36px; }
+      .cart-btn { font-size: 11px; padding: 5px 8px; gap: 5px; }
+      .cart-count { min-width: 16px; height: 16px; font-size: 10px; padding: 0 4px; }
+      .menu-toggle { font-size: 22px; }
+      .section { padding: 40px 0; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer p { max-width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ==========================================================
+       NAVBAR (mirrors the rest of the site)
+       ========================================================== -->
+  <!-- ==========================================================
+       NAVBAR — same structure/markup as the homepage
+       ========================================================== -->
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="althome.html" class="brand">Haven<span>wood</span></a>
+
+      <nav aria-label="Main navigation">
+        <ul class="nav-links" id="navLinks">
+          <li><a href="althome.html">Home</a></li>
+          <li><a href="products.html" class="active">Shop</a></li>
+          <li><a href="categories.html">Categories</a></li>
+          <li><a href="offers.html">Offers</a></li>
+        </ul>
+      </nav>
+
+      <div class="navbar-actions">
+        <a href="search-results.html" class="nav-search" aria-label="Search products"><span class="material-symbols-outlined">search</span></a>
+        <a href="cart.html" class="cart-btn" aria-label="Shopping cart">
+          Cart <span class="cart-count" id="cartCount">0</span>
+        </a>
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">&#9776;</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ==========================================================
+         BREADCRUMB (Home > Shop > Product)
+         ========================================================== -->
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="althome.html">Home</a>
+        <span class="sep">/</span>
+        <a href="products.html">Shop</a>
+        <span class="sep">/</span>
+        <span class="current" id="crumbName">Marlow Linen Sofa</span>
+      </nav>
+    </div>
+
+    <!-- ==========================================================
+         PRODUCT DETAIL (mirrors product.html structure)
+         ========================================================== -->
+    <div class="container">
+      <div class="product-detail">
+
+        <!-- Gallery -->
+        <div class="reveal">
+          <div class="gallery-main">
+            <span class="gallery-badge">Bestseller</span>
+            <img id="galleryMainImg" src="/assets/furn-sofa.png" alt="Marlow Linen Sofa" />
+          </div>
+          <div class="gallery-thumbs" id="galleryThumbs">
+            <!-- Thumbs use the same hero for consistency without extra assets -->
+            <button type="button" class="active" data-thumb="0" aria-label="View image 1">
+              <img src="/assets/furn-sofa.png" alt="" />
+            </button>
+            <button type="button" data-thumb="1" aria-label="View image 2">
+              <img src="/assets/furn-chair.png" alt="" />
+            </button>
+            <button type="button" data-thumb="2" aria-label="View image 3">
+              <img src="/assets/furn-table.png" alt="" />
+            </button>
+            <button type="button" data-thumb="3" aria-label="View image 4">
+              <img src="/assets/furn-decor.png" alt="" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="reviews-section" id="reviewsSection" style="margin-top:40px;">
+          <h2>Customer Reviews</h2>
+          <div class="review-form-card">
+            <div class="form-group">
+              <label>Your Rating</label>
+              <div class="star-picker" id="starPicker">
+                <button type="button" data-star="1" aria-label="1 star">&#9733;</button>
+                <button type="button" data-star="2" aria-label="2 stars">&#9733;</button>
+                <button type="button" data-star="3" aria-label="3 stars">&#9733;</button>
+                <button type="button" data-star="4" aria-label="4 stars">&#9733;</button>
+                <button type="button" data-star="5" aria-label="5 stars">&#9733;</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="reviewName">Your Name</label>
+              <input type="text" id="reviewName" placeholder="Your name" />
+            </div>
+            <div class="form-group">
+              <label for="reviewText">Your Review</label>
+              <textarea id="reviewText" placeholder="Share your thoughts about this product&hellip;"></textarea>
+            </div>
+            <button type="button" class="btn btn-primary" id="submitReviewBtn">Submit Review</button>
+          </div>
+          <div id="reviewsList"><div class="reviews-empty">Loading reviews...</div></div>
+        </div>
+
+        <!-- Info -->
+        <div class="product-info reveal">
+          <div class="info-category">Seating</div>
+          <h1 id="productName">Marlow Linen Sofa</h1>
+
+          <div class="info-rating">
+            <span class="stars">★★★★★</span>
+            <small>4.9 &middot; 214 reviews</small>
+          </div>
+
+          <div class="info-price">
+            <span class="price" id="productPrice">$1,299</span>
+            <s>$1,599</s>
+            <span class="save">Save $300</span>
+          </div>
+          <div class="stock-note">In stock &middot; ships in 2&ndash;4 days</div>
+
+          <p class="info-desc">
+            Deeply cushioned and generously proportioned, the Marlow is our most-loved
+            sofa — a piece that anchors a room without ever feeling heavy. Solid
+            kiln-dried hardwood frame, feather-blend cushions, and washable linen upholstery.
+          </p>
+
+          <!-- Key features / specs at-a-glance -->
+          <ul class="feature-list">
+            <li>Kiln-dried hardwood frame — built to last generations</li>
+            <li>Washable, stain-resistant 100% linen upholstery</li>
+            <li>Feather-blend cushions with high-resilience foam core</li>
+            <li>Free white-glove delivery &amp; 10-year warranty</li>
+          </ul>
+
+          <!-- Color swatches -->
+          <div class="option-block">
+            <label>Color <span>&mdash; <b id="selectedColor">Natural Linen</b></span></label>
+            <div class="swatches" id="swatchList">
+              <button type="button" class="swatch active" style="background:#e8e0d3" data-color="Natural Linen" aria-label="Natural Linen"></button>
+              <button type="button" class="swatch" style="background:#6b7f5e" data-color="Sage Green" aria-label="Sage Green"></button>
+              <button type="button" class="swatch" style="background:#2b2926" data-color="Charcoal" aria-label="Charcoal"></button>
+              <button type="button" class="swatch" style="background:#a67c52" data-color="Wood Tan" aria-label="Wood Tan"></button>
+            </div>
+          </div>
+
+          <!-- Size selector -->
+          <div class="option-block">
+            <label>Size <span>&mdash; <b id="selectedSize">3-Seater</b></span></label>
+            <div class="size-list" id="sizeList">
+              <button type="button" class="size-pill" data-size="2-Seater">2-Seater</button>
+              <button type="button" class="size-pill active" data-size="3-Seater">3-Seater</button>
+              <button type="button" class="size-pill" data-size="4-Seater">4-Seater</button>
+            </div>
+          </div>
+
+          <!-- Qty + CTA -->
+          <div class="option-block">
+            <label>Quantity</label>
+            <div class="buy-row">
+              <div class="qty">
+                <button type="button" data-qty="-1" aria-label="Decrease quantity">&minus;</button>
+                <input type="number" id="qtyInput" value="1" min="1" max="99" aria-label="Quantity" />
+                <button type="button" data-qty="1" aria-label="Increase quantity">+</button>
+              </div>
+              <button type="button" class="btn btn-primary" id="addToCartBtn">Add to Cart</button>
+              <button type="button" class="btn-icon" id="wishlistBtn" aria-label="Add to wishlist" title="Add to wishlist"><span class="material-symbols-outlined">favorite_border</span></button>
+            </div>
+          </div>
+
+          <!-- Perks strip -->
+          <div class="perks">
+            <div><b>Free Delivery</b>On orders over $500</div>
+            <div><b>10-Year Warranty</b>On every frame</div>
+            <div><b>30-Day Returns</b>Hassle-free</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==========================================================
+         ORDER INFORMATION SECTION
+         Modern form + client-side validation + confirmation modal.
+         ========================================================== -->
+    <section class="order-section">
+      <div class="container">
+        <div class="order-card reveal">
+          <div class="order-head">
+            <div class="eyebrow">Order Information</div>
+            <h2>Complete your order</h2>
+            <p>We&rsquo;ll confirm your order by phone within 24 hours. Cash on delivery is available in all major cities.</p>
+          </div>
+
+          <!-- The form uses novalidate so we can show custom messages -->
+          <form id="orderForm" novalidate>
+            <div class="form-grid">
+
+              <div class="field">
+                <label for="fName">Full Name <span class="req">*</span></label>
+                <input type="text" id="fName" name="fName" placeholder="Jane Doe" autocomplete="name" />
+                <div class="msg" data-msg-for="fName"></div>
+              </div>
+
+              <div class="field">
+                <label for="fPhone">Phone Number <span class="req">*</span></label>
+                <input type="tel" id="fPhone" name="fPhone" placeholder="+1 (555) 123-4567" autocomplete="tel" />
+                <div class="msg" data-msg-for="fPhone"></div>
+              </div>
+
+              <div class="field">
+                <label for="fEmail">Email <span class="req">*</span></label>
+                <input type="email" id="fEmail" name="fEmail" placeholder="you@example.com" autocomplete="email" />
+                <div class="msg" data-msg-for="fEmail"></div>
+              </div>
+
+              <div class="field">
+                <label for="fCity">City <span class="req">*</span></label>
+                <input type="text" id="fCity" name="fCity" placeholder="Copenhagen" autocomplete="address-level2" />
+                <div class="msg" data-msg-for="fCity"></div>
+              </div>
+
+              <div class="field full">
+                <label for="fAddress">Delivery Address <span class="req">*</span></label>
+                <input type="text" id="fAddress" name="fAddress" placeholder="Street, apartment, ZIP code" autocomplete="street-address" />
+                <div class="msg" data-msg-for="fAddress"></div>
+              </div>
+
+              <div class="field full">
+                <label for="fNotes">Notes <span>(optional)</span></label>
+                <textarea id="fNotes" name="fNotes" placeholder="Delivery instructions, gift note, etc."></textarea>
+                <div class="msg"></div>
+              </div>
+
+            </div>
+
+            <!-- Live order summary -->
+            <div class="order-summary" aria-live="polite">
+              <div class="line"><span>Product</span><span id="sumName">Marlow Linen Sofa</span></div>
+              <div class="line"><span>Color</span><span id="sumColor">Natural Linen</span></div>
+              <div class="line"><span>Size</span><span id="sumSize">3-Seater</span></div>
+              <div class="line"><span>Quantity</span><span id="sumQty">1</span></div>
+              <div class="line"><span>Shipping</span><span>Free</span></div>
+              <div class="line total"><span>Total</span><span id="sumTotal">$1,299</span></div>
+            </div>
+
+            <div class="order-actions">
+              <a href="products.html" class="btn btn-outline">Keep Shopping</a>
+              <button type="submit" class="btn btn-primary" id="confirmOrderBtn">Confirm Order</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================
+       FOOTER (identical to sibling pages)
+       ========================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="althome.html" class="brand">Haven<span>wood</span></a>
+          <p>Premium modern furniture and home d&eacute;cor, crafted from natural materials and designed for everyday living.</p>
+        </div>
+        <div>
+          <h4>Shop</h4>
+          <ul>
+            <li><a href="products.html?category=seating">Seating</a></li>
+            <li><a href="products.html?category=tables">Tables &amp; Desks</a></li>
+            <li><a href="products.html?category=bedroom">Bedroom</a></li>
+            <li><a href="products.html?category=lighting">Lighting &amp; D&eacute;cor</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="althome.html">About Havenwood</a></li>
+            <li><a href="offers.html">Current Offers</a></li>
+            <li><a href="althome.html">Sustainability</a></li>
+            <li><a href="althome.html">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">&copy; 2026 Havenwood. All rights reserved. A fictional brand for learning purposes.</div>
+    </div>
+  </footer>
+
+  <!-- Toast (shared component) -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ==========================================================
+       CONFIRMATION MODAL — hidden until form is submitted
+       ========================================================== -->
+  <div class="modal-backdrop" id="orderModal" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
+    <div class="modal-card">
+      <div class="modal-check" aria-hidden="true">✓</div>
+      <h3 id="orderModalTitle">Order Confirmed</h3>
+      <p>Thank you for your purchase! We&rsquo;ll contact you shortly to confirm the details of your delivery.</p>
+      <button type="button" class="btn btn-primary" id="modalCloseBtn">Continue</button>
+    </div>
+  </div>
+
+  <script src="utils.js"></script>
+  <script>
+
+    /* ---------- 1. PRODUCT STATE ---------- */
+    const PRODUCT = {
+      id: 'sofa-marlow',
+      name: 'Marlow Linen Sofa',
+      price: 1299,
+      image: '/assets/furn-sofa.png'
+    };
+
+    /* Live selection tracked in one object for easy summary updates */
+    const selection = {
+      color: 'Natural Linen',
+      size:  '3-Seater',
+      qty:   1
+    };
+
+    /* ---------- 2. CART HELPERS (shared key: havenwood-cart) ---------- */
+    const CART_KEY = 'havenwood-cart';
+
+    function getCart() {
+      try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+      catch { return []; }
+    }
+    function saveCart(cart) {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      updateCartCount();
+    }
+    function updateCartCount() {
+      const total = getCart().reduce(function (sum, item) { return sum + item.qty; }, 0);
+      document.getElementById('cartCount').textContent = total;
+    }
+    function isInCart(productId) {
+      return getCart().some(function (item) { return item.id === productId; });
+    }
+    function addToCart(qty, color, size) {
+      const cart = getCart();
+      /* Match line items by id + color + size so different variants stack separately */
+      const key = PRODUCT.id + '|' + color + '|' + size;
+      const existing = cart.find(function (item) { return item.key === key; });
+      if (existing) {
+        existing.qty += qty;
+      } else {
+        cart.push({
+          key: key,
+          id: PRODUCT.id,
+          name: PRODUCT.name,
+          price: PRODUCT.price,
+          image: PRODUCT.image,
+          color: color,
+          size: size,
+          qty: qty
+        });
+      }
+      saveCart(cart);
+    }
+
+    /* ---------- 3. DETAIL INTERACTIONS ---------- */
+
+    /* ---------- REVIEWS (API-backed) ---------- */
+    var allReviews = [];
+    var REVIEWS_VISIBLE_INITIAL = 3;
+
+    function fetchReviews(productId, callback) {
+      fetch('/api/reviews?product_id=' + encodeURIComponent(productId))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          allReviews = data.reviews || [];
+          if (callback) callback();
+        })
+        .catch(function () { allReviews = []; if (callback) callback(); });
+    }
+
+    function submitReviewApi(productId, name, rating, comment, onSuccess) {
+      fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: productId, customer_name: name, rating: rating, comment: comment })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.id) {
+            allReviews.unshift(data);
+            if (onSuccess) onSuccess();
+          } else {
+            showToast(data.error || 'Failed to submit review');
+          }
+        })
+        .catch(function () { showToast('Failed to submit review'); });
+    }
+
+    function deleteReview(reviewId) {
+      fetch('/api/reviews/' + reviewId, { method: 'DELETE' })
+        .then(function () {
+          allReviews = allReviews.filter(function (r) { return r.id !== reviewId; });
+          renderReviewsIntoPage();
+        })
+        .catch(function () {});
+    }
+
+    function renderSingleReview(r) {
+      var starStr = '\u2605'.repeat(r.rating) + '\u2606'.repeat(5 - r.rating);
+      var dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+      return '<div class="review-card" data-review-id="' + r.id + '">' +
+        '<div class="review-head">' +
+          '<span class="review-name">' + escapeHtml(r.customer_name) + '</span>' +
+          '<span class="review-stars">' + starStr + '</span>' +
+        '</div>' +
+        '<div class="review-date">' + dateStr +
+          ' <button type="button" class="review-delete-btn" data-delete-id="' + r.id + '" title="Delete review" aria-label="Delete review">&times;</button>' +
+        '</div>' +
+        '<div class="review-text">' + escapeHtml(r.comment) + '</div>' +
+      '</div>';
+    }
+
+    function renderReviewsIntoPage() {
+      var listEl = document.getElementById('reviewsList');
+      if (!listEl) return;
+      if (allReviews.length === 0) {
+        listEl.innerHTML = '<div class="reviews-empty">No reviews yet. Be the first to share your thoughts!</div>';
+        return;
+      }
+      var html = '';
+      var toShow = allReviews.slice(0, REVIEWS_VISIBLE_INITIAL);
+      html += toShow.map(renderSingleReview).join('');
+      if (allReviews.length > REVIEWS_VISIBLE_INITIAL) {
+        html += '<button type="button" class="btn btn-outline" id="viewAllReviewsBtn" style="width:100%;margin-top:10px;font-size:13px;padding:10px 20px;">View all ' + allReviews.length + ' comments</button>';
+        html += '<div id="extraReviews" style="display:none;">' + allReviews.slice(REVIEWS_VISIBLE_INITIAL).map(renderSingleReview).join('') + '</div>';
+      }
+      listEl.innerHTML = html;
+      wireUpReviewDeleteButtons();
+      wireUpViewAllButton();
+    }
+
+    function wireUpReviewDeleteButtons() {
+      document.querySelectorAll('[data-delete-id]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id = parseInt(btn.getAttribute('data-delete-id'), 10);
+          if (id) deleteReview(id);
+        });
+      });
+    }
+
+    function wireUpViewAllButton() {
+      var viewAllBtn = document.getElementById('viewAllReviewsBtn');
+      if (!viewAllBtn) return;
+      viewAllBtn.addEventListener('click', function () {
+        var extra = document.getElementById('extraReviews');
+        if (extra) {
+          extra.style.display = 'block';
+          viewAllBtn.remove();
+          wireUpReviewDeleteButtons();
+        }
+      });
+    }
+
+    function wireUpStarPicker() {
+      var starBtns = document.querySelectorAll('#starPicker button');
+      var currentRating = 0;
+      starBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          currentRating = Number(btn.getAttribute('data-star'));
+          starBtns.forEach(function (b, i) {
+            b.classList.toggle('filled', i < currentRating);
+          });
+        });
+        btn.addEventListener('mouseenter', function () {
+          var hover = Number(btn.getAttribute('data-star'));
+          starBtns.forEach(function (b, i) {
+            b.style.color = i < hover ? 'var(--wood)' : '';
+          });
+        });
+        btn.addEventListener('mouseleave', function () {
+          starBtns.forEach(function (b, i) {
+            b.style.color = i < currentRating ? 'var(--wood)' : 'var(--beige)';
+          });
+        });
+      });
+      document.getElementById('submitReviewBtn').addEventListener('click', function () {
+        var name = document.getElementById('reviewName').value.trim();
+        var text = document.getElementById('reviewText').value.trim();
+        if (!currentRating) { showToast('Please select a rating'); return; }
+        if (!name) { showToast('Please enter your name'); return; }
+        if (!text) { showToast('Please write a review'); return; }
+        submitReviewApi(PRODUCT.id, name, currentRating, text, function () {
+          showToast('Review submitted — thank you!');
+          document.getElementById('reviewName').value = '';
+          document.getElementById('reviewText').value = '';
+          currentRating = 0;
+          starBtns.forEach(function (b) { b.classList.remove('filled'); b.style.color = 'var(--beige)'; });
+          renderReviewsIntoPage();
+        });
+      });
+    }
+
+    /* Format numbers like "$1,299" */
+    function money(n) { return '$' + n.toLocaleString('en-US'); }
+
+    /* Sync the small summary at the bottom of the form */
+    function updateSummary() {
+      document.getElementById('sumColor').textContent = selection.color;
+      document.getElementById('sumSize').textContent  = selection.size;
+      document.getElementById('sumQty').textContent   = selection.qty;
+      document.getElementById('sumTotal').textContent = money(PRODUCT.price * selection.qty);
+    }
+
+    /* Gallery thumbnails — swap the main image */
+    const mainImg = document.getElementById('galleryMainImg');
+    document.querySelectorAll('#galleryThumbs button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('#galleryThumbs button').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        const thumbImg = btn.querySelector('img');
+        if (thumbImg) mainImg.src = thumbImg.src;
+      });
+    });
+
+    /* Color swatches */
+    document.getElementById('swatchList').addEventListener('click', function (event) {
+      const swatch = event.target.closest('[data-color]');
+      if (!swatch) return;
+      document.querySelectorAll('#swatchList .swatch').forEach(function (s) { s.classList.remove('active'); });
+      swatch.classList.add('active');
+      selection.color = swatch.getAttribute('data-color');
+      document.getElementById('selectedColor').textContent = selection.color;
+      updateSummary();
+    });
+
+    /* Size selector */
+    document.getElementById('sizeList').addEventListener('click', function (event) {
+      const size = event.target.closest('[data-size]');
+      if (!size) return;
+      document.querySelectorAll('#sizeList .size-pill').forEach(function (b) { b.classList.remove('active'); });
+      size.classList.add('active');
+      selection.size = size.getAttribute('data-size');
+      document.getElementById('selectedSize').textContent = selection.size;
+      updateSummary();
+    });
+
+    /* Quantity stepper */
+    const qtyInput = document.getElementById('qtyInput');
+    function commitQty(v) {
+      const next = Math.max(1, Math.min(99, Number(v) || 1));
+      qtyInput.value = next;
+      selection.qty = next;
+      updateSummary();
+    }
+    document.querySelectorAll('[data-qty]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        commitQty(Number(qtyInput.value) + Number(btn.getAttribute('data-qty')));
+      });
+    });
+    qtyInput.addEventListener('change', function () { commitQty(qtyInput.value); });
+
+    /* Add to cart button (main CTA above the form) */
+    document.getElementById('addToCartBtn').addEventListener('click', function () {
+      addToCart(selection.qty, selection.color, selection.size);
+      showToast(PRODUCT.name + ' added to cart');
+      this.textContent = 'In Cart';
+      this.onclick = function () { window.location.href = 'cart.html'; };
+    });
+
+    /* Wishlist button — visual toggle only */
+    const wishBtn = document.getElementById('wishlistBtn');
+    let wished = false;
+    wishBtn.addEventListener('click', function () {
+      wished = !wished;
+      wishBtn.innerHTML = '<span class="material-symbols-outlined">' + (wished ? 'favorite' : 'favorite_border') + '</span>';
+      wishBtn.style.color = wished ? 'var(--wood)' : '';
+      wishBtn.style.borderColor = wished ? 'var(--wood)' : '';
+      wishBtn.querySelector('.material-symbols-outlined').style.fontVariationSettings = wished ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24";
+      showToast(wished ? 'Added to wishlist' : 'Removed from wishlist');
+    });
+
+    /* ---------- 4. ORDER FORM VALIDATION + MODAL ---------- */
+
+    const form = document.getElementById('orderForm');
+    const modal = document.getElementById('orderModal');
+
+    /* Each rule returns an error string, or '' when valid.
+       Keeping rules small and named makes the code easy to edit. */
+    const rules = {
+      fName:    function (v) { return v.trim().length < 2 ? 'Please enter your full name.' : ''; },
+      fPhone:   function (v) {
+        const digits = v.replace(/[^0-9]/g, '');
+        return digits.length < 7 ? 'Please enter a valid phone number.' : '';
+      },
+      fEmail:   function (v) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? '' : 'Please enter a valid email.';
+      },
+      fAddress: function (v) { return v.trim().length < 5 ? 'Please enter your delivery address.' : ''; },
+      fCity:    function (v) { return v.trim().length < 2 ? 'Please enter your city.' : ''; }
+    };
+
+    function setError(name, message) {
+      const input = document.getElementById(name);
+      const msg = document.querySelector('[data-msg-for="' + name + '"]');
+      if (message) {
+        input.classList.add('error');
+        if (msg) msg.textContent = message;
+      } else {
+        input.classList.remove('error');
+        if (msg) msg.textContent = '';
+      }
+    }
+
+    /* Validate one field on blur — nicer UX than only on submit */
+    Object.keys(rules).forEach(function (name) {
+      const input = document.getElementById(name);
+      input.addEventListener('blur', function () {
+        setError(name, rules[name](input.value));
+      });
+      input.addEventListener('input', function () {
+        /* Clear the error while the user is typing */
+        if (input.classList.contains('error')) setError(name, '');
+      });
+    });
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      /* Run every rule; collect the first invalid field to focus. */
+      let firstInvalid = null;
+      Object.keys(rules).forEach(function (name) {
+        const input = document.getElementById(name);
+        const error = rules[name](input.value);
+        setError(name, error);
+        if (error && !firstInvalid) firstInvalid = input;
+      });
+
+      if (firstInvalid) {
+        firstInvalid.focus();
+        showToast('Please fix the highlighted fields');
+        return;
+      }
+
+      /* All good — open the confirmation modal */
+      openModal();
+    });
+
+    function openModal() {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      /* Move focus to the close button for keyboard users */
+      setTimeout(function () { document.getElementById('modalCloseBtn').focus(); }, 200);
+    }
+    function closeModal() {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('modalCloseBtn').addEventListener('click', function () {
+      closeModal();
+      /* Reset the form after a successful order so it's ready for the next one */
+      form.reset();
+      commitQty(1);
+    });
+    modal.addEventListener('click', function (event) {
+      /* Click outside the card = close */
+      if (event.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && modal.classList.contains('open')) closeModal();
+    });
+
+    /* ---------- 5. UI HELPERS ---------- */
+
+    document.getElementById('menuToggle').addEventListener('click', function () {
+      document.getElementById('navLinks').classList.toggle('open');
+    });
+
+    /* Reveal-on-scroll observer (same behavior as sibling pages) */
+    const revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(function (el) { revealObserver.observe(el); });
+
+    /* Toast — shared visual language with the rest of the site */
+    let toastTimer = null;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2200);
+    }
+
+    /* Boot */
+    fetchReviews(PRODUCT.id, function () { renderReviewsIntoPage(); });
+    wireUpStarPicker();
+    updateCartCount();
+    updateSummary();
+    if (isInCart(PRODUCT.id)) {
+      document.getElementById('addToCartBtn').textContent = 'In Cart';
+      document.getElementById('addToCartBtn').onclick = function () { window.location.href = 'cart.html'; };
+    }
+  </script>
+
+  <!-- Backend API Integration -->
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var requestedId = params.get('id');
+      if (!requestedId) return;
+      fetch('/api/products/browse')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var items = data.products || data.data || data;
+          if (!Array.isArray(items)) return;
+          var found = items.find(function (p) { return String(p.id) === requestedId || p.slug === requestedId; });
+          if (!found) return;
+          var apiProduct = {
+            id: String(found.id || found.slug),
+            name: found.name,
+            category: (found.category || found.category_name || 'uncategorized').toLowerCase(),
+            price: Math.round(found.price_cents ? found.price_cents / 100 : (found.price || 0)),
+            originalPrice: found.compare_at_price_cents ? Math.round(found.compare_at_price_cents / 100) : null,
+            description: found.description || 'A thoughtfully designed piece from the Havenwood collection.',
+            image: (found.images && found.images[0]) ? found.images[0] : (found.image || '/assets/furn-sofa.png')
+          };
+          if (typeof PRODUCT !== 'undefined') {
+            Object.assign(PRODUCT, apiProduct);
+          }
+        })
+        .catch(function () {});
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orders — Havenwood Admin</title>
+  <meta name="description" content="Manage Havenwood customer orders: search, filter and update order status." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --warm-white: #faf7f2;
+      --cream:      #f3eee6;
+      --beige:      #e8e0d3;
+      --charcoal:   #2b2926;
+      --gray:       #6f6a62;
+      --wood:       #a67c52;
+      --sage:       #6b7f5e;
+      --sage-dark:  #576a4c;
+      --white:      #fffdf9;
+      --success:    #6b7f5e;
+      --warning:    #c98a3a;
+      --danger:     #b3532e;
+
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 6px 24px rgba(43, 41, 38, 0.08);
+      --shadow-lift: 0 16px 40px rgba(43, 41, 38, 0.14);
+
+      --sidebar-w: 250px;
+      --topbar-h: 72px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--warm-white);
+      color: var(--charcoal);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.55;
+    }
+    h1, h2, h3 { font-family: 'Playfair Display', serif; line-height: 1.2; }
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font-family: inherit; }
+    img { display: block; max-width: 100%; }
+
+    .app { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+
+    .sidebar {
+      background: var(--white);
+      border-right: 1px solid var(--beige);
+      padding: 24px 18px;
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    .sidebar .brand {
+      font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700;
+      padding: 4px 8px 22px; border-bottom: 1px solid var(--beige); margin-bottom: 18px;
+    }
+    .sidebar .brand span { color: var(--sage); }
+    .nav-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gray); padding: 6px 10px; margin-top: 6px;
+    }
+    .side-nav { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .side-nav a {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: var(--radius-md);
+      color: var(--gray); font-size: 14.5px; font-weight: 500;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    }
+    .side-nav a:hover { background: var(--cream); color: var(--charcoal); transform: translateX(2px); }
+    .side-nav a.active { background: var(--charcoal); color: var(--warm-white); }
+    .side-nav a.active svg { color: var(--warm-white); }
+    .side-nav svg { color: var(--gray); flex-shrink: 0; }
+    .side-nav a:hover svg { color: var(--charcoal); }
+    .sidebar-foot { margin-top: auto; padding-top: 18px; border-top: 1px solid var(--beige); }
+    .sidebar-foot a.logout { color: var(--danger); }
+    .sidebar-foot a.logout svg { color: var(--danger); }
+    .sidebar-foot a.logout:hover { background: rgba(179, 83, 46, 0.08); color: var(--danger); }
+
+    .main-col { min-width: 0; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 40; height: var(--topbar-h);
+      background: rgba(250, 247, 242, 0.85);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--beige);
+      display: flex; align-items: center; gap: 20px; padding: 0 32px;
+    }
+    .search { position: relative; flex: 1; max-width: 460px; }
+    .search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gray); }
+    .search input {
+      width: 100%; padding: 10px 14px 10px 40px;
+      border: 1.5px solid var(--beige); border-radius: var(--radius-pill);
+      background: var(--white); font-size: 14px; color: var(--charcoal);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .search input:focus { outline: none; border-color: var(--sage); box-shadow: 0 0 0 4px rgba(107, 127, 94, 0.12); }
+    .top-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .icon-btn {
+      position: relative; width: 40px; height: 40px; border-radius: var(--radius-pill);
+      border: 1.5px solid var(--beige); background: var(--white); color: var(--charcoal);
+      display: grid; place-items: center; cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .icon-btn:hover { background: var(--cream); border-color: var(--charcoal); }
+    .icon-btn .dot { position: absolute; top: 8px; right: 9px; width: 8px; height: 8px; background: var(--wood); border-radius: 50%; border: 2px solid var(--white); }
+    .admin-chip {
+      display: flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px;
+      border-radius: var(--radius-pill); background: var(--white); border: 1.5px solid var(--beige);
+      cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .admin-chip:hover { background: var(--cream); border-color: var(--charcoal); }
+    .admin-chip .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--sage); color: var(--white); display: grid; place-items: center; font-weight: 600; font-size: 13px; }
+    .admin-chip .who { line-height: 1.15; }
+    .admin-chip .who strong { display: block; font-size: 13.5px; color: var(--charcoal); }
+    .admin-chip .who span { display: block; font-size: 11.5px; color: var(--gray); }
+
+    .content { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+    .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .page-head h1 { font-size: clamp(24px, 3vw, 32px); color: var(--charcoal); }
+    .page-head p { color: var(--gray); font-size: 14.5px; margin-top: 4px; }
+
+    .filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; }
+    .filter-field { display: flex; flex-direction: column; gap: 6px; }
+    .filter-field label {
+      font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray);
+    }
+    .filter-field select {
+      appearance: none; min-width: 170px;
+      padding: 10px 36px 10px 14px;
+      border: 1.5px solid var(--beige); border-radius: var(--radius-md);
+      background: var(--white);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236f6a62' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      font-size: 14px; color: var(--charcoal); cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .filter-field select:focus { outline: none; border-color: var(--sage); box-shadow: 0 0 0 4px rgba(107, 127, 94, 0.12); }
+    .filter-spacer { flex: 1; }
+    .result-count { font-size: 13.5px; color: var(--gray); }
+    .result-count strong { color: var(--charcoal); }
+
+    .panel {
+      background: var(--white); border: 1px solid var(--beige);
+      border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow-soft);
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px; }
+    thead th {
+      text-align: left; font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--gray); padding: 12px; border-bottom: 1.5px solid var(--beige); white-space: nowrap;
+    }
+    tbody td { padding: 14px 12px; border-bottom: 1px solid var(--beige); color: var(--charcoal); vertical-align: middle; }
+    tbody tr { transition: background 0.2s ease; }
+    tbody tr:hover { background: var(--warm-white); }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .order-id { font-weight: 600; color: var(--charcoal); }
+    .customer-cell { display: flex; align-items: center; gap: 10px; }
+    .avatar-sm {
+      width: 30px; height: 30px; border-radius: 50%; background: var(--cream); color: var(--sage);
+      display: grid; place-items: center; font-weight: 600; font-size: 12px; flex-shrink: 0;
+    }
+    .price { font-weight: 600; color: var(--charcoal); }
+    .method { display: inline-flex; align-items: center; gap: 7px; color: var(--gray); font-size: 13.5px; }
+    .method svg { color: var(--wood); }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: var(--radius-pill);
+      font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+    }
+    .badge.pending   { background: rgba(201, 138, 58, 0.16); color: var(--warning); }
+    .badge.processing { background: rgba(166, 124, 82, 0.16); color: var(--wood); }
+    .badge.completed { background: rgba(107, 127, 94, 0.14); color: var(--sage-dark); }
+    .badge.cancelled { background: rgba(179, 83, 46, 0.14); color: var(--danger); }
+
+    .row-actions { display: flex; gap: 6px; }
+    .row-actions button {
+      width: 32px; height: 32px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--beige); background: var(--white); color: var(--charcoal);
+      display: grid; place-items: center; cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .row-actions button:hover { background: var(--cream); border-color: var(--charcoal); }
+    .row-actions button.view:hover { background: rgba(107, 127, 94, 0.1); border-color: var(--sage); color: var(--sage-dark); }
+    .row-actions button.status:hover { background: rgba(166, 124, 82, 0.1); border-color: var(--wood); color: var(--wood); }
+    .row-actions button.print:hover { background: rgba(43, 41, 38, 0.08); border-color: var(--charcoal); }
+
+    .table-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 18px; }
+    .pager { display: flex; align-items: center; gap: 6px; }
+    .pager button {
+      min-width: 36px; height: 36px; padding: 0 10px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--beige); background: var(--white); color: var(--charcoal);
+      font-size: 13.5px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .pager button:hover { background: var(--cream); border-color: var(--charcoal); }
+    .pager button.active { background: var(--charcoal); border-color: var(--charcoal); color: var(--warm-white); }
+    .pager button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .pager button:disabled:hover { background: var(--white); border-color: var(--beige); }
+    .pager .ellipsis { color: var(--gray); padding: 0 4px; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 20px);
+      background: var(--charcoal); color: var(--warm-white);
+      padding: 13px 22px; border-radius: var(--radius-pill);
+      font-size: 14px; font-weight: 500; box-shadow: var(--shadow-lift);
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; z-index: 90;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(43, 41, 38, 0.45);
+      display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      background: var(--white); border-radius: var(--radius-lg); padding: 26px;
+      width: 100%; max-width: 380px; box-shadow: var(--shadow-lift);
+    }
+    .modal-card h3 { font-size: 19px; margin-bottom: 6px; }
+    .modal-card p { color: var(--gray); font-size: 14px; margin-bottom: 18px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+    @media (max-width: 1080px) { .grid-2, .grid-tables { grid-template-columns: 1fr; } }
+    @media (max-width: 860px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+      .side-nav { flex-direction: row; overflow-x: auto; gap: 6px; }
+      .side-nav a { white-space: nowrap; }
+      .nav-label, .sidebar-foot { display: none; }
+      .sidebar .brand { border-bottom: none; padding-bottom: 12px; margin-bottom: 8px; }
+      .topbar { padding: 0 20px; gap: 10px; }
+      .admin-chip .who { display: none; }
+      .content { padding: 20px; }
+    }
+    @media (max-width: 720px) {
+      .sidebar { display: none; }
+      .topbar { grid-template-columns: 1fr auto; }
+      .content { margin-left: 0; padding: 18px; }
+      .who { display: none; }
+    }
+    @media (max-width: 600px) { .filter-field select { min-width: 140px; } }
+    @media (max-width: 520px) { .search { display: none; } }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">Haven<span>wood</span></div>
+
+      <span class="nav-label">Main</span>
+      <ul class="side-nav">
+        <li><a class="active" href="admin-dashboard.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </a></li>
+        <li><a class="active" href="admin-products.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+          Products
+        </a></li>
+        <li><a class="active" href="admin-orders.html"
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Orders
+        </a></li>
+        <li><a href="admin-customers.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Customers
+        </a></li>
+        <li><a href="admin-profile.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>
+          Profile
+        </a></li>
+        <li><a href="#">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>
+          Analytics
+        </a></li>
+      </ul>
+
+      <span class="nav-label" style="margin-top:16px">System</span>
+      <ul class="side-nav">
+        <li><a href="admin-settings.html">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+          Settings
+        </a></li>
+      </ul>
+
+      <div class="sidebar-foot">
+        <ul class="side-nav">
+          <li><a href="admin-login.html" class="logout">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+            Logout
+          </a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <div class="main-col">
+      <header class="topbar">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="tableSearch" placeholder="Search by order ID, customer or email…" />
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" aria-label="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="dot"></span>
+          </button>
+          <div class="admin-chip" role="button" tabindex="0" aria-label="Admin profile">
+            <div class="avatar">EM</div>
+            <div class="who">
+              <strong>Emma Miller</strong>
+              <span>Store admin</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="page-head">
+          <div>
+            <h1>Orders</h1>
+            <p>Track, filter and update customer orders.</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="filters" style="margin-bottom: 20px;">
+            <div class="filter-field">
+              <label for="fStatus">Status</label>
+              <select id="fStatus">
+                <option value="">All statuses</option>
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="filter-spacer"></div>
+            <div class="result-count" id="resultCount"></div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Payment Method</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="orderRows"><!-- rendered by JS --></tbody>
+            </table>
+          </div>
+
+          <div class="table-foot">
+            <span class="result-count" id="rangeLabel"></span>
+            <div class="pager" id="pager"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Status update modal -->
+  <div class="modal-backdrop" id="statusModal">
+    <div class="modal-card">
+      <h3>Update Order Status</h3>
+      <p id="statusModalSub">Change the fulfillment status for this order.</p>
+      <div class="filter-field" style="margin-bottom:18px;">
+        <label for="newStatus">New status</label>
+        <select id="newStatus" class="input" style="width:100%;">
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="qa-btn" id="statusCancel">Cancel</button>
+        <button class="qa-btn primary" id="statusConfirm">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <style>
+    .qa-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 16px; border-radius: var(--radius-pill);
+      border: 1.5px solid var(--charcoal); background: transparent; color: var(--charcoal);
+      font-size: 13.5px; font-weight: 600; cursor: pointer;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+    .qa-btn:hover { background: var(--charcoal); color: var(--warm-white); }
+    .qa-btn.primary { background: var(--sage); border-color: var(--sage); color: var(--white); }
+    .qa-btn.primary:hover { background: var(--sage-dark); border-color: var(--sage-dark); }
+  </style>
+
+  <script>
+    const ORDERS = [
+      { id: 'HW-2841', name: 'Olivia Bennett',  email: 'olivia.b@mail.com',   date: '2026-07-08', method: 'Card',      status: 'pending',    total: 1299 },
+      { id: 'HW-2840', name: 'Liam Carter',     email: 'liam.c@mail.com',     date: '2026-07-08', method: 'PayPal',    status: 'processing', total: 549 },
+      { id: 'HW-2839', name: 'Emma Rodriguez',  email: 'emma.r@mail.com',     date: '2026-07-07', method: 'Card',      status: 'completed',  total: 1848 },
+      { id: 'HW-2838', name: 'Noah Patel',      email: 'noah.p@mail.com',     date: '2026-07-07', method: 'Apple Pay', status: 'completed',  total: 899 },
+      { id: 'HW-2837', name: 'Ava Thompson',    email: 'ava.t@mail.com',      date: '2026-07-06', method: 'Card',      status: 'cancelled',  total: 319 },
+      { id: 'HW-2836', name: 'William Nguyen', email: 'will.n@mail.com',     date: '2026-07-06', method: 'PayPal',    status: 'processing', total: 229 },
+      { id: 'HW-2835', name: 'Sophia Martin',   email: 'sophia.m@mail.com',   date: '2026-07-05', method: 'Card',      status: 'pending',    total: 1078 },
+      { id: 'HW-2834', name: 'James Wilson',    email: 'james.w@mail.com',    date: '2026-07-05', method: 'Klarna',    status: 'completed',  total: 479 },
+      { id: 'HW-2833', name: 'Isabella Garcia', email: 'bella.g@mail.com',    date: '2026-07-04', method: 'Card',      status: 'processing', total: 169 },
+      { id: 'HW-2832', name: 'Benjamin Lee',    email: 'ben.l@mail.com',      date: '2026-07-04', method: 'PayPal',    status: 'completed',  total: 1099 },
+      { id: 'HW-2831', name: 'Mia Anderson',    email: 'mia.a@mail.com',      date: '2026-07-03', method: 'Apple Pay', status: 'cancelled',  total: 89 },
+      { id: 'HW-2830', name: 'Lucas Brown',     email: 'lucas.b@mail.com',    date: '2026-07-03', method: 'Card',      status: 'pending',    total: 728 },
+      { id: 'HW-2829', name: 'Charlotte Davis', email: 'char.d@mail.com',     date: '2026-07-02', method: 'PayPal',    status: 'completed',  total: 389 },
+      { id: 'HW-2828', name: 'Henry Moore',     email: 'henry.m@mail.com',    date: '2026-07-02', method: 'Card',      status: 'processing', total: 279 }
+    ];
+
+    const PER_PAGE = 8;
+    const STATUS_LABEL = { pending: 'Pending', processing: 'Processing', completed: 'Completed', cancelled: 'Cancelled' };
+    const state = { search: '', status: '', page: 1 };
+
+    function initials(name) {
+      return name.split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
+    }
+    function svg(paths) {
+      return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>';
+    }
+    function methodIcon(m) {
+      if (m === 'Card') return svg('<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>');
+      if (m === 'PayPal') return svg('<path d="M7 8h10a3 3 0 0 1 0 6H10l-3 6V8z"/>');
+      if (m === 'Apple Pay') return svg('<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h2M9 10v4"/>');
+      return svg('<path d="M3 7h18v10H3z"/><path d="M3 11h18"/>');
+    }
+
+    function getFiltered() {
+      const q = state.search.trim().toLowerCase();
+      return ORDERS.filter(function (o) {
+        if (q && !(o.id.toLowerCase().includes(q) || o.name.toLowerCase().includes(q) || o.email.toLowerCase().includes(q))) return false;
+        if (state.status && o.status !== state.status) return false;
+        return true;
+      });
+    }
+
+    function render() {
+      const data = getFiltered();
+      const total = data.length;
+      const pages = Math.max(1, Math.ceil(total / PER_PAGE));
+      if (state.page > pages) state.page = pages;
+      const start = (state.page - 1) * PER_PAGE;
+      const rows = data.slice(start, start + PER_PAGE);
+      const tbody = document.getElementById('orderRows');
+
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:36px; color:var(--gray);">No orders match your filters.</td></tr>';
+      } else {
+        tbody.innerHTML = rows.map(function (o) {
+          return '<tr>' +
+            '<td><span class="order-id">' + o.id + '</span></td>' +
+            '<td><div class="customer-cell"><span class="avatar-sm">' + initials(o.name) + '</span>' + o.name + '</div></td>' +
+            '<td>' + o.date + '</td>' +
+            '<td><span class="method">' + methodIcon(o.method) + o.method + '</span></td>' +
+            '<td><span class="badge ' + o.status + '">' + STATUS_LABEL[o.status] + '</span></td>' +
+            '<td class="price">$' + o.total.toLocaleString('en-US') + '</td>' +
+            '<td><div class="row-actions">' +
+              '<button class="view" title="View" data-action="view" data-id="' + o.id + '">' + svg('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>') + '</button>' +
+              '<button class="status" title="Update status" data-action="status" data-id="' + o.id + '">' + svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>') + '</button>' +
+              '<button class="print" title="Print invoice" data-action="print" data-id="' + o.id + '">' + svg('<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>') + '</button>' +
+            '</div></td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      document.getElementById('resultCount').innerHTML = '<strong>' + total + '</strong> order' + (total === 1 ? '' : 's');
+      document.getElementById('rangeLabel').textContent = total === 0 ? '' : 'Showing ' + (start + 1) + '–' + (start + rows.length) + ' of ' + total;
+      renderPager(pages);
+    }
+
+    function renderPager(pages) {
+      const pager = document.getElementById('pager');
+      let html = '<button aria-label="Previous" data-page="' + (state.page - 1) + '"' + (state.page === 1 ? ' disabled' : '') + '>' + svg('<path d="m15 18-6-6 6-6"/>') + '</button>';
+      for (let i = 1; i <= pages; i++) {
+        if (pages > 7 && i !== 1 && i !== pages && Math.abs(i - state.page) > 1) {
+          if (i === 2 || i === pages - 1) html += '<span class="ellipsis">…</span>';
+          continue;
+        }
+        html += '<button class="' + (i === state.page ? 'active' : '') + '" data-page="' + i + '">' + i + '</button>';
+      }
+      html += '<button aria-label="Next" data-page="' + (state.page + 1) + '"' + (state.page === pages ? ' disabled' : '') + '>' + svg('<path d="m9 18 6-6-6-6"/>') + '</button>';
+      pager.innerHTML = html;
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200);
+    }
+
+    /* Status modal */
+    const modal = document.getElementById('statusModal');
+    let statusTarget = null;
+    function openStatus(id) {
+      const o = ORDERS.find(function (x) { return x.id === id; });
+      if (!o) return;
+      statusTarget = id;
+      document.getElementById('statusModalSub').textContent = 'Change the fulfillment status for order ' + id + '.';
+      document.getElementById('newStatus').value = o.status;
+      modal.classList.add('open');
+    }
+    function closeStatus() { modal.classList.remove('open'); statusTarget = null; }
+    document.getElementById('statusCancel').addEventListener('click', closeStatus);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeStatus(); });
+    document.getElementById('statusConfirm').addEventListener('click', function () {
+      if (!statusTarget) return;
+      const o = ORDERS.find(function (x) { return x.id === statusTarget; });
+      o.status = document.getElementById('newStatus').value;
+      showToast('Order ' + statusTarget + ' → ' + STATUS_LABEL[o.status]);
+      closeStatus();
+      render();
+    });
+
+    /* Events */
+    document.getElementById('tableSearch').addEventListener('input', function (e) { state.search = e.target.value; state.page = 1; render(); });
+    document.getElementById('fStatus').addEventListener('change', function (e) { state.status = e.target.value; state.page = 1; render(); });
+    document.getElementById('pager').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-page]');
+      if (!btn || btn.disabled) return;
+      const p = parseInt(btn.getAttribute('data-page'), 10);
+      if (!isNaN(p)) { state.page = p; render(); }
+    });
+    document.getElementById('orderRows').addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.getAttribute('data-action');
+      const id = btn.getAttribute('data-id');
+      const o = ORDERS.find(function (x) { return x.id === id; });
+      if (action === 'view') {
+        showToast('Opening order ' + id + ' (' + o.name + ')');
+      } else if (action === 'status') {
+        openStatus(id);
+      } else if (action === 'print') {
+        showToast('Invoice for ' + id + ' sent to printer');
+        setTimeout(function () { window.print(); }, 300);
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
