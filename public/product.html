@@ -1119,7 +1119,7 @@
           key: key,
           id: product.id,
           name: product.name,
-          price: product.price,
+          price_cents: product.price * 100,
           image: product.image,
           color: color || '',
           size: size || '',
@@ -1193,8 +1193,8 @@
       if (p.badge === 'sale') badgeHTML = '<span class="gallery-badge sale">Sale</span>';
       else if (p.badge === 'new') badgeHTML = '<span class="gallery-badge">New</span>';
 
-      var oldPriceHTML = p.oldPrice ? '<s>$' + p.oldPrice + '</s>' : '';
-      var saveHTML = p.oldPrice ? '<span class="save">Save $' + (p.oldPrice - p.price) + '</span>' : '';
+      var oldPriceHTML = p.oldPrice ? '<s>' + price(p.oldPrice * 100) + '</s>' : '';
+      var saveHTML = p.oldPrice ? '<span class="save">Save ' + price((p.oldPrice - p.price) * 100) + '</span>' : '';
 
       var thumbs = [0, 1, 2, 3].map(function (i) {
         return '<button type="button" class="' + (i === 0 ? 'active' : '') + '" data-thumb="' + i + '" aria-label="View image ' + (i + 1) + '"><img src="' + p.image + '" alt="" /></button>';
@@ -1267,7 +1267,7 @@
             '</div>' +
 
             '<div class="info-price">' +
-              '<span class="price">$' + p.price + '</span>' +
+              '<span class="price">' + price(p.price * 100) + '</span>' +
               oldPriceHTML +
               saveHTML +
             '</div>' +
@@ -1577,7 +1577,7 @@
       if (sumColor) sumColor.textContent = selection.color;
       if (sumSize) sumSize.textContent = selection.size;
       if (sumQty) sumQty.textContent = selection.qty;
-      if (sumTotal) sumTotal.textContent = '$' + (p.price * selection.qty).toLocaleString('en-US');
+      if (sumTotal) sumTotal.textContent = price(p.price * 100 * selection.qty);
     }
 
     var formRules = {
@@ -1644,7 +1644,7 @@
       var badge = '';
       if (p.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
       if (p.badge === 'new')  badge = '<span class="card-badge">New</span>';
-      var oldPrice = p.oldPrice ? '<s>$' + p.oldPrice + '</s>' : '';
+      var oldPrice = p.oldPrice ? '<s>' + price(p.oldPrice * 100) + '</s>' : '';
       var inCart = isInCart(p.id);
       var btnClass = inCart ? 'card-added' : 'card-add';
       var btnText = inCart ? 'In Cart' : 'Add';
@@ -1656,7 +1656,7 @@
           '<h3><a href="product.html?id=' + p.id + '">' + p.name + '</a></h3>' +
           '<div class="card-rating">' + stars + '<span>(' + p.reviews + ')</span></div>' +
           '<div class="card-price-row">' +
-            '<div class="card-price">$' + p.price + oldPrice + '</div>' +
+            '<div class="card-price">' + price(p.price * 100) + oldPrice + '</div>' +
             '<button class="' + btnClass + '" type="button" data-add="' + p.id + '">' + btnText + '</button>' +
           '</div>' +
         '</div>' +
@@ -1731,6 +1731,8 @@
           if (!Array.isArray(items)) return;
           var found = items.find(function (p) { return String(p.id) === requestedId || p.slug === requestedId; });
           if (!found) return;
+          var images = [];
+          try { images = JSON.parse(found.images || '[]'); } catch(e) { images = []; }
           PRODUCTS.push({
             id: String(found.id || found.slug),
             name: found.name,
@@ -1739,7 +1741,7 @@
             oldPrice: found.compare_at_price_cents ? Math.round(found.compare_at_price_cents / 100) : null,
             rating: parseFloat(found.rating) || 4.7,
             reviews: parseInt(found.reviews, 10) || 50,
-            image: (found.images && found.images[0]) ? found.images[0] : (found.image || '/assets/furn-sofa.png'),
+            image: (images && images[0]) ? images[0] : (found.image || '/assets/furn-sofa.png'),
             badge: found.compare_at_price_cents ? 'sale' : null
           });
           product = PRODUCTS[PRODUCTS.length - 1];

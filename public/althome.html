@@ -1119,7 +1119,7 @@
       if (existing) {
         existing.qty += 1;               /* already in cart → bump quantity */
       } else {
-        cart.push({ id: product.id, name: product.name, price: product.price_cents, image: product.image, qty: 1 });
+        cart.push({ id: product.id, name: product.name, price_cents: product.price_cents, image: product.image, qty: 1 });
       }
 
       saveCart(cart);
@@ -1292,7 +1292,7 @@
               old_price_cents: p.compare_at_price_cents || p.old_price_cents || null,
               rating: parseFloat(p.rating) || 4.7,
               reviews: parseInt(p.reviews, 10) || Math.floor(Math.random() * 200) + 10,
-              image: (p.images && p.images[0]) ? p.images[0] : (p.image || '/assets/furn-sofa.png'),
+              image: (function () { var imgs = []; try { imgs = JSON.parse(p.images || '[]'); } catch(e) { imgs = []; } return imgs[0] || p.image || '/assets/furn-sofa.png'; })(),
               badge: p.compare_at_price_cents || p.on_sale ? 'sale' : (p.is_new ? 'new' : null)
             };
           });

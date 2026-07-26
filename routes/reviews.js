@@ -19,6 +19,11 @@ function isRateLimited(ip) {
   if (!reviewRateLimit[ip]) reviewRateLimit[ip] = [];
   // Remove timestamps outside the window
   reviewRateLimit[ip] = reviewRateLimit[ip].filter(t => now - t < RATE_LIMIT_WINDOW);
+  // Clean up empty entries to prevent memory leak
+  if (reviewRateLimit[ip].length === 0) {
+    delete reviewRateLimit[ip];
+    reviewRateLimit[ip] = [];
+  }
   if (reviewRateLimit[ip].length >= RATE_LIMIT_MAX) return true;
   reviewRateLimit[ip].push(now);
   return false;

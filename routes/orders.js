@@ -59,38 +59,41 @@ router.post('/', checkoutLimiter, (req, res, next) => {
       return res.status(400).json({ error: 'At least one item is required' });
     }
 
-    let subtotal_cents = 0;
-    const resolvedItems = [];
-
-    // Validate each item: check product exists, is active, and has enough stock.
-    // We use the DATABASE price, not the client-submitted price (prevents price tampering).
+    // Validate each item has product_id and quantity BEFORE the transaction
     for (const item of items) {
       if (!item.product_id || !item.quantity || item.quantity < 1) {
         return res.status(400).json({ error: 'Each item must have product_id and quantity >= 1' });
       }
-      const product = db.prepare("SELECT id, name, price_cents, stock, status FROM products WHERE id = ? AND status = 'active'").get(item.product_id);
-      if (!product) return res.status(400).json({ error: `Product ${item.product_id} not found or inactive` });
-      if (product.stock < item.quantity) return res.status(400).json({ error: `Insufficient stock for ${product.name}` });
-
-      subtotal_cents += product.price_cents * item.quantity;
-      resolvedItems.push({ product_id: product.id, name: product.name, price_cents: product.price_cents, quantity: item.quantity });
     }
 
     // Get delivery fee from settings (configured in admin panel)
     const feeRow = db.prepare("SELECT value FROM settings WHERE key = 'delivery_fee_cents'").get();
     const delivery_fee = feeRow ? Number(feeRow.value) : 0;
-    const total_cents = subtotal_cents + delivery_fee;
 
-    // Wrap order creation + stock decrement in a transaction.
-    // If ANY part fails, the entire operation rolls back (no partial orders).
+    // Wrap everything in a transaction with IMMEDIATE locking.
+    // This ensures stock validation + decrement is atomic — no two concurrent
+    // checkouts can both read the same stock and both succeed.
     const createOrder = db.transaction(() => {
+      let subtotal_cents = 0;
+      const resolvedItems = [];
+
+      for (const item of items) {
+        const product = db.prepare("SELECT id, name, price_cents, stock, status FROM products WHERE id = ? AND status = 'active'").get(item.product_id);
+        if (!product) throw new Error(`Product ${item.product_id} not found or inactive`);
+        if (product.stock < item.quantity) throw new Error(`Insufficient stock for ${product.name}`);
+
+        subtotal_cents += product.price_cents * item.quantity;
+        resolvedItems.push({ product_id: product.id, name: product.name, price_cents: product.price_cents, quantity: item.quantity });
+      }
+
+      const total_cents = subtotal_cents + delivery_fee;
+
       const stmt = db.prepare(`
         INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, customer_city, items, subtotal_cents, delivery_fee_cents, total_cents, payment_status, order_status, notes)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending', ?)
       `);
       const result = stmt.run(customer_name, customer_email, customer_phone, customer_address, customer_city,
         JSON.stringify(resolvedItems), subtotal_cents, delivery_fee, total_cents, notes || '');
-      const id = result.lastInsertRowid;
 
       // Decrease stock for each ordered product
       const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
@@ -98,15 +101,22 @@ router.post('/', checkoutLimiter, (req, res, next) => {
         stockStmt.run(item.quantity, item.product_id);
       }
 
-      return id;
+      return { id: result.lastInsertRowid, resolvedItems, subtotal_cents, total_cents };
     });
 
-    const id = createOrder();
+    const { id, resolvedItems, subtotal_cents, total_cents } = createOrder();
 
     res.status(201).json({
       order: { id, customer_name, customer_email, items: resolvedItems, subtotal_cents, delivery_fee_cents: delivery_fee, total_cents, payment_status: 'pending', order_status: 'pending' }
     });
   } catch (err) {
+    // Convert transaction errors to proper 400 responses
+    if (err.message && err.message.startsWith('Insufficient stock')) {
+      return res.status(400).json({ error: err.message });
+    }
+    if (err.message && err.message.startsWith('Product')) {
+      return res.status(400).json({ error: err.message });
+    }
     next(err);
   }
 });

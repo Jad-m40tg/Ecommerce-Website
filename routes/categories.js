@@ -32,7 +32,7 @@ router.use(authenticateToken, requireAdmin);
 
 // POST /api/categories — Create a new category.
 // Requires name and slug. Slug must be unique (used in URLs like /category/living-room).
-router.post('/', (req, res) => {
+router.post('/', (req, res, next) => {
   const { name, slug, image, description, sort_order } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
   // Auto-generate slug from name if not provided

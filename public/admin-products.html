@@ -239,7 +239,7 @@
             var status = p.status || 'active';
             return '<tr>' +
               '<td><div class="prod-cell"><div class="prod-thumb"><img src="' + escapeHtml(img || '') + '" alt="" onerror="this.style.display=\'none\'" /></div><div class="prod-name">' + escapeHtml(p.name || '') + '</div></div></td>' +
-              '<td class="price">$' + ((p.price_cents || 0) / 100).toFixed(2) + '</td>' +
+              '<td class="price">' + priceFull(p.price_cents) + '</td>' +
               '<td>' + (p.stock != null ? p.stock : '—') + '</td>' +
               '<td class="muted">' + escapeHtml(p.category_name || p.category || '—') + '</td>' +
               '<td><span class="badge ' + escapeHtml(status) + '">' + escapeHtml(status) + '</span></td>' +

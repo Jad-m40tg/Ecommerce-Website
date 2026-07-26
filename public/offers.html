@@ -926,7 +926,8 @@
         var items = data.products || data.data || data;
         if (!Array.isArray(items) || !items.length) return;
         PRODUCTS = items.map(function (p) {
-          var img = (p.images && p.images[0]) ? p.images[0] : (p.image || '/assets/furn-sofa.png');
+          var imgs = []; try { imgs = JSON.parse(p.images || '[]'); } catch(e) { imgs = []; }
+          var img = imgs[0] || p.image || '/assets/furn-sofa.png';
           return {
             id: p.id,
             name: p.name || 'Untitled',

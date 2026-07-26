@@ -291,7 +291,7 @@
 
         var delivered = orders.filter(function (o) { return o.order_status === 'delivered'; });
         totalRevenue = delivered.reduce(function (s, o) { return s + (o.total_cents || 0); }, 0);
-        document.getElementById('statRevenue').textContent = '$' + (totalRevenue / 100).toLocaleString('en-US', { minimumFractionDigits: 0 });
+        document.getElementById('statRevenue').textContent = price(totalRevenue);
 
         var pending = orders.filter(function (o) { return o.order_status === 'pending'; }).length;
         document.getElementById('statRevenueDelta').textContent = delivered.length + ' delivered · ' + pending + ' pending';
@@ -312,7 +312,7 @@
         if (!recentOrders.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--gray)">No orders yet</td></tr>'; return; }
         tbody.innerHTML = recentOrders.map(function (o) {
           var badge = o.order_status === 'pending' ? 'pending' : o.order_status === 'shipped' ? 'shipped' : 'delivered';
-          return '<tr><td>#' + (o.id || '').toString().slice(0, 8) + '</td><td>' + escapeHtml(o.customer_name || o.email || '—') + '</td><td><span class="badge ' + badge + '">' + escapeHtml(o.order_status || 'pending') + '</span></td><td>$' + ((o.total_cents || 0) / 100).toFixed(2) + '</td></tr>';
+          return '<tr><td>#' + (o.id || '').toString().slice(0, 8) + '</td><td>' + escapeHtml(o.customer_name || o.email || '—') + '</td><td><span class="badge ' + badge + '">' + escapeHtml(o.order_status || 'pending') + '</span></td><td>' + priceFull(o.total_cents) + '</td></tr>';
         }).join('');
       }
 
@@ -337,7 +337,7 @@
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' }, ticks: { callback: function (v) { return '$' + (v / 1000).toFixed(0) + 'k'; } } },
+              y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' }, ticks: { callback: function (v) { return price(v); } } },
               x: { grid: { display: false } }
             }
           }

@@ -137,7 +137,7 @@
               '<td style="font-weight:600">#' + (o.id || '').toString().slice(0, 8) + '</td>' +
               '<td>' + escapeHtml(o.customer_name || o.email || '—') + '</td>' +
               '<td>' + itemCount + ' item' + (itemCount === 1 ? '' : 's') + '</td>' +
-              '<td style="font-weight:600">$' + ((o.total_cents || 0) / 100).toFixed(2) + '</td>' +
+              '<td style="font-weight:600">' + priceFull(o.total_cents) + '</td>' +
               '<td><span class="badge ' + escapeHtml(badge) + '">' + escapeHtml(badge) + '</span></td>' +
               '<td class="muted">' + date + '</td>' +
               '<td><div class="row-actions"><select data-id="' + o.id + '" class="status-select">' + statuses.map(function (s) { return '<option value="' + s + '"' + (s === badge ? ' selected' : '') + '>' + s.charAt(0).toUpperCase() + s.slice(1) + '</option>'; }).join('') + '</select></div></td>' +
