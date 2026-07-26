@@ -100,3 +100,44 @@ window.price = price;
 window.priceFull = priceFull;
 window.EXCHANGE_RATES = EXCHANGE_RATES;
 window.CURRENCY_SYMBOLS = CURRENCY_SYMBOLS;
+
+// ============================================================
+// Image fallback for products with missing upload images
+// ============================================================
+
+var _FALLBACK_IMAGE_MAP = {
+  'living-room': '/assets/furn-sofa.png',
+  'dining-room': '/assets/furn-table.png',
+  'bedroom': '/assets/furn-bed.png',
+  'office': '/assets/furn-desk.png',
+  'outdoor': '/assets/furn-sofa.png',
+  'storage': '/assets/furn-shelf.png',
+  'lighting': '/assets/furn-lamp.png',
+  'decor': '/assets/furn-decor.png',
+  'seating': '/assets/furn-sofa.png',
+  'tables': '/assets/furn-table.png'
+};
+
+function getFallbackImage(category) {
+  return _FALLBACK_IMAGE_MAP[category] || '/assets/furn-sofa.png';
+}
+
+function getProductImage(product) {
+  var images = [];
+  try {
+    images = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
+  } catch (e) { images = []; }
+  if (images.length > 0 && images[0]) return images[0];
+  return getFallbackImage(product.category);
+}
+
+function handleImageError(img) {
+  if (img.dataset.fallback) return;
+  img.dataset.fallback = '1';
+  var cat = img.dataset.category || '';
+  img.src = getFallbackImage(cat);
+}
+
+window.getFallbackImage = getFallbackImage;
+window.getProductImage = getProductImage;
+window.handleImageError = handleImageError;

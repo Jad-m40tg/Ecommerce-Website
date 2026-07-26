@@ -1026,81 +1026,14 @@
 
   <script src="utils.js"></script>
   <script>
-    /* ---------- 1. PRODUCT DATA ---------- */
-    const PRODUCTS = [
-      { id: 'sofa-marlow',  name: 'Marlow Linen Sofa',      category: 'seating',  price: 1299, oldPrice: 1599, rating: 4.9, reviews: 214, image: '/assets/furn-sofa.png',  badge: 'sale' },
-      { id: 'chair-sage',   name: 'Sage Curve Armchair',    category: 'seating',  price: 549,  oldPrice: null, rating: 4.8, reviews: 167, image: '/assets/furn-chair.png', badge: 'new'  },
-      { id: 'table-arden',  name: 'Arden Oak Dining Table', category: 'tables',   price: 899,  oldPrice: null, rating: 4.9, reviews: 132, image: '/assets/furn-table.png', badge: null   },
-      { id: 'desk-walden',  name: 'Walden Walnut Desk',     category: 'tables',   price: 649,  oldPrice: 749,  rating: 4.7, reviews: 98,  image: '/assets/furn-desk.png',  badge: 'sale' },
-      { id: 'bed-haven',    name: 'Haven Upholstered Bed',  category: 'bedroom',  price: 1099, oldPrice: null, rating: 4.8, reviews: 143, image: '/assets/furn-bed.png',   badge: null   },
-      { id: 'lamp-lumen',   name: 'Lumen Linen Floor Lamp', category: 'lighting', price: 229,  oldPrice: null, rating: 4.6, reviews: 88,  image: '/assets/furn-lamp.png',  badge: 'new'  },
-      { id: 'shelf-nordic', name: 'Nordic Oak Bookshelf',   category: 'tables',   price: 479,  oldPrice: null, rating: 4.7, reviews: 76,  image: '/assets/furn-shelf.png', badge: null   },
-      { id: 'decor-terra',  name: 'Terra Vase Duo',         category: 'lighting', price: 89,   oldPrice: 119,  rating: 4.8, reviews: 201, image: '/assets/furn-decor.png', badge: 'sale' }
-    ];
-
-    const CATEGORY_LABELS = {
-      seating:  'Seating',
-      tables:   'Tables & Desks',
-      bedroom:  'Bedroom',
-      lighting: 'Lighting & Décor'
-    };
-
-    const PRODUCT_DETAILS = {
-      'sofa-marlow': {
-        description: 'Deeply cushioned and generously proportioned, the Marlow is our most-loved sofa — a piece that anchors a room without ever feeling heavy. Solid kiln-dried hardwood frame, feather-blend cushions, and washable linen upholstery.',
-        colors: [ { name: 'Natural Linen', hex: '#e8e0d3' }, { name: 'Sage Green', hex: '#6b7f5e' }, { name: 'Charcoal', hex: '#2b2926' }, { name: 'Wood Tan', hex: '#a67c52' } ],
-        specs: { 'Dimensions': '86" W x 36" D x 34" H', 'Frame': 'Kiln-dried hardwood', 'Upholstery': '100% washable linen', 'Fill': 'Feather-blend cushions', 'Assembly': '10 minutes, tools included', 'Warranty': '10 years' },
-        sizes: ['2-Seater', '3-Seater', '4-Seater']
-      },
-      'chair-sage': {
-        description: 'A soft, curved silhouette that hugs you back. The Sage armchair pairs a subtle mid-century shape with a wide, low seat.',
-        colors: [ { name: 'Sage Green', hex: '#6b7f5e' }, { name: 'Natural Linen', hex: '#e8e0d3' }, { name: 'Charcoal', hex: '#2b2926' } ],
-        specs: { 'Dimensions': '32" W x 34" D x 31" H', 'Frame': 'Solid ash wood', 'Upholstery': 'Bouclé-blend, stain-resistant', 'Assembly': 'Legs attach in 5 minutes', 'Warranty': '10 years' },
-        sizes: ['Standard', 'Tall']
-      },
-      'table-arden': {
-        description: 'A round oak dining table designed to bring people together. Built from FSC-certified solid oak.',
-        colors: [ { name: 'Natural Oak', hex: '#c9a97a' }, { name: 'Warm Walnut', hex: '#7a5539' }, { name: 'Blackened Oak', hex: '#2b2926' } ],
-        specs: { 'Dimensions': '48" diameter x 30" H', 'Seats': '4 comfortably', 'Material': 'FSC-certified solid oak', 'Finish': 'Hand-rubbed natural oil', 'Assembly': 'Base attaches with 4 bolts', 'Warranty': '10 years' },
-        sizes: ['4-Seat', '6-Seat']
-      },
-      'desk-walden': {
-        description: 'A compact, honest walnut desk built for focus. Two hidden drawers, cable pass-through.',
-        colors: [ { name: 'Warm Walnut', hex: '#7a5539' }, { name: 'Natural Oak', hex: '#c9a97a' } ],
-        specs: { 'Dimensions': '55" W x 26" D x 30" H', 'Material': 'Solid American walnut', 'Storage': '2 soft-close drawers', 'Finish': 'Matte water-based lacquer', 'Warranty': '10 years' },
-        sizes: ['Standard', 'Large']
-      },
-      'bed-haven': {
-        description: 'A cocoon of a bed. The Haven pairs a plush upholstered headboard with a low, calm profile.',
-        colors: [ { name: 'Natural Linen', hex: '#e8e0d3' }, { name: 'Sage Green', hex: '#6b7f5e' }, { name: 'Charcoal', hex: '#2b2926' } ],
-        specs: { 'Size': 'Queen (also available in King)', 'Frame': 'Kiln-dried pine + hardwood slats', 'Headboard': 'Foam-cushioned, linen wrapped', 'Assembly': '25 minutes, two people', 'Warranty': '10 years' },
-        sizes: ['Queen', 'King']
-      },
-      'lamp-lumen': {
-        description: 'A slender floor lamp with a soft linen shade that diffuses light into a warm glow.',
-        colors: [ { name: 'Natural Linen', hex: '#e8e0d3' }, { name: 'Charcoal', hex: '#2b2926' } ],
-        specs: { 'Height': '62"', 'Base': '10" diameter, weighted', 'Bulb': 'E26, up to 60W (LED recommended)', 'Cord': '8 ft with in-line dimmer', 'Warranty': '5 years' },
-        sizes: ['Standard']
-      },
-      'shelf-nordic': {
-        description: 'A tall, airy oak bookshelf with five open shelves — enough for books, plants and a small speaker.',
-        colors: [ { name: 'Natural Oak', hex: '#c9a97a' }, { name: 'Warm Walnut', hex: '#7a5539' }, { name: 'Blackened Oak', hex: '#2b2926' } ],
-        specs: { 'Dimensions': '32" W x 12" D x 72" H', 'Shelves': '5 fixed shelves', 'Material': 'Solid oak with veneered back', 'Wall-anchor': 'Included', 'Warranty': '10 years' },
-        sizes: ['Standard']
-      },
-      'decor-terra': {
-        description: 'A pair of hand-thrown ceramic vases in warm terracotta and cream. Sold as a set.',
-        colors: [ { name: 'Terracotta', hex: '#a67c52' }, { name: 'Cream', hex: '#f3eee6' } ],
-        specs: { 'Set includes': '2 vases (tall + short)', 'Tall vase': '11" H x 5" diameter', 'Short vase': '7" H x 6" diameter', 'Material': 'Hand-thrown stoneware', 'Care': 'Wipe clean, decorative use' },
-        sizes: ['Standard']
-      }
-    };
-
-    const CART_KEY = 'havenwood-cart';
+    console.log('[product.html] script loaded, requestedId=' + new URLSearchParams(window.location.search).get('id'));
+    /* ---------- 1. GLOBALS ---------- */
+    var CART_KEY = 'havenwood-cart';
+    var currentProduct = null;
 
     function getCart() {
       try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
-      catch { return []; }
+      catch (e) { return []; }
     }
     function saveCart(cart) {
       localStorage.setItem(CART_KEY, JSON.stringify(cart));
@@ -1108,29 +1041,28 @@
     }
     function addToCart(productId, qty, color, size) {
       qty = Math.max(1, qty || 1);
-      const product = PRODUCTS.find(function (p) { return p.id === productId; });
-      if (!product) return;
-      const cart = getCart();
-      const key = product.id + '|' + (color || '') + '|' + (size || '');
-      const existing = cart.find(function (item) { return item.key === key; });
+      if (!currentProduct) return;
+      var cart = getCart();
+      var key = currentProduct.id + '|' + (color || '') + '|' + (size || '');
+      var existing = cart.find(function (item) { return item.key === key; });
       if (existing) { existing.qty += qty; }
       else {
         cart.push({
           key: key,
-          id: product.id,
-          name: product.name,
-          price_cents: product.price * 100,
-          image: product.image,
+          id: currentProduct.id,
+          name: currentProduct.name,
+          price_cents: currentProduct.price_cents,
+          image: currentProduct.image,
           color: color || '',
           size: size || '',
           qty: qty
         });
       }
       saveCart(cart);
-      showToast(product.name + ' added to cart');
+      showToast(currentProduct.name + ' added to cart');
     }
     function updateCartCount() {
-      const total = getCart().reduce(function (sum, item) { return sum + item.qty; }, 0);
+      var total = getCart().reduce(function (sum, item) { return sum + item.qty; }, 0);
       var el = document.getElementById('cartCount');
       if (el) el.textContent = total;
     }
@@ -1140,12 +1072,50 @@
 
     var selection = { color: '', size: '', qty: 1 };
 
-    /* ---------- URL PARAM RESOLUTION ---------- */
+    /* ---------- 2. IMAGE HELPERS ---------- */
+    var FALLBACK_IMAGES = {
+      'living-room': '/assets/furn-sofa.png',
+      'dining-room': '/assets/furn-table.png',
+      'bedroom': '/assets/furn-bed.png',
+      'office': '/assets/furn-desk.png',
+      'outdoor': '/assets/furn-sofa.png',
+      'storage': '/assets/furn-shelf.png',
+      'lighting': '/assets/furn-lamp.png',
+      'decor': '/assets/furn-decor.png'
+    };
+
+    function fallbackImage(category) {
+      return FALLBACK_IMAGES[category] || '/assets/furn-sofa.png';
+    }
+
+    function getProductImage(product) {
+      var images = [];
+      try { images = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []); }
+      catch (e) { images = []; }
+      if (images.length > 0 && images[0]) return images[0];
+      return fallbackImage(product.category);
+    }
+
+    /* ---------- 3. CATEGORY LABELS ---------- */
+    var CATEGORY_LABELS = {};
+    function getCategoryLabel(slug) {
+      if (CATEGORY_LABELS[slug]) return CATEGORY_LABELS[slug];
+      return slug ? slug.replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); }) : '';
+    }
+
+    /* ---------- 4. LOAD CATEGORIES FROM API ---------- */
+    fetch('/api/categories').then(function (r) { return r.json(); }).then(function (data) {
+      var cats = data.categories || data;
+      if (Array.isArray(cats)) {
+        cats.forEach(function (c) { CATEGORY_LABELS[c.slug] = c.name; });
+      }
+    }).catch(function () {});
+
+    /* ---------- 5. LOAD PRODUCT FROM API ---------- */
     var params = new URLSearchParams(window.location.search);
     var requestedId = params.get('id');
-    var product = PRODUCTS.find(function (p) { return p.id === requestedId; });
 
-    if (!product) {
+    function showNotFound() {
       document.getElementById('breadcrumb').innerHTML =
         '<a href="althome.html">Home</a><span class="sep">/</span>' +
         '<a href="products.html">Shop</a><span class="sep">/</span>' +
@@ -1156,69 +1126,185 @@
           '<p>It may have been renamed or moved. Browse the full collection to find something you&rsquo;ll love.</p>' +
           '<a href="products.html" class="btn btn-primary">Back to Shop</a>' +
         '</div>';
+    }
+
+    if (!requestedId) {
+      showNotFound();
     } else {
-      document.getElementById('orderSection').style.display = 'block';
-      fetchReviews(product.id, function () {
-        renderProduct(product);
-        renderRelated(product);
-        wireUpReviewDeleteButtons();
-        wireUpViewAllButton();
+      document.getElementById('breadcrumb').innerHTML = '<span style="color:var(--gray)">Loading...</span>';
+      document.getElementById('productRoot').innerHTML = '<div style="text-align:center;padding:80px 20px;color:var(--gray);">Loading product...</div>';
+      fetch('/api/products/browse/' + encodeURIComponent(requestedId))
+        .then(function (r) {
+          if (!r.ok) throw new Error('Not found');
+          return r.json();
+        })
+        .then(function (apiProduct) {
+          currentProduct = {
+            id: apiProduct.id,
+            name: apiProduct.name,
+            description: apiProduct.description || '',
+            category: apiProduct.category || '',
+            price_cents: apiProduct.price_cents || 0,
+            old_price_cents: apiProduct.old_price_cents || null,
+            stock: apiProduct.stock || 0,
+            colors: [],
+            sizes: [],
+            tags: [],
+            image: getProductImage(apiProduct),
+            featured: apiProduct.featured,
+            on_sale: apiProduct.on_sale
+          };
+          try { currentProduct.colors = typeof apiProduct.colors === 'string' ? JSON.parse(apiProduct.colors) : (apiProduct.colors || []); } catch (e) { currentProduct.colors = []; }
+          try { currentProduct.sizes = typeof apiProduct.sizes === 'string' ? JSON.parse(apiProduct.sizes) : (apiProduct.sizes || []); } catch (e) { currentProduct.sizes = []; }
+          try { currentProduct.tags = typeof apiProduct.tags === 'string' ? JSON.parse(apiProduct.tags) : (apiProduct.tags || []); } catch (e) { currentProduct.tags = []; }
+
+          document.getElementById('orderSection').style.display = 'block';
+          fetchReviewsAndRender(currentProduct);
+          if (isInCart(currentProduct.id)) {
+            var btn = document.getElementById('addToCartBtn');
+            if (btn) { btn.textContent = 'In Cart'; btn.onclick = function () { window.location.href = 'cart.html'; }; }
+          }
+        })
+        .catch(function (err) {
+          console.error('Failed to load product:', err);
+          showNotFound();
+        });
+    }
+
+    /* ---------- 6. REVIEWS ---------- */
+    var currentReviews = [];
+
+    function fetchReviewsAndRender(product) {
+      fetch('/api/reviews?product_id=' + product.id)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          currentReviews = data.reviews || [];
+          renderProduct(product);
+          renderRelated(product);
+          wireUpReviewDeleteButtons();
+          wireUpViewAllButton();
+        })
+        .catch(function (err) {
+          console.error('Failed to load reviews:', err);
+          currentReviews = [];
+          renderProduct(product);
+          renderRelated(product);
+        });
+    }
+
+    function renderReviews(productId) {
+      if (currentReviews.length === 0) {
+        return '<div class="reviews-empty">No reviews yet. Be the first to share your thoughts!</div>';
+      }
+      return currentReviews.map(function (review) {
+        var stars = '';
+        for (var i = 0; i < 5; i++) {
+          stars += i < review.rating ? '&#9733;' : '&#9734;';
+        }
+        var date = review.created_at ? new Date(review.created_at).toLocaleDateString() : '';
+        return '<div class="review-card">' +
+          '<div class="review-head">' +
+            '<div><span class="review-name">' + escapeHtml(review.customer_name) + '</span> <span class="review-stars">' + stars + '</span></div>' +
+            '<div><span class="review-date">' + date + '</span> <button type="button" class="review-delete-btn" data-review-id="' + review.id + '" aria-label="Delete review" title="Delete review">&#10005;</button></div>' +
+          '</div>' +
+          '<p class="review-text">' + escapeHtml(review.comment) + '</p>' +
+        '</div>';
+      }).join('');
+    }
+
+    function wireUpReviewDeleteButtons() {
+      document.querySelectorAll('[data-review-id]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var reviewId = btn.getAttribute('data-review-id');
+          if (!confirm('Delete this review?')) return;
+          fetch('/api/reviews/' + reviewId, { method: 'DELETE' })
+            .then(function (r) { return r.json(); })
+            .then(function () {
+              currentReviews = currentReviews.filter(function (r) { return String(r.id) !== String(reviewId); });
+              var list = document.getElementById('reviewsList');
+              if (list) list.innerHTML = renderReviews(currentProduct ? currentProduct.id : 0);
+              showToast('Review deleted');
+            })
+            .catch(function () { showToast('Could not delete review'); });
+        });
       });
-      if (isInCart(product.id)) {
-        var btn = document.getElementById('addToCartBtn');
-        if (btn) { btn.textContent = 'In Cart'; btn.onclick = function () { window.location.href = 'cart.html'; }; }
+    }
+
+    function wireUpViewAllButton() {
+      var viewAll = document.getElementById('viewAllReviewsBtn');
+      if (viewAll) {
+        viewAll.addEventListener('click', function () {
+          var list = document.getElementById('reviewsList');
+          if (list) list.innerHTML = renderReviews(currentProduct ? currentProduct.id : 0);
+        });
       }
     }
 
-    /* ---------- RENDER PRODUCT ---------- */
+    /* ---------- 7. RENDER PRODUCT ---------- */
 
     function renderProduct(p) {
-      var details = PRODUCT_DETAILS[p.id] || {};
-      var description = details.description || 'A thoughtfully designed piece from the Havenwood collection.';
-      var colors = details.colors || [{ name: 'Natural', hex: '#e8e0d3' }];
-      var specs = details.specs || {};
-      var sizes = details.sizes || ['Standard'];
+      var description = p.description || 'A thoughtfully designed piece from the Havenwood collection.';
+      var colors = p.colors && p.colors.length > 0 ? p.colors : ['Natural'];
+      var sizes = p.sizes && p.sizes.length > 0 ? p.sizes : ['Standard'];
 
-      var stars = '\u2605'.repeat(Math.round(p.rating)) + '\u2606'.repeat(5 - Math.round(p.rating));
+      var priceDollars = Math.round(p.price_cents / 100);
+      var oldPriceDollars = p.old_price_cents ? Math.round(p.old_price_cents / 100) : null;
 
-      var catLabel = CATEGORY_LABELS[p.category] || p.category;
+      var reviewCount = currentReviews.length;
+      var avgRating = 4.7;
+      if (reviewCount > 0) {
+        var sum = currentReviews.reduce(function (s, r) { return s + r.rating; }, 0);
+        avgRating = Math.round((sum / reviewCount) * 10) / 10;
+      }
+      var stars = '\u2605'.repeat(Math.round(avgRating)) + '\u2606'.repeat(5 - Math.round(avgRating));
+
+      var catLabel = getCategoryLabel(p.category);
       document.getElementById('breadcrumb').innerHTML =
         '<a href="althome.html">Home</a><span class="sep">/</span>' +
         '<a href="products.html">Shop</a><span class="sep">/</span>' +
-        '<a href="products.html?category=' + p.category + '">' + escapeHtml(catLabel) + '</a>' +
+        '<a href="products.html?category=' + encodeURIComponent(p.category) + '">' + escapeHtml(catLabel) + '</a>' +
         '<span class="sep">/</span>' +
         '<span class="current">' + escapeHtml(p.name) + '</span>';
 
       var badgeHTML = '';
-      if (p.badge === 'sale') badgeHTML = '<span class="gallery-badge sale">Sale</span>';
-      else if (p.badge === 'new') badgeHTML = '<span class="gallery-badge">New</span>';
+      if (p.on_sale) badgeHTML = '<span class="gallery-badge sale">Sale</span>';
+      else if (p.featured) badgeHTML = '<span class="gallery-badge">New</span>';
 
-      var oldPriceHTML = p.oldPrice ? '<s>' + price(p.oldPrice * 100) + '</s>' : '';
-      var saveHTML = p.oldPrice ? '<span class="save">Save ' + price((p.oldPrice - p.price) * 100) + '</span>' : '';
+      var oldPriceHTML = oldPriceDollars ? '<s>' + price(oldPriceDollars * 100) + '</s>' : '';
+      var saveHTML = oldPriceDollars ? '<span class="save">Save ' + price((oldPriceDollars - priceDollars) * 100) + '</span>' : '';
 
       var thumbs = [0, 1, 2, 3].map(function (i) {
-        return '<button type="button" class="' + (i === 0 ? 'active' : '') + '" data-thumb="' + i + '" aria-label="View image ' + (i + 1) + '"><img src="' + p.image + '" alt="" /></button>';
+        return '<button type="button" class="' + (i === 0 ? 'active' : '') + '" data-thumb="' + i + '" aria-label="View image ' + (i + 1) + '"><img src="' + p.image + '" alt="" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
       }).join('');
 
-      var swatches = colors.map(function (c, i) {
-        return '<button type="button" class="swatch ' + (i === 0 ? 'active' : '') + '" style="background:' + c.hex + '" data-color="' + escapeHtml(c.name) + '" aria-label="Color: ' + escapeHtml(c.name) + '"></button>';
-      }).join('');
-      var firstColor = colors[0].name;
+      var swatches;
+      if (typeof colors[0] === 'object') {
+        swatches = colors.map(function (c, i) {
+          var hex = c.hex || '#e8e0d3';
+          var name = c.name || c;
+          return '<button type="button" class="swatch ' + (i === 0 ? 'active' : '') + '" style="background:' + hex + '" data-color="' + escapeHtml(name) + '" aria-label="Color: ' + escapeHtml(name) + '"></button>';
+        }).join('');
+        selection.color = colors[0].name || colors[0];
+      } else {
+        var colorNames = ['#e8e0d3', '#6b7f5e', '#2b2926', '#a67c52', '#c9a97a'];
+        swatches = colors.map(function (name, i) {
+          return '<button type="button" class="swatch ' + (i === 0 ? 'active' : '') + '" style="background:' + (colorNames[i] || '#e8e0d3') + '" data-color="' + escapeHtml(name) + '" aria-label="Color: ' + escapeHtml(name) + '"></button>';
+        }).join('');
+        selection.color = colors[0];
+      }
 
       var sizePills = sizes.map(function (s, i) {
-        return '<button type="button" class="size-pill ' + (i === 0 ? 'active' : '') + '" data-size="' + escapeHtml(s) + '">' + escapeHtml(s) + '</button>';
+        var label = typeof s === 'object' ? s.name : s;
+        return '<button type="button" class="size-pill ' + (i === 0 ? 'active' : '') + '" data-size="' + escapeHtml(label) + '">' + escapeHtml(label) + '</button>';
       }).join('');
-      var firstSize = sizes[0];
-
-      selection.color = firstColor;
-      selection.size = firstSize;
+      selection.size = typeof sizes[0] === 'object' ? (sizes[0].name || sizes[0]) : sizes[0];
       selection.qty = 1;
 
-      var specRows = Object.keys(specs).map(function (key) {
-        return '<tr><th>' + escapeHtml(key) + '</th><td>' + escapeHtml(specs[key]) + '</td></tr>';
-      }).join('');
-
       var reviewsHTML = renderReviews(p.id);
+
+      var stockHTML = p.stock > 0
+        ? '<div class="stock-note">In stock &middot; ships in 2&ndash;4 days</div>'
+        : '<div class="stock-note" style="color:var(--wood)">Out of stock</div>';
 
       document.getElementById('productRoot').innerHTML =
         '<div class="product-detail">' +
@@ -1226,7 +1312,7 @@
           '<div class="reveal">' +
             '<div class="gallery-main">' +
               badgeHTML +
-              '<img id="galleryMainImg" src="' + p.image + '" alt="' + escapeHtml(p.name) + '" />' +
+              '<img id="galleryMainImg" src="' + p.image + '" alt="' + escapeHtml(p.name) + '" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" />' +
             '</div>' +
             '<div class="gallery-thumbs">' + thumbs + '</div>' +
 
@@ -1235,7 +1321,7 @@
               '<div class="review-form-card">' +
                 '<div class="form-group">' +
                   '<label>Your Rating</label>' +
-                  '<div class="star-picker" id="starPicker">' +
+                  '<div class="star-picker" id="starPicker" data-selected="5">' +
                     '<button type="button" data-star="1" aria-label="1 star">&#9733;</button>' +
                     '<button type="button" data-star="2" aria-label="2 stars">&#9733;</button>' +
                     '<button type="button" data-star="3" aria-label="3 stars">&#9733;</button>' +
@@ -1263,25 +1349,25 @@
 
             '<div class="info-rating">' +
               '<span class="stars">' + stars + '</span>' +
-              '<small>' + p.rating + ' &middot; ' + p.reviews + ' reviews</small>' +
+              '<small>' + avgRating + ' &middot; ' + reviewCount + ' review' + (reviewCount !== 1 ? 's' : '') + '</small>' +
             '</div>' +
 
             '<div class="info-price">' +
-              '<span class="price">' + price(p.price * 100) + '</span>' +
+              '<span class="price">' + price(p.price_cents) + '</span>' +
               oldPriceHTML +
               saveHTML +
             '</div>' +
-            '<div class="stock-note">In stock &middot; ships in 2&ndash;4 days</div>' +
+            stockHTML +
 
             '<p class="info-desc">' + escapeHtml(description) + '</p>' +
 
             '<div class="option-block">' +
-              '<label>Color <span>&mdash; <b id="selectedColor">' + escapeHtml(firstColor) + '</b></span></label>' +
+              '<label>Color <span>&mdash; <b id="selectedColor">' + escapeHtml(selection.color) + '</b></span></label>' +
               '<div class="swatches" id="swatchList">' + swatches + '</div>' +
             '</div>' +
 
             '<div class="option-block">' +
-              '<label>Size <span>&mdash; <b id="selectedSize">' + escapeHtml(firstSize) + '</b></span></label>' +
+              '<label>Size <span>&mdash; <b id="selectedSize">' + escapeHtml(selection.size) + '</b></span></label>' +
               '<div class="size-list" id="sizeList">' + sizePills + '</div>' +
             '</div>' +
 
@@ -1293,7 +1379,7 @@
                   '<input type="number" id="qtyInput" value="1" min="1" max="99" aria-label="Quantity" />' +
                   '<button type="button" data-qty="1" aria-label="Increase quantity">+</button>' +
                 '</div>' +
-                '<button type="button" class="btn btn-primary" id="addToCartBtn">Add to Cart</button>' +
+                '<button type="button" class="btn btn-primary" id="addToCartBtn"' + (p.stock <= 0 ? ' disabled style="opacity:0.5;pointer-events:none;"' : '') + '>Add to Cart</button>' +
                 '<button type="button" class="btn-icon" id="wishlistBtn" aria-label="Add to wishlist" title="Add to wishlist"><span class="material-symbols-outlined">favorite_border</span></button>' +
               '</div>' +
             '</div>' +
@@ -1314,11 +1400,14 @@
                 '<div class="tab-panel active" data-panel="desc">' +
                   '<h3>About this piece</h3>' +
                   '<p>' + escapeHtml(description) + '</p>' +
-                  '<p>Every Havenwood item is designed in Copenhagen and made from sustainably sourced materials. It arrives in recyclable packaging and is built to be lived with for a very long time.</p>' +
                 '</div>' +
                 '<div class="tab-panel" data-panel="specs">' +
                   '<h3>The details</h3>' +
-                  '<table class="specs-table"><tbody>' + specRows + '</tbody></table>' +
+                  '<table class="specs-table"><tbody>' +
+                    '<tr><th>Brand</th><td>' + escapeHtml(p.brand || 'Havenwood') + '</td></tr>' +
+                    '<tr><th>Category</th><td>' + escapeHtml(catLabel) + '</td></tr>' +
+                    (p.sku ? '<tr><th>SKU</th><td>' + escapeHtml(p.sku) + '</td></tr>' : '') +
+                  '</tbody></table>' +
                 '</div>' +
                 '<div class="tab-panel" data-panel="ship">' +
                   '<h3>Delivery &amp; returns</h3>' +
@@ -1445,124 +1534,25 @@
         if (!currentRating) { showToast('Please select a rating'); return; }
         if (!name) { showToast('Please enter your name'); return; }
         if (!text) { showToast('Please write a review'); return; }
-        submitReview(p.id, name, currentRating, text, function () {
-          showToast('Review submitted — thank you!');
-          document.getElementById('reviewName').value = '';
-          document.getElementById('reviewText').value = '';
-          currentRating = 0;
-          starBtns.forEach(function (b) { b.classList.remove('filled'); b.style.color = 'var(--beige)'; });
-          reRenderReviews(p.id);
-        });
-      });
-    }
-
-    /* ---------- REVIEWS (API-backed) ---------- */
-    var allReviews = [];
-    var REVIEWS_VISIBLE_INITIAL = 3;
-
-    function fetchReviews(productId, callback) {
-      fetch('/api/reviews?product_id=' + encodeURIComponent(productId))
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          allReviews = data.reviews || [];
-          if (callback) callback();
+        fetch('/api/reviews', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: p.id, customer_name: name, rating: currentRating, comment: text })
         })
-        .catch(function () { allReviews = []; if (callback) callback(); });
-    }
-
-    function submitReview(productId, name, rating, comment, onSuccess) {
-      fetch('/api/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: productId, customer_name: name, rating: rating, comment: comment })
-      })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          if (data.id) {
-            allReviews.unshift(data);
-            if (onSuccess) onSuccess();
-          } else {
-            showToast(data.error || 'Failed to submit review');
-          }
-        })
-        .catch(function () { showToast('Failed to submit review'); });
-    }
-
-    function deleteReview(reviewId) {
-      fetch('/api/reviews/' + reviewId, { method: 'DELETE' })
-        .then(function () {
-          allReviews = allReviews.filter(function (r) { return r.id !== reviewId; });
-          var listEl = document.getElementById('reviewsList');
-          if (listEl) listEl.innerHTML = renderReviewsFromList(allReviews);
-        })
-        .catch(function () {});
-    }
-
-    function renderSingleReview(r) {
-      var starStr = '\u2605'.repeat(r.rating) + '\u2606'.repeat(5 - r.rating);
-      var dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
-      return '<div class="review-card" data-review-id="' + r.id + '">' +
-        '<div class="review-head">' +
-          '<span class="review-name">' + escapeHtml(r.customer_name) + '</span>' +
-          '<span class="review-stars">' + starStr + '</span>' +
-        '</div>' +
-        '<div class="review-date">' + dateStr +
-          ' <button type="button" class="review-delete-btn" data-delete-id="' + r.id + '" title="Delete review" aria-label="Delete review">&times;</button>' +
-        '</div>' +
-        '<div class="review-text">' + escapeHtml(r.comment) + '</div>' +
-      '</div>';
-    }
-
-    function renderReviewsFromList(reviews) {
-      if (reviews.length === 0) {
-        return '<div class="reviews-empty">No reviews yet. Be the first to share your thoughts!</div>';
-      }
-      var html = reviews.map(renderSingleReview).join('');
-      return html;
-    }
-
-    function renderReviews(productId) {
-      var reviews = allReviews;
-      if (reviews.length === 0) {
-        return '<div class="reviews-empty">No reviews yet. Be the first to share your thoughts!</div>';
-      }
-      var html = '';
-      var toShow = reviews.slice(0, REVIEWS_VISIBLE_INITIAL);
-      html += toShow.map(renderSingleReview).join('');
-      if (reviews.length > REVIEWS_VISIBLE_INITIAL) {
-        html += '<button type="button" class="btn btn-outline" id="viewAllReviewsBtn" style="width:100%;margin-top:10px;font-size:13px;padding:10px 20px;">View all ' + reviews.length + ' comments</button>';
-        html += '<div id="extraReviews" style="display:none;">' + reviews.slice(REVIEWS_VISIBLE_INITIAL).map(renderSingleReview).join('') + '</div>';
-      }
-      return html;
-    }
-
-    function reRenderReviews(productId) {
-      var listEl = document.getElementById('reviewsList');
-      if (!listEl) return;
-      listEl.innerHTML = renderReviews(productId);
-      wireUpReviewDeleteButtons();
-      wireUpViewAllButton();
-    }
-
-    function wireUpReviewDeleteButtons() {
-      document.querySelectorAll('[data-delete-id]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var id = parseInt(btn.getAttribute('data-delete-id'), 10);
-          if (id) deleteReview(id);
-        });
-      });
-    }
-
-    function wireUpViewAllButton() {
-      var viewAllBtn = document.getElementById('viewAllReviewsBtn');
-      if (!viewAllBtn) return;
-      viewAllBtn.addEventListener('click', function () {
-        var extra = document.getElementById('extraReviews');
-        if (extra) {
-          extra.style.display = 'block';
-          viewAllBtn.remove();
-          wireUpReviewDeleteButtons();
-        }
+          .then(function (r) { return r.json(); })
+          .then(function (newReview) {
+            if (newReview.error) { showToast(newReview.error); return; }
+            currentReviews.unshift(newReview);
+            var list = document.getElementById('reviewsList');
+            if (list) list.innerHTML = renderReviews(p.id);
+            document.getElementById('reviewName').value = '';
+            document.getElementById('reviewText').value = '';
+            currentRating = 0;
+            starBtns.forEach(function (b) { b.classList.remove('filled'); b.style.color = 'var(--beige)'; });
+            showToast('Review submitted!');
+            wireUpReviewDeleteButtons();
+          })
+          .catch(function () { showToast('Could not submit review'); });
       });
     }
 
@@ -1577,7 +1567,7 @@
       if (sumColor) sumColor.textContent = selection.color;
       if (sumSize) sumSize.textContent = selection.size;
       if (sumQty) sumQty.textContent = selection.qty;
-      if (sumTotal) sumTotal.textContent = price(p.price * 100 * selection.qty);
+      if (sumTotal) sumTotal.textContent = price(p.price_cents * selection.qty);
     }
 
     var formRules = {
@@ -1639,49 +1629,73 @@
     });
 
     /* ---------- RELATED PRODUCTS ---------- */
-    function productCardHTML(p) {
-      var stars = '\u2605'.repeat(Math.round(p.rating));
+    function relatedProductCard(p) {
+      var img = getProductImage(p);
       var badge = '';
-      if (p.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
-      if (p.badge === 'new')  badge = '<span class="card-badge">New</span>';
-      var oldPrice = p.oldPrice ? '<s>' + price(p.oldPrice * 100) + '</s>' : '';
+      if (p.on_sale) badge = '<span class="card-badge sale">Sale</span>';
+      else if (p.featured) badge = '<span class="card-badge">New</span>';
+      var oldPriceHTML = p.old_price_cents ? '<s>' + price(p.old_price_cents) + '</s>' : '';
       var inCart = isInCart(p.id);
       var btnClass = inCart ? 'card-added' : 'card-add';
       var btnText = inCart ? 'In Cart' : 'Add';
       return '<article class="product-card">' +
         '<a href="product.html?id=' + p.id + '" class="card-media">' + badge +
-        '<img src="' + p.image + '" alt="' + p.name + '" loading="lazy" /></a>' +
+        '<img src="' + img + '" alt="' + escapeHtml(p.name) + '" loading="lazy" onerror="imgOnError(this)" /></a>' +
         '<div class="card-body">' +
-          '<div class="card-category">' + p.category + '</div>' +
-          '<h3><a href="product.html?id=' + p.id + '">' + p.name + '</a></h3>' +
-          '<div class="card-rating">' + stars + '<span>(' + p.reviews + ')</span></div>' +
+          '<div class="card-category">' + escapeHtml(getCategoryLabel(p.category)) + '</div>' +
+          '<h3><a href="product.html?id=' + p.id + '">' + escapeHtml(p.name) + '</a></h3>' +
           '<div class="card-price-row">' +
-            '<div class="card-price">' + price(p.price * 100) + oldPrice + '</div>' +
+            '<div class="card-price">' + price(p.price_cents) + oldPriceHTML + '</div>' +
             '<button class="' + btnClass + '" type="button" data-add="' + p.id + '">' + btnText + '</button>' +
           '</div>' +
         '</div>' +
       '</article>';
     }
 
-    function renderRelated(currentProduct) {
-      var related = PRODUCTS.filter(function (p) { return p.id !== currentProduct.id && p.category === currentProduct.category; });
-      if (related.length < 4) {
-        var others = PRODUCTS.filter(function (p) { return p.id !== currentProduct.id && p.category !== currentProduct.category; });
-        related = related.concat(others);
-      }
-      related = related.slice(0, 6);
-      if (related.length === 0) return;
-      document.getElementById('relatedSection').style.display = 'block';
-      document.getElementById('relatedRow').innerHTML = related.map(productCardHTML).join('');
+    function renderRelated(cur) {
+      var fetchUrl = '/api/products/browse?limit=8';
+      if (cur.category) fetchUrl += '&category=' + encodeURIComponent(cur.category);
+      fetch(fetchUrl)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var items = data.products || [];
+          var related = items.filter(function (p) { return p.id !== cur.id; }).slice(0, 6);
+          if (related.length === 0) return;
+          document.getElementById('relatedSection').style.display = 'block';
+          document.getElementById('relatedRow').innerHTML = related.map(relatedProductCard).join('');
+        })
+        .catch(function () {});
     }
 
     document.addEventListener('click', function (event) {
       var addButton = event.target.closest('[data-add]');
       if (!addButton) return;
       if (addButton.classList.contains('card-added')) { window.location.href = 'cart.html'; return; }
-      addToCart(addButton.getAttribute('data-add'), 1, '', '');
-      addButton.textContent = 'In Cart';
-      addButton.className = 'card-added';
+      var productId = parseInt(addButton.getAttribute('data-add'), 10);
+      fetch('/api/products/browse/' + productId)
+        .then(function (r) { return r.json(); })
+        .then(function (prod) {
+          var cart = getCart();
+          var existing = cart.find(function (item) { return item.id === productId; });
+          if (existing) { existing.qty += 1; }
+          else {
+            cart.push({
+              key: productId + '|',
+              id: productId,
+              name: prod.name,
+              price_cents: prod.price_cents,
+              image: getProductImage(prod),
+              color: '',
+              size: '',
+              qty: 1
+            });
+          }
+          saveCart(cart);
+          addButton.textContent = 'In Cart';
+          addButton.className = 'card-added';
+          showToast(prod.name + ' added to cart');
+        })
+        .catch(function () {});
     });
 
     document.querySelectorAll('[data-scroll]').forEach(function (button) {
@@ -1715,48 +1729,6 @@
     }
 
     updateCartCount();
-  </script>
-
-  <!-- Backend API Integration -->
-  <script>
-    (function () {
-      var params = new URLSearchParams(window.location.search);
-      var requestedId = params.get('id');
-      if (!requestedId) return;
-      if (product) return;
-      fetch('/api/products/browse')
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          var items = data.products || data.data || data;
-          if (!Array.isArray(items)) return;
-          var found = items.find(function (p) { return String(p.id) === requestedId || p.slug === requestedId; });
-          if (!found) return;
-          var images = [];
-          try { images = JSON.parse(found.images || '[]'); } catch(e) { images = []; }
-          PRODUCTS.push({
-            id: String(found.id || found.slug),
-            name: found.name,
-            category: (found.category || found.category_name || 'uncategorized').toLowerCase(),
-            price: Math.round(found.price_cents ? found.price_cents / 100 : (found.price || 0)),
-            oldPrice: found.compare_at_price_cents ? Math.round(found.compare_at_price_cents / 100) : null,
-            rating: parseFloat(found.rating) || 4.7,
-            reviews: parseInt(found.reviews, 10) || 50,
-            image: (images && images[0]) ? images[0] : (found.image || '/assets/furn-sofa.png'),
-            badge: found.compare_at_price_cents ? 'sale' : null
-          });
-          product = PRODUCTS[PRODUCTS.length - 1];
-          document.getElementById('productRoot').innerHTML = '';
-          document.getElementById('breadcrumb').innerHTML = '';
-          document.getElementById('orderSection').style.display = 'block';
-          fetchReviews(product.id, function () {
-            renderProduct(product);
-            renderRelated(product);
-            wireUpReviewDeleteButtons();
-            wireUpViewAllButton();
-          });
-        })
-        .catch(function () {});
-    })();
   </script>
 </body>
 </html>

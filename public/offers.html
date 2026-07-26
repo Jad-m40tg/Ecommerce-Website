@@ -807,7 +807,7 @@
         '<article class="product-card">' +
           '<a href="product.html?id=' + product.id + '" class="card-media">' +
             badge +
-            '<img src="' + (product.image || '/assets/furn-sofa.png') + '" alt="' + escapeHtml(product.name) + '" loading="lazy" />' +
+            '<img src="' + (product.image || '/assets/furn-sofa.png') + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
           '</a>' +
           '<div class="card-body">' +
             '<div class="card-category">' + escapeHtml(product.category_name || '') + '</div>' +

@@ -779,7 +779,7 @@
         return (
           '<article class="cart-item" data-index="' + index + '">' +
             '<a href="product.html?id=' + item.id + '" class="item-media" aria-label="View ' + escapeHtml(item.name) + '">' +
-              '<img src="' + item.image + '" alt="' + escapeHtml(item.name) + '" loading="lazy" />' +
+              '<img src="' + item.image + '" alt="' + escapeHtml(item.name) + '" loading="lazy" onerror="handleImageError(this)" />' +
             '</a>' +
 
             '<div class="item-info">' +
