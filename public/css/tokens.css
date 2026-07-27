@@ -1,0 +1,27 @@
+/* ============================================================
+   DESIGN TOKENS (CSS VARIABLES)
+   Single source of truth for the entire design system.
+   ============================================================ */
+:root {
+  /* Colors */
+  --warm-white: #faf7f2;   /* main page background            */
+  --cream:      #f3eee6;   /* alternating section background  */
+  --beige:      #e8e0d3;   /* card borders, subtle fills      */
+  --charcoal:   #2b2926;   /* headings + primary text         */
+  --gray:       #6f6a62;   /* secondary / muted text          */
+  --wood:       #a67c52;   /* warm wood accent                */
+  --sage:       #6b7f5e;   /* muted green accent (primary)    */
+  --sage-dark:  #576a4c;   /* sage hover state                */
+  --white:      #fffdf9;   /* card surfaces                   */
+
+  /* Shape + effects */
+  --radius-lg:  20px;                              /* cards            */
+  --radius-md:  12px;                              /* buttons, inputs  */
+  --radius-pill: 999px;                            /* pills, badges    */
+  --shadow-soft:  0 6px 24px rgba(43, 41, 38, 0.08);
+  --shadow-lift:  0 16px 40px rgba(43, 41, 38, 0.14);
+
+  /* Layout */
+  --container:  1180px;
+  --nav-height: 72px;
+}

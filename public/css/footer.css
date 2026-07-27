@@ -1,0 +1,41 @@
+/* ============================================================
+   FOOTER — Three-column layout, identical across all pages
+   ============================================================ */
+.footer {
+  background: var(--charcoal);
+  color: #cfc9bf;
+  padding: 64px 0 0;
+  margin-top: clamp(56px, 8vw, 96px);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 48px;
+}
+
+.footer .brand { color: var(--warm-white); margin-bottom: 14px; display: inline-block; }
+.footer p { font-size: 14.5px; max-width: 320px; }
+
+.footer h4 {
+  color: var(--warm-white);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.footer ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer ul a { font-size: 14.5px; transition: color 0.25s ease; }
+.footer ul a:hover { color: var(--wood); }
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 253, 249, 0.12);
+  padding: 20px 0;
+  text-align: center;
+  font-size: 13.5px;
+  color: #96907f;
+}

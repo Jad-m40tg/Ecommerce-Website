@@ -1,0 +1,146 @@
+/* ============================================================
+   NAVBAR
+   Sticky, glassmorphic bar with pill-shaped links.
+   Used by ALL customer-facing pages.
+   ============================================================ */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  padding: 14px 0 0;
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: var(--nav-height);
+  padding: 0 26px;
+  background: rgba(250, 247, 242, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid var(--beige);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+/* Brand wordmark */
+.brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.brand span { color: var(--sage); }
+
+/* Pill-style nav links */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+}
+
+.nav-links a {
+  padding: 8px 17px;
+  border: 1.5px solid var(--beige);
+  border-radius: var(--radius-pill);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--gray);
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.nav-links a:hover { background: var(--beige); color: var(--charcoal); }
+
+.nav-links a.active {
+  background: var(--charcoal);
+  color: var(--warm-white);
+  border-color: var(--charcoal);
+}
+
+/* Cart button with live count badge */
+.cart-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1.5px solid var(--charcoal);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--charcoal);
+  transition: background 0.25s ease, color 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.cart-btn:hover { background: var(--charcoal); color: var(--warm-white); }
+
+.cart-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--sage);
+  color: var(--warm-white);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Search icon button */
+.nav-search {
+  display: flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  color: var(--charcoal);
+  transition: background 0.25s ease;
+  flex-shrink: 0;
+}
+.nav-search:hover { background: var(--beige); }
+
+/* Mobile hamburger (hidden on desktop) */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 26px;
+  color: var(--charcoal);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   RESPONSIVE NAVBAR — mobile collapse at 800px
+   ============================================================ */
+@media (max-width: 800px) {
+  .menu-toggle { display: block; }
+
+  .nav-links {
+    position: absolute;
+    top: calc(var(--nav-height) + 14px);
+    left: 0; right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    background: var(--warm-white);
+    border-bottom: 1px solid var(--beige);
+    padding: 12px 4%;
+    display: none; /* toggled by JS */
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { display: block; text-align: center; }
+}

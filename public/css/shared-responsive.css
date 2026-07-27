@@ -1,0 +1,77 @@
+/* ============================================================
+   SHARED RESPONSIVE BREAKPOINTS
+   Non-navbar breakpoints used across multiple pages.
+   Navbar collapse at 800px is in navbar.css.
+   ============================================================ */
+
+/* 1000px — 3-col grids drop to 2 */
+@media (max-width: 1000px) {
+  .product-grid,
+  .results-grid { grid-template-columns: repeat(2, 1fr); }
+  .categories-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* 900px — category grid to 2 cols, testimonial to 1, offer stack */
+@media (max-width: 900px) {
+  .category-grid { grid-template-columns: repeat(2, 1fr); }
+  .testimonial-grid { grid-template-columns: 1fr; }
+  .offer { grid-template-columns: 1fr; }
+  .offer-media { order: -1; }
+  .offer-media img { height: 280px; }
+}
+
+/* 820px — catalog sidebar becomes off-canvas, product grid 2 cols */
+@media (max-width: 820px) {
+  .catalog { grid-template-columns: 1fr; gap: 20px; }
+  .filters {
+    position: static;
+    display: none; /* toggled by JS */
+  }
+  .filters.open { display: block; }
+  .filters-toggle { display: inline-flex; }
+  .product-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 800px — navbar collapse handled in navbar.css, but shared container padding */
+@media (max-width: 800px) {
+  .container { padding: 0 18px; }
+  .product-card { flex: 0 0 240px; }
+  .row-arrows { display: none; } /* rely on swipe on touch */
+  .newsletter-form { flex-direction: column; }
+}
+
+/* 520px — grids to 1 column */
+@media (max-width: 520px) {
+  .product-grid,
+  .results-grid,
+  .categories-grid,
+  .promo-grid { grid-template-columns: 1fr; }
+  .search-bar { flex-direction: column; }
+}
+
+/* 500px — navbar/brand/cart sizing, footer stack */
+@media (max-width: 500px) {
+  .navbar-inner { padding: 0 14px; gap: 12px; }
+  .brand { font-size: 20px; }
+  .cart-btn { font-size: 12px; padding: 7px 12px; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .footer p { max-width: 100%; }
+  .product-card { flex: 0 0 100%; }
+}
+
+/* 400px — ultra-small screens */
+@media (max-width: 400px) {
+  .container { padding: 0 14px; }
+  .brand { font-size: 18px; }
+  .nav-search { width: 36px; height: 36px; }
+  .cart-btn { font-size: 11px; padding: 5px 8px; gap: 5px; }
+  .cart-count { min-width: 16px; height: 16px; font-size: 10px; padding: 0 4px; }
+  .menu-toggle { font-size: 22px; }
+  .section { padding: 40px 0; }
+  .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+  .footer p { max-width: 100%; }
+  .hero h1 { font-size: 28px; }
+  .hero p { font-size: 16px; }
+  .card-row { flex-direction: column; gap: 14px; }
+  .item-media { width: 100%; }
+}
