@@ -14,46 +14,46 @@ async function apiFetch(path, options = {}) {
 }
 
 /* ---------- Products ---------- */
-export async function fetchProducts(params = {}) {
+function fetchProducts(params = {}) {
   const qs = new URLSearchParams(params).toString();
   return apiFetch('/products/browse' + (qs ? '?' + qs : ''));
 }
 
-export async function fetchProduct(id) {
+function fetchProduct(id) {
   return apiFetch('/products/browse/' + encodeURIComponent(id));
 }
 
-export async function fetchOnSaleProducts() {
+function fetchOnSaleProducts() {
   return apiFetch('/products/browse/on-sale');
 }
 
-export async function fetchFeaturedProducts() {
+function fetchFeaturedProducts() {
   return apiFetch('/products/browse/featured');
 }
 
 /* ---------- Categories ---------- */
-export async function fetchCategories() {
+function fetchCategories() {
   return apiFetch('/categories');
 }
 
 /* ---------- Reviews ---------- */
-export async function fetchReviews(productId) {
+function fetchReviews(productId) {
   return apiFetch('/reviews?product_id=' + encodeURIComponent(productId));
 }
 
-export async function postReview(productId, payload) {
+function postReview(productId, payload) {
   return apiFetch('/reviews', {
     method: 'POST',
     body: JSON.stringify({ product_id: productId, ...payload })
   });
 }
 
-export async function deleteReview(reviewId) {
+function deleteReview(reviewId) {
   return apiFetch('/reviews/' + reviewId, { method: 'DELETE' });
 }
 
 /* ---------- Orders (checkout) ---------- */
-export async function placeOrder(orderData) {
+function placeOrder(orderData) {
   return apiFetch('/orders', {
     method: 'POST',
     body: JSON.stringify(orderData)
@@ -61,11 +61,11 @@ export async function placeOrder(orderData) {
 }
 
 /* ---------- Settings ---------- */
-export async function fetchSettings() {
+function fetchSettings() {
   return apiFetch('/settings');
 }
 
-export async function updateSettings(key, value) {
+function updateSettings(key, value) {
   return apiFetch('/settings/' + key, {
     method: 'PUT',
     body: JSON.stringify({ value })

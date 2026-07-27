@@ -177,7 +177,20 @@
 .confirm-card .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
 /* ============================================================
-   5. RESPONSIVE
+   5. SPINNER (loading indicator for place-order button)
+   ============================================================ */
+.spinner {
+  display: inline-block;
+  width: 18px; height: 18px;
+  border: 2.5px solid var(--warm-white);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   6. RESPONSIVE
    ============================================================ */
 @media (max-width: 960px) {
   .checkout-layout { grid-template-columns: 1fr; }

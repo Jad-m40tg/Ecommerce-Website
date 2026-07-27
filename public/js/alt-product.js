@@ -324,7 +324,7 @@ document.getElementById('orderForm').addEventListener('submit', function (event)
       customer_phone: document.getElementById('fPhone').value,
       customer_address: document.getElementById('fAddress').value,
       customer_city: document.getElementById('fCity').value,
-      items: [{ product_id: 1, quantity: selection.qty }],
+      items: [{ product_id: PRODUCT.id, quantity: selection.qty }],
       notes: (document.getElementById('fNotes') && document.getElementById('fNotes').value) || ''
     })
   }).then(function (r) { return r.json(); }).then(function () {

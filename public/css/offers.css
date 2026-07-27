@@ -140,10 +140,71 @@
 .product-row::-webkit-scrollbar { height: 6px; }
 .product-row::-webkit-scrollbar-thumb { background: var(--beige); border-radius: 3px; }
 
-/* Product card in row — reuses shared .product-card (flex: 0 0 260px) */
+/* ============================================================
+   5. PRODUCT CARD (row context)
+   ============================================================ */
+.product-card {
+  flex: 0 0 260px;
+  background: var(--white);
+  border: 1px solid var(--beige);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  scroll-snap-align: start;
+}
+.product-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
+
+.card-media { position: relative; display: block; background: var(--cream); }
+.card-media img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+
+.card-badge {
+  position: absolute; top: 12px; left: 12px;
+  padding: 5px 12px; border-radius: var(--radius-pill);
+  background: var(--sage); color: var(--warm-white);
+  font-size: 11.5px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.card-badge.sale { background: var(--wood); }
+
+.card-body { padding: 16px 18px 20px; }
+.card-category {
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray);
+}
+.card-body h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 15.5px; font-weight: 600; margin: 6px 0 8px;
+}
+.card-body h3 a { color: var(--charcoal); }
+.card-body h3 a:hover { color: var(--sage); }
+
+.card-rating { font-size: 13px; color: var(--wood); margin-bottom: 10px; }
+.card-rating span { color: var(--gray); margin-left: 4px; }
+
+.card-price-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.card-price { font-size: 17px; font-weight: 700; color: var(--charcoal); }
+.card-price s { font-size: 13px; font-weight: 500; color: var(--gray); margin-left: 6px; }
+
+.card-add {
+  padding: 9px 16px; border: none; border-radius: var(--radius-md);
+  background: var(--charcoal); color: var(--warm-white);
+  font-size: 13px; font-weight: 600;
+  transition: background 0.25s ease;
+}
+.card-add:hover { background: var(--sage); }
+
+.card-added {
+  padding: 9px 16px; border: none; border-radius: var(--radius-md);
+  background: var(--sage); color: var(--warm-white);
+  font-size: 13px; font-weight: 600;
+}
+.card-added:hover { background: var(--sage-dark); }
 
 /* ============================================================
-   5. RESPONSIVE
+   6. RESPONSIVE
    ============================================================ */
 @media (max-width: 900px) {
   .offer-hero { grid-template-columns: 1fr; }

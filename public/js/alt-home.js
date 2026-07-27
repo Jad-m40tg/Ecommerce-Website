@@ -51,11 +51,11 @@ function productCardHTML(product) {
     '<article class="product-card">' +
       '<a href="product.html?id=' + product.id + '" class="card-media">' +
         badge +
-        '<img src="' + product.image + '" alt="' + product.name + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+        '<img src="' + product.image + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
       '</a>' +
       '<div class="card-body">' +
-        '<div class="card-category">' + product.category + '</div>' +
-        '<h3><a href="product.html?id=' + product.id + '">' + product.name + '</a></h3>' +
+        '<div class="card-category">' + escapeHtml(product.category) + '</div>' +
+        '<h3><a href="product.html?id=' + product.id + '">' + escapeHtml(product.name) + '</a></h3>' +
         '<div class="card-rating">' + stars + '<span>(' + product.reviews + ')</span></div>' +
         '<div class="card-price-row">' +
           '<div class="card-price">' + price(product.price_cents) + oldPrice + '</div>' +
