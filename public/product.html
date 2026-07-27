@@ -811,7 +811,32 @@
     .toast.show { transform: translate(-50%, 0); opacity: 1; }
 
     /* ============================================================
-       15. RESPONSIVE
+       15. SKELETON LOADING
+       ============================================================ */
+    .skeleton { position: relative; overflow: hidden; background: var(--cream); border-radius: var(--radius-md); }
+    .skeleton::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    .skel-img { width: 100%; aspect-ratio: 1; border-radius: var(--radius-lg); }
+    .skel-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+    .skel-thumb { aspect-ratio: 1; border-radius: var(--radius-md); }
+    .skel-line { height: 16px; margin-bottom: 12px; border-radius: 8px; }
+    .skel-line.w40 { width: 40%; }
+    .skel-line.w60 { width: 60%; }
+    .skel-line.w80 { width: 80%; }
+    .skel-line.w100 { width: 100%; }
+    .skel-line.h24 { height: 28px; }
+    .skel-line.h32 { height: 36px; }
+    .skel-block { height: 48px; border-radius: var(--radius-md); margin-bottom: 18px; }
+    .skel-swatch { display: inline-block; width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; }
+    .skel-pill { display: inline-block; width: 70px; height: 40px; border-radius: var(--radius-md); margin-right: 10px; }
+
+    /* ============================================================
+       16. RESPONSIVE
        ============================================================ */
     @media (max-width: 960px) {
       .product-detail { grid-template-columns: 1fr; gap: 36px; }
@@ -1026,7 +1051,6 @@
 
   <script src="utils.js"></script>
   <script>
-    console.log('[product.html] script loaded, requestedId=' + new URLSearchParams(window.location.search).get('id'));
     /* ---------- 1. GLOBALS ---------- */
     var CART_KEY = 'havenwood-cart';
     var currentProduct = null;
@@ -1092,7 +1116,10 @@
       var images = [];
       try { images = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []); }
       catch (e) { images = []; }
-      if (images.length > 0 && images[0]) return images[0];
+      if (images.length > 0 && images[0]) {
+        if (images[0].indexOf('/uploads/') === 0) return fallbackImage(product.category);
+        return images[0];
+      }
       return fallbackImage(product.category);
     }
 
@@ -1132,7 +1159,42 @@
       showNotFound();
     } else {
       document.getElementById('breadcrumb').innerHTML = '<span style="color:var(--gray)">Loading...</span>';
-      document.getElementById('productRoot').innerHTML = '<div style="text-align:center;padding:80px 20px;color:var(--gray);">Loading product...</div>';
+      document.getElementById('productRoot').innerHTML =
+        '<div class="product-detail">' +
+          '<div>' +
+            '<div class="skeleton skel-img"></div>' +
+            '<div class="skel-thumbs">' +
+              '<div class="skeleton skel-thumb"></div>' +
+              '<div class="skeleton skel-thumb"></div>' +
+              '<div class="skeleton skel-thumb"></div>' +
+              '<div class="skeleton skel-thumb"></div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="padding-top:4px;">' +
+            '<div class="skeleton skel-line w40"></div>' +
+            '<div class="skeleton skel-line h24 w80" style="margin-bottom:16px;"></div>' +
+            '<div class="skeleton skel-line w60" style="margin-bottom:24px;"></div>' +
+            '<div class="skeleton skel-line h32 w40" style="margin-bottom:24px;"></div>' +
+            '<div class="skeleton skel-line w100" style="margin-bottom:12px;"></div>' +
+            '<div class="skeleton skel-line w100" style="margin-bottom:12px;"></div>' +
+            '<div class="skeleton skel-line w80" style="margin-bottom:24px;"></div>' +
+            '<div style="margin-bottom:22px;">' +
+              '<div class="skeleton skel-swatch"></div>' +
+              '<div class="skeleton skel-swatch"></div>' +
+              '<div class="skeleton skel-swatch"></div>' +
+              '<div class="skeleton skel-swatch"></div>' +
+            '</div>' +
+            '<div style="margin-bottom:22px;">' +
+              '<div class="skeleton skel-pill"></div>' +
+              '<div class="skeleton skel-pill"></div>' +
+              '<div class="skeleton skel-pill"></div>' +
+            '</div>' +
+            '<div class="skeleton skel-block"></div>' +
+            '<div class="skeleton skel-line w100"></div>' +
+            '<div class="skeleton skel-line w100"></div>' +
+            '<div class="skeleton skel-line w60"></div>' +
+          '</div>' +
+        '</div>';
       fetch('/api/products/browse/' + encodeURIComponent(requestedId))
         .then(function (r) {
           if (!r.ok) throw new Error('Not found');
@@ -1183,12 +1245,14 @@
           renderRelated(product);
           wireUpReviewDeleteButtons();
           wireUpViewAllButton();
+          observeReveals();
         })
         .catch(function (err) {
           console.error('Failed to load reviews:', err);
           currentReviews = [];
           renderProduct(product);
           renderRelated(product);
+          observeReveals();
         });
     }
 
@@ -1640,7 +1704,7 @@
       var btnText = inCart ? 'In Cart' : 'Add';
       return '<article class="product-card">' +
         '<a href="product.html?id=' + p.id + '" class="card-media">' + badge +
-        '<img src="' + img + '" alt="' + escapeHtml(p.name) + '" loading="lazy" onerror="imgOnError(this)" /></a>' +
+        '<img src="' + img + '" alt="' + escapeHtml(p.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></a>' +
         '<div class="card-body">' +
           '<div class="card-category">' + escapeHtml(getCategoryLabel(p.category)) + '</div>' +
           '<h3><a href="product.html?id=' + p.id + '">' + escapeHtml(p.name) + '</a></h3>' +
@@ -1717,7 +1781,10 @@
         if (entry.isIntersecting) { entry.target.classList.add('visible'); revealObserver.unobserve(entry.target); }
       });
     }, { threshold: 0.15 });
-    document.querySelectorAll('.reveal').forEach(function (el) { revealObserver.observe(el); });
+    function observeReveals() {
+      document.querySelectorAll('.reveal:not(.visible)').forEach(function (el) { revealObserver.observe(el); });
+    }
+    observeReveals();
 
     var toastTimer = null;
     function showToast(message) {

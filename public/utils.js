@@ -127,7 +127,10 @@ function getProductImage(product) {
   try {
     images = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
   } catch (e) { images = []; }
-  if (images.length > 0 && images[0]) return images[0];
+  if (images.length > 0 && images[0]) {
+    if (images[0].indexOf('/uploads/') === 0) return getFallbackImage(product.category);
+    return images[0];
+  }
   return getFallbackImage(product.category);
 }
 
