@@ -749,6 +749,33 @@
     .toast.show { transform: translate(-50%, 0); opacity: 1; }
 
     /* ============================================================
+       SKELETON LOADING
+       ============================================================ */
+    .skeleton { position: relative; overflow: hidden; background: var(--cream); border-radius: var(--radius-md); }
+    .skeleton::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+    .skel-card {
+      flex: 0 0 260px;
+      background: var(--white);
+      border: 1.5px solid var(--beige);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .skel-card .skel-img { width: 100%; aspect-ratio: 1; }
+    .skel-card .skel-body { padding: 16px 18px 20px; }
+    .skel-line { height: 14px; margin-bottom: 10px; border-radius: 7px; }
+    .skel-line.w40 { width: 40%; }
+    .skel-line.w60 { width: 60%; }
+    .skel-line.w80 { width: 80%; }
+    .skel-line.w100 { width: 100%; }
+    .skel-line.h20 { height: 20px; }
+
+    /* ============================================================
        16. RESPONSIVE BREAKPOINTS
        ============================================================ */
     @media (max-width: 900px) {
@@ -759,7 +786,7 @@
       .offer-media img { height: 280px; }
     }
 
-    @media (max-width: 720px) {
+    @media (max-width: 800px) {
       .container { padding: 0 18px; }
       /* Collapse nav links into a dropdown panel */
       .menu-toggle { display: block; }
@@ -919,7 +946,12 @@
             <button class="arrow-btn" type="button" data-scroll="right" data-target="bestRow" aria-label="Scroll right">&#8594;</button>
           </div>
         </div>
-        <div class="product-row" id="bestRow"><!-- filled by JS --></div>
+        <div class="product-row" id="bestRow">
+          <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+          <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+          <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+          <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+        </div>
       </div>
     </section>
 
@@ -963,7 +995,12 @@
             <button class="arrow-btn" type="button" data-scroll="right" data-target="popularRow" aria-label="Scroll right">&#8594;</button>
           </div>
         </div>
-        <div class="product-row" id="popularRow"><!-- filled by JS --></div>
+        <div class="product-row" id="popularRow">
+          <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+          <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+          <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+          <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+        </div>
       </div>
     </section>
 
