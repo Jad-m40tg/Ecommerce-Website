@@ -281,28 +281,32 @@
       var totalRevenue = 0, totalOrders = 0;
       var recentOrders = [];
 
-      apiFetch('/api/orders').then(function (data) {
-        var orders = data.orders || data || [];
-        totalOrders = orders.length;
-        document.getElementById('statOrders').textContent = totalOrders.toLocaleString();
-
-        var delivered = orders.filter(function (o) { return o.order_status === 'delivered'; });
-        totalRevenue = delivered.reduce(function (s, o) { return s + (o.total_cents || 0); }, 0);
+      apiFetch('/api/analytics/overview').then(function (data) {
+        var stats = data || {};
+        totalRevenue = stats.total_revenue_cents || 0;
+        totalOrders = stats.total_orders || 0;
         document.getElementById('statRevenue').textContent = price(totalRevenue);
+        document.getElementById('statOrders').textContent = totalOrders.toLocaleString();
+        document.getElementById('statProducts').textContent = (stats.total_products || 0).toLocaleString();
+        document.getElementById('statRevenueDelta').textContent = (stats.total_customers || 0) + ' customers';
+      }).catch(function () {
+        apiFetch('/api/orders?limit=9999').then(function (data) {
+          var orders = data.orders || data || [];
+          totalOrders = orders.length;
+          document.getElementById('statOrders').textContent = totalOrders.toLocaleString();
+          var delivered = orders.filter(function (o) { return o.order_status === 'delivered'; });
+          totalRevenue = delivered.reduce(function (s, o) { return s + (o.total_cents || 0); }, 0);
+          document.getElementById('statRevenue').textContent = price(totalRevenue);
+        }).catch(function () {});
+      });
 
-        var pending = orders.filter(function (o) { return o.order_status === 'pending'; }).length;
-        document.getElementById('statRevenueDelta').textContent = delivered.length + ' delivered · ' + pending + ' pending';
-
+      apiFetch('/api/orders?limit=9999').then(function (data) {
+        var orders = data.orders || data || [];
         recentOrders = orders.slice(0, 5);
         renderRecentOrders();
       }).catch(function () {
         document.getElementById('recentOrdersBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--gray)">Unable to load orders</td></tr>';
       });
-
-      apiFetch('/api/products').then(function (data) {
-        var products = data.products || data || [];
-        document.getElementById('statProducts').textContent = products.length.toLocaleString();
-      }).catch(function (err) { console.error(err); });
 
       function renderRecentOrders() {
         var tbody = document.getElementById('recentOrdersBody');

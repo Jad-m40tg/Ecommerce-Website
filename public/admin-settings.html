@@ -53,7 +53,7 @@
       <header class="topbar">
         <div class="top-actions">
           <button class="icon-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot"></span></button>
-          <a href="admin-profile.html" class="admin-chip"><div class="avatar">EM</div><div class="who"><strong>Admin</strong><span>Store admin</span></div></a>
+          <a href="admin-profile.html" class="admin-chip"><div class="avatar">EM</div><div class="who"><strong id="adminName">Admin</strong><span>Store admin</span></div></a>
         </div>
       </header>
 
@@ -110,16 +110,18 @@
 
       document.getElementById('logoutBtn').addEventListener('click', function (e) { e.preventDefault(); apiFetch('/api/auth/logout', { method: 'POST' }).catch(function (err) { console.error(err); }); localStorage.removeItem('admin_token'); window.location.href = 'admin-login.html'; });
 
+      apiFetch('/api/auth/me').then(function (data) { var u = data.user || data; if (u && u.name) { var el = document.getElementById('adminName'); if (el) el.textContent = u.name.split(' ')[0]; } }).catch(function () {});
+
       apiFetch('/api/settings').then(function (data) {
         var s = data.settings || data || {};
         if (s.store_name) document.getElementById('storeName').value = s.store_name;
-        if (s.store_email) document.getElementById('storeEmail').value = s.store_email;
-        if (s.store_phone) document.getElementById('storePhone').value = s.store_phone;
+        if (s.contact_email) document.getElementById('storeEmail').value = s.contact_email;
+        if (s.contact_phone) document.getElementById('storePhone').value = s.contact_phone;
         if (s.store_address) document.getElementById('storeAddress').value = s.store_address;
         if (s.currency) document.getElementById('currency').value = s.currency;
         if (s.language) document.getElementById('language').value = s.language;
-        if (s.shipping_cost) document.getElementById('shipCost').value = s.shipping_cost;
-        if (s.free_shipping_over) document.getElementById('freeOver').value = s.free_shipping_over;
+        if (s.delivery_fee_cents != null) document.getElementById('shipCost').value = (s.delivery_fee_cents / 100).toFixed(2);
+        if (s.free_delivery_threshold_cents != null) document.getElementById('freeOver').value = (s.free_delivery_threshold_cents / 100).toFixed(2);
       }).catch(function (err) { console.error(err); showToast('Failed to load settings'); });
 
       document.getElementById('darkToggle').addEventListener('change', function (e) {
@@ -135,13 +137,13 @@
         saveBtn.disabled = true;
         var body = {
           store_name: document.getElementById('storeName').value.trim(),
-          store_email: document.getElementById('storeEmail').value.trim(),
-          store_phone: document.getElementById('storePhone').value.trim(),
+          contact_email: document.getElementById('storeEmail').value.trim(),
+          contact_phone: document.getElementById('storePhone').value.trim(),
           store_address: document.getElementById('storeAddress').value.trim(),
           currency: document.getElementById('currency').value,
           language: document.getElementById('language').value,
-          shipping_cost: parseFloat(document.getElementById('shipCost').value) || 0,
-          free_shipping_over: parseFloat(document.getElementById('freeOver').value) || 0
+          delivery_fee_cents: Math.round((parseFloat(document.getElementById('shipCost').value) || 0) * 100),
+          free_delivery_threshold_cents: Math.round((parseFloat(document.getElementById('freeOver').value) || 0) * 100)
         };
         apiFetch('/api/settings', { method: 'PUT', body: JSON.stringify(body) })
           .then(function () { showToast('Settings saved'); })

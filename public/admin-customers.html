@@ -49,7 +49,7 @@
       <header class="topbar">
         <div class="top-actions">
           <button class="icon-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot"></span></button>
-          <div class="admin-chip"><div class="avatar">EM</div><div class="who"><strong>Admin</strong><span>Store admin</span></div></div>
+          <div class="admin-chip"><div class="avatar">EM</div><div class="who"><strong id="adminName">Admin</strong><span>Store admin</span></div></div>
         </div>
       </header>
 
@@ -85,9 +85,11 @@
 
       document.getElementById('logoutBtn').addEventListener('click', function (e) { e.preventDefault(); apiFetch('/api/auth/logout', { method: 'POST' }).catch(function (err) { console.error(err); }); localStorage.removeItem('admin_token'); window.location.href = 'admin-login.html'; });
 
+      apiFetch('/api/auth/me').then(function (data) { var u = data.user || data; if (u && u.name) { var el = document.getElementById('adminName'); if (el) el.textContent = u.name.split(' ')[0]; } }).catch(function () {});
+
       var CUSTOMERS = [];
 
-      apiFetch('/api/customers').then(function (data) {
+      apiFetch('/api/customers?limit=9999').then(function (data) {
         CUSTOMERS = (data.customers || data || []).map(function (c) {
           return {
             name: c.customer_name || '',
@@ -107,7 +109,7 @@
       var PER_PAGE = 8;
       var state = { search: '', sort: 'recent', page: 1 };
 
-      function initials(name) { return name.split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase(); }
+      function initials(name) { if (!name) return '??'; return name.split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase(); }
       function svg(paths) { return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>'; }
 
       function getSorted() {

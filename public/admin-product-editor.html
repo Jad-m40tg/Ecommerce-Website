@@ -90,7 +90,7 @@
       <header class="topbar">
         <div class="top-actions">
           <button class="icon-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot"></span></button>
-          <div class="admin-chip"><div class="avatar">EM</div><div class="who"><strong>Admin</strong><span>Store admin</span></div></div>
+          <div class="admin-chip"><div class="avatar">EM</div><div class="who"><strong id="adminName">Admin</strong><span>Store admin</span></div></div>
         </div>
       </header>
 
@@ -149,6 +149,8 @@
 
       document.getElementById('logoutBtn').addEventListener('click', function (e) { e.preventDefault(); localStorage.removeItem('admin_token'); window.location.href = 'admin-login.html'; });
 
+      apiFetch('/api/auth/me').then(function (data) { var u = data.user || data; if (u && u.name) { var el = document.getElementById('adminName'); if (el) el.textContent = u.name.split(' ')[0]; } }).catch(function () {});
+
       var params = new URLSearchParams(window.location.search);
       var editId = params.get('id');
       var imageUrls = [];
@@ -162,7 +164,7 @@
       apiFetch('/api/categories').then(function (data) {
         var cats = data.categories || data || [];
         var sel = document.getElementById('pCategory');
-        sel.innerHTML = '<option value="">Select category</option>' + cats.map(function (c) { return '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>'; }).join('');
+        sel.innerHTML = '<option value="">Select category</option>' + cats.map(function (c) { return '<option value="' + escapeHtml(c.slug || c.name) + '">' + escapeHtml(c.name) + '</option>'; }).join('');
         if (editId) loadProduct();
       }).catch(function () { if (editId) loadProduct(); });
 
@@ -176,7 +178,7 @@
           document.getElementById('pStatus').value = p.status || 'active';
           document.getElementById('pSizes').value = (Array.isArray(p.sizes) ? p.sizes : typeof p.sizes === 'string' ? JSON.parse(p.sizes || '[]') : []).join(', ');
           document.getElementById('pColors').value = (Array.isArray(p.colors) ? p.colors : typeof p.colors === 'string' ? JSON.parse(p.colors || '[]') : []).join(', ');
-          if (p.category_id) document.getElementById('pCategory').value = p.category_id;
+          if (p.category) document.getElementById('pCategory').value = p.category;
           imageUrls = Array.isArray(p.images) ? p.images : typeof p.images === 'string' ? JSON.parse(p.images || '[]') : [];
           renderImages();
         }).catch(function () { showToast('Failed to load product'); });
@@ -223,7 +225,7 @@
           name: name,
           price_cents: price,
           stock: parseInt(document.getElementById('pStock').value, 10) || 0,
-          category_id: document.getElementById('pCategory').value || null,
+          category: document.getElementById('pCategory').value || null,
           status: document.getElementById('pStatus').value,
           description: document.getElementById('pDesc').value.trim(),
           sizes: document.getElementById('pSizes').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean),

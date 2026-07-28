@@ -53,7 +53,7 @@
       <header class="topbar">
         <div class="top-actions">
           <button class="icon-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot"></span></button>
-          <div class="admin-chip"><div class="avatar">EM</div><div class="who"><strong>Admin</strong><span>Store admin</span></div></div>
+          <div class="admin-chip"><div class="avatar">EM</div><div class="who"><strong id="adminName">Admin</strong><span>Store admin</span></div></div>
         </div>
       </header>
 
@@ -98,42 +98,49 @@
 
       document.getElementById('logoutBtn').addEventListener('click', function (e) { e.preventDefault(); apiFetch('/api/auth/logout', { method: 'POST' }).catch(function (err) { console.error(err); }); localStorage.removeItem('admin_token'); window.location.href = 'admin-login.html'; });
 
+      apiFetch('/api/auth/me').then(function (data) { var u = data.user || data; if (u && u.name) { var el = document.getElementById('adminName'); if (el) el.textContent = u.name.split(' ')[0]; } }).catch(function () {});
+
       var allOrders = [], allProducts = [];
+      var revenueChart = null;
+      var currentPeriod = 'daily';
 
-      Promise.all([apiFetch('/api/orders'), apiFetch('/api/products')])
-        .then(function (results) {
-          allOrders = results[0].orders || results[0] || [];
-          allProducts = results[1].products || results[1] || [];
-          computeStats();
-          renderCharts();
-          renderTop();
-        })
-        .catch(function (err) { console.error(err); });
-
-      function computeStats() {
-        var totalRev = 0;
-        allOrders.forEach(function (o) { totalRev += (o.total_cents || 0); });
-        document.getElementById('aRevenue').textContent = '$' + (totalRev / 100).toLocaleString('en-US', { maximumFractionDigits: 0 });
-        document.getElementById('aOrders').textContent = allOrders.length.toLocaleString();
-        document.getElementById('aProducts').textContent = allProducts.length.toLocaleString();
-        if (allOrders.length) {
-          var aov = totalRev / allOrders.length / 100;
+      function loadAnalytics(period) {
+        currentPeriod = period || 'daily';
+        Promise.all([
+          apiFetch('/api/analytics/overview'),
+          apiFetch('/api/analytics/revenue?period=' + currentPeriod),
+          apiFetch('/api/analytics/top-products?limit=10')
+        ]).then(function (results) {
+          var overview = results[0];
+          var revenueData = results[1];
+          var topProducts = results[2];
+          document.getElementById('aRevenue').textContent = '$' + ((overview.total_revenue_cents || 0) / 100).toLocaleString('en-US', { maximumFractionDigits: 0 });
+          document.getElementById('aOrders').textContent = (overview.total_orders || 0).toLocaleString();
+          document.getElementById('aProducts').textContent = (overview.total_products || 0).toLocaleString();
+          var aov = overview.total_orders ? ((overview.total_revenue_cents || 0) / overview.total_orders / 100) : 0;
           document.getElementById('aAOV').textContent = '$' + aov.toFixed(2);
-        }
-        var delivered = allOrders.filter(function (o) { return o.order_status === 'delivered'; }).length;
-        var pending = allOrders.filter(function (o) { return o.order_status === 'pending'; }).length;
-        document.getElementById('aRevenueD').textContent = delivered + ' delivered · ' + pending + ' pending';
-        document.getElementById('aOrdersD').textContent = allOrders.length + ' total orders';
+          document.getElementById('aRevenueD').textContent = 'Paid orders only';
+          document.getElementById('aOrdersD').textContent = overview.total_orders + ' total orders';
+          renderRevenueChart(revenueData.data || []);
+          renderTopProducts(topProducts.data || []);
+        }).catch(function (err) { console.error(err); });
+
+        apiFetch('/api/orders?limit=9999').then(function (data) {
+          allOrders = data.orders || data || [];
+          renderStatusChart();
+        }).catch(function () {});
       }
 
-      function renderCharts() {
-        var weekLabels = ['W-8','W-7','W-6','W-5','W-4','W-3','W-2','Last'];
-        var weekValues = [4200, 5800, 6100, 5400, 7200, 8100, 7600, 9200];
+      function renderRevenueChart(data) {
+        var labels = data.map(function (d) { return d.period; });
+        var values = data.map(function (d) { return (d.revenue_cents || 0) / 100; });
         var ctx1 = document.getElementById('revenueChart');
-        if (ctx1) {
-          new Chart(ctx1, { type: 'bar', data: { labels: weekLabels, datasets: [{ label: 'Revenue', data: weekValues, backgroundColor: 'rgba(107,127,94,0.7)', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' }, ticks: { callback: function (v) { return '$' + (v / 1000).toFixed(0) + 'k'; } } }, x: { grid: { display: false } } } } });
-        }
+        if (!ctx1) return;
+        if (revenueChart) revenueChart.destroy();
+        revenueChart = new Chart(ctx1, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Revenue', data: values, backgroundColor: 'rgba(107,127,94,0.7)', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' }, ticks: { callback: function (v) { return '$' + (v / 1000).toFixed(0) + 'k'; } } }, x: { grid: { display: false } } } } });
+      }
 
+      function renderStatusChart() {
         var statusCounts = {};
         allOrders.forEach(function (o) { var s = o.order_status || 'pending'; statusCounts[s] = (statusCounts[s] || 0) + 1; });
         var sLabels = Object.keys(statusCounts); var sValues = Object.values(statusCounts);
@@ -144,23 +151,13 @@
         }
       }
 
-      function renderTop() {
-        var productRevenue = {};
-        allOrders.forEach(function (o) {
-          var items = o.items ? (typeof o.items === 'string' ? JSON.parse(o.items) : o.items) : [];
-          items.forEach(function (item) {
-            var name = item.name || item.product_name || 'Unknown';
-            productRevenue[name] = (productRevenue[name] || 0) + (item.price_cents || item.price || 0) * (item.quantity || 1);
-          });
-        });
-        var sorted = Object.entries(productRevenue).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 6);
-        var max = sorted.length ? sorted[0][1] : 1;
+      function renderTopProducts(products) {
+        var max = products.length ? products[0].total_revenue_cents || 1 : 1;
         var list = document.getElementById('topList');
-        list.innerHTML = sorted.map(function (entry, i) {
-          var pct = (entry[1] / max * 100).toFixed(1);
-          return '<li class="top-item"><div class="top-row"><span class="name"><span class="rank">' + (i + 1) + '</span> ' + escapeHtml(entry[0]) + '</span><span class="value"><strong>$' + (entry[1] / 100).toLocaleString('en-US', { maximumFractionDigits: 0 }) + '</strong> revenue</span></div><div class="bar-track"><div class="bar-fill" data-pct="' + pct + '"></div></div></li>';
+        list.innerHTML = products.map(function (p, i) {
+          var pct = ((p.total_revenue_cents || 0) / max * 100).toFixed(1);
+          return '<li class="top-item"><div class="top-row"><span class="name"><span class="rank">' + (i + 1) + '</span> ' + escapeHtml(p.name || 'Unknown') + '</span><span class="value"><strong>$' + ((p.total_revenue_cents || 0) / 100).toLocaleString('en-US', { maximumFractionDigits: 0 }) + '</strong> revenue</span></div><div class="bar-track"><div class="bar-fill" data-pct="' + pct + '"></div></div></li>';
         }).join('') || '<li style="text-align:center;padding:24px;color:var(--gray)">No order data yet</li>';
-
         requestAnimationFrame(function () {
           setTimeout(function () {
             list.querySelectorAll('.bar-fill').forEach(function (el, i) {
@@ -174,8 +171,13 @@
         btn.addEventListener('click', function () {
           document.querySelectorAll('.range button').forEach(function (b) { b.classList.remove('active'); });
           btn.classList.add('active');
+          var periodMap = { '7D': 'daily', '30D': 'daily', '90D': 'weekly', '1Y': 'monthly' };
+          var period = periodMap[btn.textContent.trim()] || 'daily';
+          loadAnalytics(period);
         });
       });
+
+      loadAnalytics('daily');
     })();
   </script>
 </body>
