@@ -121,6 +121,37 @@
     </section>
 
     <!-- ==========================================================
+         REVIEWS SECTION — below order form, above related/footer
+         ========================================================== -->
+    <section class="reviews-section" id="reviewsSection">
+      <div class="container">
+        <h2>Customer Reviews</h2>
+        <div class="review-form-card">
+          <div class="form-group">
+            <label>Your Rating</label>
+            <div class="star-picker" id="starPicker" data-selected="5">
+              <button type="button" data-star="1" aria-label="1 star">&#9733;</button>
+              <button type="button" data-star="2" aria-label="2 stars">&#9733;</button>
+              <button type="button" data-star="3" aria-label="3 stars">&#9733;</button>
+              <button type="button" data-star="4" aria-label="4 stars">&#9733;</button>
+              <button type="button" data-star="5" aria-label="5 stars">&#9733;</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="reviewName">Your Name</label>
+            <input type="text" id="reviewName" placeholder="Your name" />
+          </div>
+          <div class="form-group">
+            <label for="reviewText">Your Review</label>
+            <textarea id="reviewText" placeholder="Share your thoughts about this product&hellip;"></textarea>
+          </div>
+          <button type="button" class="btn btn-primary" id="submitReviewBtn">Submit Review</button>
+        </div>
+        <div id="reviewsList"><div class="reviews-empty">Loading reviews...</div></div>
+      </div>
+    </section>
+
+    <!-- ==========================================================
          RELATED PRODUCTS
          ========================================================== -->
     <section class="section" id="relatedSection" style="display: none;">

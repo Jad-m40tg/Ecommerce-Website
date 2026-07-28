@@ -16,10 +16,8 @@
    2. PRODUCT DETAIL LAYOUT
    ============================================================ */
 .product-detail {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 56px;
-  align-items: start;
+  max-width: 720px;
+  margin: 0 auto;
   padding: 36px 0 20px;
 }
 

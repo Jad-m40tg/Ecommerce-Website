@@ -190,6 +190,8 @@ function fetchReviewsAndRender(product) {
       currentReviews = data.reviews || [];
       renderProduct(product);
       renderRelated(product);
+      var list = document.getElementById('reviewsList');
+      if (list) list.innerHTML = renderReviews(product.id);
       wireUpReviewDeleteButtons();
       wireUpViewAllButton();
       observeReveals();
@@ -199,6 +201,8 @@ function fetchReviewsAndRender(product) {
       currentReviews = [];
       renderProduct(product);
       renderRelated(product);
+      var list = document.getElementById('reviewsList');
+      if (list) list.innerHTML = renderReviews(product ? product.id : 0);
       observeReveals();
     });
 }
@@ -326,68 +330,40 @@ function renderProduct(p) {
   document.getElementById('productRoot').innerHTML =
     '<div class="product-detail">' +
 
+      /* 1. IMAGES — full width */
       '<div class="reveal">' +
         '<div class="gallery-main">' +
           badgeHTML +
           '<img id="galleryMainImg" src="' + p.image + '" alt="' + escapeHtml(p.name) + '" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" />' +
         '</div>' +
         '<div class="gallery-thumbs">' + thumbs + '</div>' +
-
-        '<div class="reviews-section" id="reviewsSection">' +
-          '<h2>Customer Reviews</h2>' +
-          '<div class="review-form-card">' +
-            '<div class="form-group">' +
-              '<label>Your Rating</label>' +
-              '<div class="star-picker" id="starPicker" data-selected="5">' +
-                '<button type="button" data-star="1" aria-label="1 star">&#9733;</button>' +
-                '<button type="button" data-star="2" aria-label="2 stars">&#9733;</button>' +
-                '<button type="button" data-star="3" aria-label="3 stars">&#9733;</button>' +
-                '<button type="button" data-star="4" aria-label="4 stars">&#9733;</button>' +
-                '<button type="button" data-star="5" aria-label="5 stars">&#9733;</button>' +
-              '</div>' +
-            '</div>' +
-            '<div class="form-group">' +
-              '<label for="reviewName">Your Name</label>' +
-              '<input type="text" id="reviewName" placeholder="Your name" />' +
-            '</div>' +
-            '<div class="form-group">' +
-              '<label for="reviewText">Your Review</label>' +
-              '<textarea id="reviewText" placeholder="Share your thoughts about this product&hellip;"></textarea>' +
-            '</div>' +
-            '<button type="button" class="btn btn-primary" id="submitReviewBtn">Submit Review</button>' +
-          '</div>' +
-          '<div id="reviewsList">' + reviewsHTML + '</div>' +
-        '</div>' +
       '</div>' +
 
+      /* 2. NAME + RATING + PRICE */
       '<div class="product-info reveal">' +
         '<div class="info-category">' + escapeHtml(catLabel) + '</div>' +
         '<h1>' + escapeHtml(p.name) + '</h1>' +
-
         '<div class="info-rating">' +
           '<span class="stars">' + stars + '</span>' +
           '<small>' + avgRating + ' &middot; ' + reviewCount + ' review' + (reviewCount !== 1 ? 's' : '') + '</small>' +
         '</div>' +
-
         '<div class="info-price">' +
           '<span class="price">' + price(p.price_cents) + '</span>' +
-          oldPriceHTML +
-          saveHTML +
+          oldPriceHTML + saveHTML +
         '</div>' +
         stockHTML +
+      '</div>' +
 
-        '<p class="info-desc">' + escapeHtml(description) + '</p>' +
-
+      /* 3. OPTIONS — colors, sizes, quantity */
+      '<div class="product-info reveal">' +
         '<div class="option-block">' +
           '<label>Color <span>&mdash; <b id="selectedColor">' + escapeHtml(selection.color) + '</b></span></label>' +
           '<div class="swatches" id="swatchList">' + swatches + '</div>' +
         '</div>' +
-
         '<div class="option-block">' +
           '<label>Size <span>&mdash; <b id="selectedSize">' + escapeHtml(selection.size) + '</b></span></label>' +
           '<div class="size-list" id="sizeList">' + sizePills + '</div>' +
         '</div>' +
-
         '<div class="option-block">' +
           '<label>Quantity</label>' +
           '<div class="buy-row">' +
@@ -400,13 +376,10 @@ function renderProduct(p) {
             '<button type="button" class="btn-icon" id="wishlistBtn" aria-label="Add to wishlist" title="Add to wishlist"><span class="material-symbols-outlined">favorite_border</span></button>' +
           '</div>' +
         '</div>' +
+      '</div>' +
 
-        '<div class="perks">' +
-          '<div><b>Free Delivery</b>On orders over $500</div>' +
-          '<div><b>10-Year Warranty</b>On every frame</div>' +
-          '<div><b>30-Day Returns</b>Hassle-free</div>' +
-        '</div>' +
-
+      /* 4. DESCRIPTION / SPECS / SHIPPING TABS */
+      '<div class="product-info reveal">' +
         '<div class="tabs">' +
           '<div class="tab-nav" role="tablist">' +
             '<button type="button" class="active" data-tab="desc" role="tab">Description</button>' +
@@ -434,7 +407,13 @@ function renderProduct(p) {
             '</div>' +
           '</div>' +
         '</div>' +
+        '<div class="perks">' +
+          '<div><b>Free Delivery</b>On orders over $500</div>' +
+          '<div><b>10-Year Warranty</b>On every frame</div>' +
+          '<div><b>30-Day Returns</b>Hassle-free</div>' +
+        '</div>' +
       '</div>' +
+
     '</div>';
 
   wireUpDetail(p, colors);
