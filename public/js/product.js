@@ -208,7 +208,7 @@ function renderReviews(productId) {
   if (currentReviews.length === 0) {
     return '<div class="reviews-empty">No reviews yet. Be the first to share your thoughts!</div>';
   }
-  return currentReviews.map(function (review) {
+  var cards = currentReviews.map(function (review) {
     var stars = '';
     for (var i = 0; i < 5; i++) {
       stars += i < review.rating ? '&#9733;' : '&#9734;';
@@ -222,6 +222,13 @@ function renderReviews(productId) {
       '<p class="review-text">' + escapeHtml(review.comment) + '</p>' +
     '</div>';
   }).join('');
+  var wrap = '<div class="reviews-scroll-wrap">';
+  wrap += '<div class="reviews-scroll-inner">' + cards + '</div>';
+  if (currentReviews.length > 3) {
+    wrap += '<div class="reviews-scroll-fade"></div>';
+  }
+  wrap += '</div>';
+  return wrap;
 }
 
 function wireUpReviewDeleteButtons() {
@@ -494,13 +501,24 @@ function wireUpDetail(p, colors) {
   var wishBtn = document.getElementById('wishlistBtn');
   var wished = false;
   if (wishBtn) {
+    var wishList = JSON.parse(localStorage.getItem('havenwood_wishlist') || '[]');
+    wished = wishList.some(function (w) { return String(w.id) === String(p.id); });
+    if (wished) {
+      wishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24">favorite</span>';
+      wishBtn.style.color = 'var(--wood)';
+      wishBtn.style.borderColor = 'var(--wood)';
+    }
     wishBtn.addEventListener('click', function () {
       wished = !wished;
-      wishBtn.innerHTML = '<span class="material-symbols-outlined">' + (wished ? 'favorite' : 'favorite_border') + '</span>';
+      wishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'' + (wished ? 'FILL\' 1' : 'FILL\' 0') + ',\'wght\' 400,\'GRAD\' 0,\'opsz\' 24">' + (wished ? 'favorite' : 'favorite_border') + '</span>';
       wishBtn.style.color = wished ? 'var(--wood)' : '';
       wishBtn.style.borderColor = wished ? 'var(--wood)' : '';
-      var icon = wishBtn.querySelector('.material-symbols-outlined');
-      if (icon) icon.style.fontVariationSettings = wished ? "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" : "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24";
+      if (wished) {
+        wishList.push({ id: p.id, name: p.name, price_cents: p.price_cents, image: p.image || (p.images && p.images[0]) || '' });
+      } else {
+        wishList = wishList.filter(function (w) { return String(w.id) !== String(p.id); });
+      }
+      localStorage.setItem('havenwood_wishlist', JSON.stringify(wishList));
       showToast(wished ? 'Added to wishlist' : 'Removed from wishlist');
     });
   }

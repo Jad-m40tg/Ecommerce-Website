@@ -1,5 +1,5 @@
 /* ============================================================
-   FOOTER — Three-column layout, identical across all pages
+   FOOTER — Four-column layout, identical across all pages
    ============================================================ */
 .footer {
   background: var(--charcoal);
@@ -10,7 +10,7 @@
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
   gap: 40px;
   padding-bottom: 48px;
 }
@@ -31,6 +31,8 @@
 .footer ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 .footer ul a { font-size: 14.5px; transition: color 0.25s ease; }
 .footer ul a:hover { color: var(--wood); }
+.footer ul li { display: flex; align-items: flex-start; gap: 8px; font-size: 14.5px; line-height: 1.5; }
+.footer ul li svg { flex-shrink: 0; margin-top: 2px; }
 
 .footer-bottom {
   border-top: 1px solid rgba(255, 253, 249, 0.12);

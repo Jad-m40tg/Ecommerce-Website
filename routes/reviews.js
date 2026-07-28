@@ -1,6 +1,6 @@
 // routes/reviews.js — Public review system for products.
 // GET /api/reviews?product_id=X — list reviews for a product
-// POST /api/reviews — create a review (rate limited: 5 per IP per hour)
+// POST /api/reviews — create a review
 // DELETE /api/reviews/:id — admin only, deletes a review
 
 const express = require('express');
@@ -8,26 +8,6 @@ const db = require('../db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
-
-// In-memory rate limit tracker: { ip: [timestamp, ...] }
-const reviewRateLimit = {};
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
-
-function isRateLimited(ip) {
-  const now = Date.now();
-  if (!reviewRateLimit[ip]) reviewRateLimit[ip] = [];
-  // Remove timestamps outside the window
-  reviewRateLimit[ip] = reviewRateLimit[ip].filter(t => now - t < RATE_LIMIT_WINDOW);
-  // Clean up empty entries to prevent memory leak
-  if (reviewRateLimit[ip].length === 0) {
-    delete reviewRateLimit[ip];
-    reviewRateLimit[ip] = [];
-  }
-  if (reviewRateLimit[ip].length >= RATE_LIMIT_MAX) return true;
-  reviewRateLimit[ip].push(now);
-  return false;
-}
 
 // GET /api/reviews?product_id=X — public
 router.get('/', (req, res) => {
@@ -44,12 +24,8 @@ router.get('/', (req, res) => {
   res.json({ reviews, total: reviews.length });
 });
 
-// POST /api/reviews — public, rate limited
+// POST /api/reviews — public
 router.post('/', (req, res) => {
-  const ip = req.ip || req.connection.remoteAddress || 'unknown';
-  if (isRateLimited(ip)) {
-    return res.status(429).json({ error: 'Too many reviews. Please try again later.' });
-  }
 
   const { product_id, customer_name, rating, comment } = req.body;
 

@@ -55,7 +55,6 @@ function addToCart(qty, color, size) {
 
 /* ---------- 3. REVIEWS ---------- */
 var allReviews = [];
-var REVIEWS_VISIBLE_INITIAL = 3;
 
 function fetchReviews(productId, callback) {
   fetch('/api/reviews?product_id=' + encodeURIComponent(productId))
@@ -116,16 +115,16 @@ function renderReviewsIntoPage() {
     listEl.innerHTML = '<div class="reviews-empty">No reviews yet. Be the first to share your thoughts!</div>';
     return;
   }
-  var html = '';
-  var toShow = allReviews.slice(0, REVIEWS_VISIBLE_INITIAL);
-  html += toShow.map(renderSingleReview).join('');
-  if (allReviews.length > REVIEWS_VISIBLE_INITIAL) {
-    html += '<button type="button" class="btn btn-outline" id="viewAllReviewsBtn" style="width:100%;margin-top:10px;font-size:13px;padding:10px 20px;">View all ' + allReviews.length + ' comments</button>';
-    html += '<div id="extraReviews" style="display:none;">' + allReviews.slice(REVIEWS_VISIBLE_INITIAL).map(renderSingleReview).join('') + '</div>';
+  var html = '<div class="reviews-scroll-wrap">';
+  html += '<div class="reviews-scroll-inner">';
+  html += allReviews.map(renderSingleReview).join('');
+  html += '</div>';
+  if (allReviews.length > 3) {
+    html += '<div class="reviews-scroll-fade"></div>';
   }
+  html += '</div>';
   listEl.innerHTML = html;
   wireUpReviewDeleteButtons();
-  wireUpViewAllButton();
 }
 
 function wireUpReviewDeleteButtons() {
@@ -134,19 +133,6 @@ function wireUpReviewDeleteButtons() {
       var id = parseInt(btn.getAttribute('data-delete-id'), 10);
       if (id) deleteReview(id);
     });
-  });
-}
-
-function wireUpViewAllButton() {
-  var viewAllBtn = document.getElementById('viewAllReviewsBtn');
-  if (!viewAllBtn) return;
-  viewAllBtn.addEventListener('click', function () {
-    var extra = document.getElementById('extraReviews');
-    if (extra) {
-      extra.style.display = 'block';
-      viewAllBtn.remove();
-      wireUpReviewDeleteButtons();
-    }
   });
 }
 
@@ -260,11 +246,24 @@ document.getElementById('addToCartBtn').addEventListener('click', function () {
 /* Wishlist toggle */
 var wishBtn = document.getElementById('wishlistBtn');
 var wished = false;
+var wishList = JSON.parse(localStorage.getItem('havenwood_wishlist') || '[]');
+wished = wishList.some(function (w) { return w.id === PRODUCT.id; });
+if (wished) {
+  wishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24">favorite</span>';
+  wishBtn.style.color = 'var(--wood)';
+  wishBtn.style.borderColor = 'var(--wood)';
+}
 wishBtn.addEventListener('click', function () {
   wished = !wished;
-  wishBtn.innerHTML = '<span class="material-symbols-outlined">' + (wished ? 'favorite' : 'favorite_border') + '</span>';
+  wishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'' + (wished ? 'FILL\' 1' : 'FILL\' 0') + ',\'wght\' 400,\'GRAD\' 0,\'opsz\' 24">' + (wished ? 'favorite' : 'favorite_border') + '</span>';
   wishBtn.style.color = wished ? 'var(--wood)' : '';
   wishBtn.style.borderColor = wished ? 'var(--wood)' : '';
+  if (wished) {
+    wishList.push({ id: PRODUCT.id, name: PRODUCT.name, price_cents: PRODUCT.price_cents, image: PRODUCT.image || (PRODUCT.images && PRODUCT.images[0]) || '' });
+  } else {
+    wishList = wishList.filter(function (w) { return w.id !== PRODUCT.id; });
+  }
+  localStorage.setItem('havenwood_wishlist', JSON.stringify(wishList));
   showToast(wished ? 'Added to wishlist' : 'Removed from wishlist');
 });
 

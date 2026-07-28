@@ -3,36 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Cart — Havenwood Modern Furniture &amp; Home Décor</title>
-  <meta name="description" content="Review the items in your Havenwood cart, adjust quantities, apply a promo code, and continue to secure checkout." />
-
-  <!-- Same font pairing as the rest of the site -->
+  <title>Wishlist — Havenwood Modern Furniture &amp; Home Décor</title>
+  <meta name="description" content="Your saved favorites from the Havenwood collection." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-
   <link rel="stylesheet" href="css/tokens.css" />
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/navbar.css" />
   <link rel="stylesheet" href="css/buttons.css" />
   <link rel="stylesheet" href="css/footer.css" />
-  <link rel="stylesheet" href="css/reveal.css" />
   <link rel="stylesheet" href="css/toast.css" />
-  <link rel="stylesheet" href="css/skeleton.css" />
   <link rel="stylesheet" href="css/shared-responsive.css" />
-  <link rel="stylesheet" href="css/cart.css" />
+  <style>
+    .wish-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; padding-bottom: 60px; }
+    .wish-card { background: var(--white); border: 1.5px solid var(--beige); border-radius: var(--radius-lg); overflow: hidden; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+    .wish-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lift); }
+    .wish-card .wish-img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+    .wish-card .wish-body { padding: 16px; }
+    .wish-card .wish-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .wish-card .wish-price { font-size: 15px; font-weight: 600; color: var(--wood); margin-bottom: 12px; }
+    .wish-card .wish-actions { display: flex; gap: 8px; }
+    .wish-card .wish-actions a { flex: 1; text-align: center; }
+    .wish-card .wish-actions button { flex: 1; }
+    .wish-empty { text-align: center; padding: 80px 20px; }
+    .wish-empty h2 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 8px; }
+    .wish-empty p { color: var(--gray); margin-bottom: 24px; }
+  </style>
 </head>
-
 <body>
-
-  <!-- ==========================================================
-       NAVBAR — same structure/markup as the homepage
-       ========================================================== -->
   <header class="navbar">
     <div class="container navbar-inner">
       <a href="althome.html" class="brand">Haven<span>wood</span></a>
-
       <nav aria-label="Main navigation">
         <ul class="nav-links" id="navLinks">
           <li><a href="althome.html">Home</a></li>
@@ -41,64 +44,33 @@
           <li><a href="offers.html">Offers</a></li>
         </ul>
       </nav>
-
       <div class="navbar-actions">
         <a href="search-results.html" class="nav-search" aria-label="Search products"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></a>
-        <a href="cart.html" class="cart-btn" aria-label="Shopping cart">
-          Cart <span class="cart-count" id="cartCount">0</span>
-        </a>
+        <a href="cart.html" class="cart-btn" aria-label="Shopping cart">Cart <span class="cart-count" id="cartCount">0</span></a>
         <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">&#9776;</button>
       </div>
     </div>
   </header>
 
   <main>
-
-    <!-- ==========================================================
-         BREADCRUMB
-         ========================================================== -->
     <div class="container">
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="althome.html">Home</a>
         <span class="sep">/</span>
-        <a href="products.html">Shop</a>
-        <span class="sep">/</span>
-        <span class="current">Cart</span>
+        <span class="current">Wishlist</span>
       </nav>
     </div>
 
-    <!-- ==========================================================
-         PAGE HEAD
-         ========================================================== -->
     <div class="container page-head">
-      <h1>Your Cart</h1>
-      <p id="pageSubtitle">Review your items before checkout.</p>
+      <h1>Your Wishlist</h1>
+      <p id="pageSubtitle">Items you've saved for later.</p>
     </div>
 
-    <!-- ==========================================================
-         CART LAYOUT
-         Items are rendered by JS into #cartItems.
-         Summary is rendered by JS into #summaryPanel.
-         ========================================================== -->
     <div class="container">
-      <div class="cart-layout">
-
-        <div class="cart-items reveal" id="cartItems">
-          <!-- Rendered by JS -->
-        </div>
-
-        <aside class="summary reveal" id="summaryPanel">
-          <!-- Rendered by JS -->
-        </aside>
-
-      </div>
+      <div id="wishGrid" class="wish-layout"></div>
     </div>
-
   </main>
 
-  <!-- ==========================================================
-       FOOTER (identical to sibling pages)
-       ========================================================== -->
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
@@ -138,7 +110,57 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="utils.js"></script>
-  <script src="js/cart.js"></script>
+  <script>
+    (function () {
+      function showToast(msg) {
+        var t = document.getElementById('toast');
+        if (t) { t.textContent = msg; t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 2200); }
+      }
+      function updateCartCount() {
+        var cart = JSON.parse(localStorage.getItem('havenwood_cart') || '[]');
+        var count = cart.reduce(function (s, item) { return s + (item.qty || 1); }, 0);
+        var el = document.getElementById('cartCount');
+        if (el) el.textContent = count;
+      }
+      updateCartCount();
+
+      var wishList = JSON.parse(localStorage.getItem('havenwood_wishlist') || '[]');
+      var grid = document.getElementById('wishGrid');
+
+      function renderWishlist() {
+        if (wishList.length === 0) {
+          grid.innerHTML = '<div class="wish-empty" style="grid-column:1/-1"><h2>Your wishlist is empty</h2><p>Browse our collection and save items you love.</p><a href="products.html" class="btn btn-primary">Browse Products</a></div>';
+          return;
+        }
+        grid.innerHTML = wishList.map(function (item) {
+          var img = item.image || 'images/placeholder.jpg';
+          var price = '$' + ((item.price_cents || 0) / 100).toLocaleString('en-US');
+          return '<div class="wish-card" data-wish-id="' + item.id + '">' +
+            '<img class="wish-img" src="' + img + '" alt="' + (item.name || 'Product') + '" onerror="this.src=\'images/placeholder.jpg\'" />' +
+            '<div class="wish-body">' +
+              '<div class="wish-name">' + (item.name || 'Product') + '</div>' +
+              '<div class="wish-price">' + price + '</div>' +
+              '<div class="wish-actions">' +
+                '<a href="product.html?id=' + encodeURIComponent(item.id) + '" class="btn btn-outline btn-sm">View</a>' +
+                '<button type="button" class="btn btn-sm btn-remove" data-remove="' + item.id + '">Remove</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        grid.querySelectorAll('[data-remove]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-remove');
+            wishList = wishList.filter(function (w) { return w.id !== id; });
+            localStorage.setItem('havenwood_wishlist', JSON.stringify(wishList));
+            renderWishlist();
+            showToast('Removed from wishlist');
+          });
+        });
+      }
+
+      renderWishlist();
+    })();
+  </script>
 </body>
 </html>

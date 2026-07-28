@@ -204,6 +204,20 @@
   background: var(--white); border: 1px dashed var(--beige); border-radius: var(--radius-lg);
 }
 
+.reviews-scroll-wrap { position: relative; max-height: 420px; overflow: hidden; }
+.reviews-scroll-inner {
+  max-height: 420px; overflow-y: auto; scroll-behavior: smooth;
+  scrollbar-width: thin; scrollbar-color: var(--beige) transparent;
+}
+.reviews-scroll-inner::-webkit-scrollbar { width: 6px; }
+.reviews-scroll-inner::-webkit-scrollbar-track { background: transparent; }
+.reviews-scroll-inner::-webkit-scrollbar-thumb { background: var(--beige); border-radius: 3px; }
+.reviews-scroll-fade {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 48px;
+  background: linear-gradient(transparent, var(--warm-white));
+  pointer-events: none;
+}
+
 /* ============================================================
    4. ORDER FORM SECTION
    ============================================================ */

@@ -56,7 +56,7 @@
     .search svg{position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--gray)}
     .search input{width:100%; padding:10px 14px 10px 40px; border:1.5px solid var(--beige); border-radius:var(--radius-pill); background:var(--white); font-size:14px; color:var(--charcoal); transition:border-color .2s ease, box-shadow .2s ease}
     .search input:focus{outline:none; border-color:var(--sage); box-shadow:0 0 0 4px rgba(107,127,94,.12)}
-    .top-actions{margin-left:auto; display:flex; align-items:center; gap:12px}
+    .top-actions{margin-left:auto; display:flex; align-items:center; gap:12px; position:relative}
     .icon-btn{position:relative; width:40px; height:40px; border-radius:var(--radius-pill); border:1.5px solid var(--beige); background:var(--white); color:var(--charcoal); display:grid; place-items:center; cursor:pointer; transition:background .2s ease, border-color .2s ease}
     .icon-btn:hover{background:var(--cream); border-color:var(--charcoal)}
     .icon-btn .dot{position:absolute; top:8px; right:9px; width:8px; height:8px; background:var(--wood); border-radius:50%; border:2px solid var(--white)}
@@ -65,6 +65,20 @@
     .admin-chip .avatar{width:32px; height:32px; border-radius:50%; background:var(--sage); color:var(--white); display:grid; place-items:center; font-weight:600; font-size:13px}
     .admin-chip .who strong{display:block; font-size:13.5px; color:var(--charcoal)}
     .admin-chip .who span{display:block; font-size:11.5px; color:var(--gray)}
+
+    .notif-panel{position:absolute; top:52px; right:0; width:320px; max-height:400px; background:var(--white); border:1.5px solid var(--beige); border-radius:var(--radius-lg); box-shadow:var(--shadow-lift); z-index:200; display:flex; flex-direction:column; overflow:hidden}
+    .notif-header{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--beige)}
+    .notif-header h4{font-size:14px; font-weight:600}
+    .notif-clear{background:none; border:none; font-size:12px; color:var(--gray); cursor:pointer; transition:color .2s}
+    .notif-clear:hover{color:var(--danger)}
+    .notif-body{overflow-y:auto; flex:1; max-height:320px}
+    .notif-item{display:flex; gap:10px; padding:12px 16px; border-bottom:1px solid var(--cream); font-size:13px; transition:background .15s}
+    .notif-item:hover{background:var(--cream)}
+    .notif-item .notif-icon{width:32px; height:32px; border-radius:50%; background:var(--cream); display:grid; place-items:center; flex-shrink:0; font-size:14px}
+    .notif-item .notif-text{flex:1; line-height:1.4}
+    .notif-item .notif-text strong{font-weight:600}
+    .notif-item .notif-time{font-size:11px; color:var(--gray); margin-top:2px}
+    .notif-empty{text-align:center; padding:28px 16px; color:var(--gray); font-size:13px}
 
     .content{padding:32px; display:flex; flex-direction:column; gap:28px}
     .page-head{display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap}
@@ -184,11 +198,15 @@
     <div class="main-col">
       <header class="topbar">
         <div class="top-actions">
-          <button class="icon-btn" aria-label="Notifications">
+          <button class="icon-btn" id="notifBtn" aria-label="Notifications">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-            <span class="dot"></span>
+            <span class="dot" id="notifDot"></span>
           </button>
-          <div class="admin-chip" role="button" tabindex="0" aria-label="Admin profile">
+          <div id="notifPanel" class="notif-panel" style="display:none;">
+            <div class="notif-header"><h4>Notifications</h4><button type="button" class="notif-clear" id="notifClear">Clear all</button></div>
+            <div class="notif-body" id="notifBody"><div class="notif-empty">No new notifications</div></div>
+          </div>
+          <div class="admin-chip" role="button" tabindex="0" aria-label="Admin profile" onclick="window.location.href='admin-profile.html'">
             <div class="avatar">EM</div>
             <div class="who">
               <strong id="adminName">Admin</strong>
@@ -277,6 +295,77 @@
         var user = data.user || data;
         if (user && user.name) document.getElementById('adminName').textContent = user.name.split(' ')[0];
       }).catch(function (err) { console.error(err); });
+
+      /* Notifications */
+      var notifPanel = document.getElementById('notifPanel');
+      var notifBtn = document.getElementById('notifBtn');
+      var notifBody = document.getElementById('notifBody');
+      var notifDot = document.getElementById('notifDot');
+      var notifClear = document.getElementById('notifClear');
+      var seenNotifs = JSON.parse(localStorage.getItem('seen_notifs') || '[]');
+
+      function timeAgo(dateStr) {
+        var diff = Date.now() - new Date(dateStr).getTime();
+        var mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'Just now';
+        if (mins < 60) return mins + 'm ago';
+        var hrs = Math.floor(mins / 60);
+        if (hrs < 24) return hrs + 'h ago';
+        return Math.floor(hrs / 24) + 'd ago';
+      }
+
+      function loadNotifications() {
+        apiFetch('/api/orders?limit=9999').then(function (data) {
+          var orders = data.orders || data || [];
+          var notifs = [];
+          orders.slice(0, 20).forEach(function (o) {
+            var key = 'order_' + o.id + '_' + o.order_status;
+            var icon = o.order_status === 'pending' ? '&#9888;' : o.order_status === 'shipped' ? '&#128666;' : '&#10003;';
+            notifs.push({ key: key, icon: icon, text: '<strong>#' + (o.id || '').toString().slice(0,8) + '</strong> ' + escapeHtml(o.customer_name || 'Customer') + ' — ' + (o.order_status || 'pending'), time: o.created_at });
+          });
+          var unseen = notifs.filter(function (n) { return seenNotifs.indexOf(n.key) === -1; });
+          if (unseen.length > 0) {
+            notifDot.style.display = 'block';
+          } else {
+            notifDot.style.display = 'none';
+          }
+          if (notifs.length === 0) {
+            notifBody.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+          } else {
+            notifBody.innerHTML = notifs.map(function (n) {
+              return '<div class="notif-item" data-key="' + n.key + '"><div class="notif-icon">' + n.icon + '</div><div><div class="notif-text">' + n.text + '</div><div class="notif-time">' + timeAgo(n.time) + '</div></div></div>';
+            }).join('');
+          }
+        }).catch(function () {});
+      }
+
+      notifBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var isOpen = notifPanel.style.display !== 'none';
+        notifPanel.style.display = isOpen ? 'none' : 'flex';
+        if (!isOpen) {
+          notifBody.querySelectorAll('.notif-item').forEach(function (item) {
+            var key = item.getAttribute('data-key');
+            if (seenNotifs.indexOf(key) === -1) seenNotifs.push(key);
+          });
+          localStorage.setItem('seen_notifs', JSON.stringify(seenNotifs));
+          notifDot.style.display = 'none';
+        }
+      });
+
+      notifClear.addEventListener('click', function () {
+        notifBody.querySelectorAll('.notif-item').forEach(function (item) {
+          var key = item.getAttribute('data-key');
+          if (seenNotifs.indexOf(key) === -1) seenNotifs.push(key);
+        });
+        localStorage.setItem('seen_notifs', JSON.stringify(seenNotifs));
+        notifDot.style.display = 'none';
+        notifBody.innerHTML = '<div class="notif-empty">No new notifications</div>';
+      });
+
+      document.addEventListener('click', function () { notifPanel.style.display = 'none'; });
+      notifPanel.addEventListener('click', function (e) { e.stopPropagation(); });
+      loadNotifications();
 
       var totalRevenue = 0, totalOrders = 0;
       var recentOrders = [];
