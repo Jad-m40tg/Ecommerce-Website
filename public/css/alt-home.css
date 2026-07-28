@@ -338,7 +338,7 @@
   .nav-links a { display: block; text-align: center; }
 
   .newsletter-form { flex-direction: column; }
-  .product-card { flex: 0 0 240px; }
+  .product-card { flex: 0 0 280px; }
   .row-arrows { display: none; }
 }
 

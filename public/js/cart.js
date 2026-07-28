@@ -97,7 +97,7 @@ function renderCart() {
     var line = (item.price_cents || 0) * item.qty;
 
     return (
-      '<article class="cart-item" data-index="' + index + '" data-id="' + item.id + '">' +
+      '<article class="cart-item" data-index="' + index + '" data-key="' + escapeHtml(item.key || '') + '">' +
         '<a href="product.html?id=' + item.id + '" class="item-media" aria-label="View ' + escapeHtml(item.name) + '">' +
           '<img src="' + item.image + '" alt="' + escapeHtml(item.name) + '" loading="lazy" onerror="handleImageError(this)" />' +
         '</a>' +
@@ -114,7 +114,7 @@ function renderCart() {
               '<input type="number" value="' + item.qty + '" min="1" max="99" data-action="set" data-index="' + index + '" aria-label="Quantity" />' +
               '<button type="button" data-action="inc" data-index="' + index + '" aria-label="Increase quantity">+</button>' +
             '</div>' +
-            '<button type="button" class="remove-btn" data-action="remove" data-index="' + index + '" data-id="' + item.id + '">&#10005; Remove</button>' +
+            '<button type="button" class="remove-btn" data-action="remove" data-index="' + index + '" data-key="' + escapeHtml(item.key || '') + '">&#10005; Remove</button>' +
           '</div>' +
         '</div>' +
 
@@ -201,12 +201,12 @@ document.getElementById('cartItems').addEventListener('click', function (event) 
     saveCart(cart); renderCart();
   } else if (action === 'remove') {
     var row = btn.closest('.cart-item');
-    var itemId = btn.getAttribute('data-id');
-    if (row && itemId) {
+    var itemKey = btn.getAttribute('data-key');
+    if (row && itemKey) {
       row.classList.add('removing');
       setTimeout(function () {
         var fresh = getCart();
-        var idx = fresh.findIndex(function (c) { return c.id === itemId; });
+        var idx = fresh.findIndex(function (c) { return c.key === itemKey; });
         if (idx !== -1) fresh.splice(idx, 1);
         saveCart(fresh);
         renderCart();

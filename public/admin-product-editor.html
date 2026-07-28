@@ -50,8 +50,14 @@
     .textarea{resize:vertical;min-height:90px;line-height:1.5}.input:focus,.textarea:focus,select.input:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 4px rgba(107,127,94,.12)}
     select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236f6a62' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
 
-    .img-grid{display:flex;flex-wrap:wrap;gap:10px}.img-preview{width:80px;height:80px;border-radius:var(--radius-md);background:var(--cream);overflow:hidden;position:relative}
-    .img-preview img{width:100%;height:100%;object-fit:cover}.img-preview .rm{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:var(--danger);color:var(--white);display:grid;place-items:center;font-size:14px;cursor:pointer;border:none;line-height:1}
+    .img-grid{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
+    .img-main{width:200px;height:200px;border-radius:var(--radius-md);overflow:hidden;position:relative;border:2px solid var(--sage)}
+    .img-main img{width:100%;height:100%;object-fit:cover}
+    .img-main .rm{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:var(--danger);color:var(--white);display:grid;place-items:center;font-size:16px;cursor:pointer;border:none;line-height:1}
+    .img-main .main-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:var(--white);font-size:11px;text-align:center;padding:4px 0;font-weight:600}
+    .img-thumbs{display:flex;flex-wrap:wrap;gap:8px}
+    .img-preview{width:72px;height:72px;border-radius:var(--radius-sm);background:var(--cream);overflow:hidden;position:relative;border:1.5px solid var(--beige)}
+    .img-preview img{width:100%;height:100%;object-fit:cover}.img-preview .rm{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:var(--white);display:grid;place-items:center;font-size:13px;cursor:pointer;border:none;line-height:1}
     .dropzone{border:2px dashed var(--beige);border-radius:var(--radius-md);padding:18px 20px;text-align:center;cursor:pointer;background:var(--warm-white);transition:border-color .2s ease,background .2s ease;flex:1;min-width:200px}
     .dropzone:hover,.dropzone.drag{border-color:var(--sage);background:var(--cream)}.dropzone p{font-size:13px;color:var(--gray)}.dropzone strong{color:var(--charcoal)}
 
@@ -186,7 +192,10 @@
 
       function renderImages() {
         var grid = document.getElementById('imgGrid');
-        grid.innerHTML = imageUrls.map(function (url, i) { return '<div class="img-preview"><img src="' + escapeHtml(url) + '" alt="Product image" /><button type="button" class="rm" data-idx="' + i + '">&times;</button></div>'; }).join('');
+        if (imageUrls.length === 0) { grid.innerHTML = ''; return; }
+        var main = '<div class="img-main"><img src="' + escapeHtml(imageUrls[0]) + '" alt="Main product image" /><button type="button" class="rm" data-idx="0" title="Remove main image">&times;</button><div class="main-label">Main Image</div></div>';
+        var thumbs = imageUrls.slice(1).map(function (url, i) { return '<div class="img-preview"><img src="' + escapeHtml(url) + '" alt="Product image ' + (i + 2) + '" /><button type="button" class="rm" data-idx="' + (i + 1) + '">&times;</button></div>'; }).join('');
+        grid.innerHTML = main + '<div class="img-thumbs">' + thumbs + '</div>';
       }
 
       document.getElementById('imgGrid').addEventListener('click', function (e) {

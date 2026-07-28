@@ -65,7 +65,6 @@ function getProductImage(product) {
   try { images = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []); }
   catch (e) { images = []; }
   if (images.length > 0 && images[0]) {
-    if (images[0].indexOf('/uploads/') === 0) return fallbackImage(product.category);
     return images[0];
   }
   return fallbackImage(product.category);
@@ -644,7 +643,34 @@ document.getElementById('orderForm').addEventListener('submit', function (event)
     if (error && !firstInvalid) firstInvalid = input;
   });
   if (firstInvalid) { firstInvalid.focus(); showToast('Please fix the highlighted fields'); return; }
-  openModal();
+
+  var btn = event.target.querySelector('[type="submit"], .btn-primary');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Processing\u2026'; }
+
+  fetch('/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      customer_name: document.getElementById('fName').value,
+      customer_email: document.getElementById('fEmail').value,
+      customer_phone: document.getElementById('fPhone').value,
+      customer_address: document.getElementById('fAddress').value,
+      customer_city: document.getElementById('fCity').value,
+      items: [{ product_id: currentProduct ? currentProduct.id : null, quantity: selection.qty }],
+      notes: (document.getElementById('fNotes') && document.getElementById('fNotes').value) || ''
+    })
+  }).then(function (r) {
+    return r.text().then(function (text) {
+      var body; try { body = JSON.parse(text); } catch (e) { body = { error: text || 'Empty response' }; }
+      if (!r.ok) throw new Error(body.error || 'Order failed');
+      return body;
+    });
+  }).then(function () {
+    openModal();
+  }).catch(function (err) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Confirm Order'; }
+    showToast(err.message || 'Failed to place order');
+  });
 });
 
 document.getElementById('modalCloseBtn').addEventListener('click', function () {

@@ -92,7 +92,7 @@
             <div class="switch-row"><div class="switch-label"><strong>Dark Mode</strong><span>Switch the admin interface to a dark theme</span></div><label class="switch"><input type="checkbox" id="darkToggle" /><span class="track"></span></label></div>
           </section>
 
-          <div class="save-bar"><span class="spacer"></span><button type="button" class="qa-btn" id="resetBtn">Reset</button><button type="submit" class="qa-btn primary">Save Settings</button></div>
+          <div class="save-bar"><span class="spacer"></span><button type="submit" class="qa-btn primary">Save Settings</button></div>
         </form>
       </main>
     </div>
@@ -133,6 +133,7 @@
 
       document.getElementById('settingsForm').addEventListener('submit', function (e) {
         e.preventDefault();
+        if (!confirm('Save these settings? They will be visible on the storefront.')) return;
         var saveBtn = this.querySelector('button[type="submit"]');
         saveBtn.disabled = true;
         var body = {
@@ -150,8 +151,6 @@
           .catch(function () { showToast('Failed to save settings'); })
           .finally(function () { saveBtn.disabled = false; });
       });
-
-      document.getElementById('resetBtn').addEventListener('click', function () { document.getElementById('settingsForm').reset(); showToast('Form reset'); });
     })();
   </script>
 </body>

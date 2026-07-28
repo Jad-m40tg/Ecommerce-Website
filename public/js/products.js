@@ -7,7 +7,6 @@ function getProductImage(product) {
   try {
     var imgs = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
     if (Array.isArray(imgs) && imgs.length && imgs[0]) {
-      if (imgs[0].indexOf('/uploads/') === 0) return '/assets/furn-sofa.png';
       return imgs[0];
     }
     return '/assets/furn-sofa.png';

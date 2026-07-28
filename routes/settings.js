@@ -11,11 +11,11 @@ const { JWT_SECRET } = require('../config');
 const router = express.Router();
 
 // These keys are safe to show to anyone (customers see them on the storefront)
-const PUBLIC_KEYS = ['store_name', 'store_tagline', 'currency', 'delivery_fee_cents', 'free_delivery_threshold_cents', 'contact_email', 'contact_phone', 'reviews'];
+const PUBLIC_KEYS = ['store_name', 'store_tagline', 'currency', 'delivery_fee_cents', 'free_delivery_threshold_cents', 'contact_email', 'contact_phone', 'store_address', 'reviews'];
 
 // Whitelist of keys that admins are allowed to update.
 // Prevents accidentally injecting or overwriting unintended configuration.
-const ALLOWED_SETTINGS_KEYS = ['store_name', 'store_tagline', 'currency', 'delivery_fee_cents', 'free_delivery_threshold_cents', 'contact_email', 'contact_phone', 'language'];
+const ALLOWED_SETTINGS_KEYS = ['store_name', 'store_tagline', 'currency', 'delivery_fee_cents', 'free_delivery_threshold_cents', 'contact_email', 'contact_phone', 'store_address', 'language'];
 
 // Helper: checks if the request has a valid admin token (without rejecting it).
 // Used to decide whether to return all settings or just the public ones.

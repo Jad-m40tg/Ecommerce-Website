@@ -566,7 +566,7 @@
   .buy-row .btn { flex: 1 1 100%; }
   .row-arrows { display: none; }
   .container { padding: 0 18px; }
-  .product-card { flex: 0 0 240px; }
+  .product-card { flex: 0 0 280px; }
 }
 
 @media (max-width: 500px) {

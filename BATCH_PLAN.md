@@ -37,11 +37,11 @@ Trivials: #14, 15, 20, 27, 28, 29, 31, 7
 | 21 | Footer store info section | ✅ Done |
 | 22 | Wishlist page | ✅ Done |
 
-## Batch 6 — Pending (big UI changes)
-| # | Issue |
-|---|-------|
-| 9 | Product image upload + editor redesign |
-| 19 | Profile updates reflect in footer + confirmation dialog |
+## Batch 6 — Done (big UI changes, Alpha 1.16)
+| # | Issue | Status |
+|---|-------|--------|
+| 9 | Product image upload + editor redesign | ✅ Done |
+| 19 | Profile updates reflect in footer + confirmation dialog | ✅ Done |
 
 ## Batch 7 — Pending (content + SEO + a11y)
 | # | Issue |

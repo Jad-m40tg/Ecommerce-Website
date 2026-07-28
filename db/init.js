@@ -353,6 +353,7 @@ try {
     ['free_delivery_threshold_cents', '9999'],
     ['contact_email', 'support@havenwood.com'],
     ['contact_phone', '+1 (555) 123-4567'],
+    ['store_address', '123 Havenwood Lane, Furniture District'],
   ];
 
   // Wrap all setting inserts in a transaction.

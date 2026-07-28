@@ -79,7 +79,7 @@
             </div>
           </section>
 
-          <div class="save-bar"><span class="spacer"></span><button type="button" class="qa-btn" id="cancelBtn">Cancel</button><button type="submit" class="qa-btn primary">Save Changes</button></div>
+          <div class="save-bar"><span class="spacer"></span><button type="submit" class="qa-btn primary">Save Changes</button></div>
         </form>
       </main>
     </div>
@@ -107,6 +107,7 @@
 
       document.getElementById('profileForm').addEventListener('submit', function (e) {
         e.preventDefault();
+        if (!confirm('Save these changes? They will be visible on the storefront.')) return;
         var np = document.getElementById('newPass').value;
         var cp = document.getElementById('confirmPass').value;
         if (np || cp) {
