@@ -197,7 +197,7 @@
   .nav-links.open { display: flex; }
   .nav-links a { display: block; text-align: center; }
 
-  .product-card { flex: 0 0 220px; }
+  .product-card { flex: 0 0 280px; }
   .row-arrows { display: none; }
 }
 
@@ -209,7 +209,7 @@
   .navbar-inner { padding: 0 14px; gap: 12px; }
   .brand { font-size: 20px; }
   .cart-btn { font-size: 12px; padding: 7px 12px; }
-  .product-card { flex: 0 0 100%; }
+  .product-card { flex: 0 0 160px; }
   .footer-grid { grid-template-columns: 1fr; }
   .footer p { max-width: 100%; }
 }

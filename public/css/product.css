@@ -560,7 +560,7 @@
   .navbar-actions { gap: 4px; }
   .cart-btn { padding: 8px 12px; font-size: 13px; }
   .navbar-inner { padding: 0 14px; gap: 12px; }
-  .gallery-thumbs { grid-template-columns: repeat(2, 1fr); justify-content: center; }
+  .gallery-thumbs { grid-template-columns: repeat(4, 1fr); justify-content: center; }
   .footer-grid { grid-template-columns: 1fr; }
   .footer p { max-width: 100%; }
 }

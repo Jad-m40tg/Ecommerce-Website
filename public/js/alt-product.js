@@ -367,7 +367,39 @@ function showToast(message) {
   toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2200);
 }
 
-/* ---------- 8. INIT ---------- */
+/* ---------- 8. API PRODUCT LOADING ---------- */
+function loadProductFromAPI() {
+  var params = new URLSearchParams(window.location.search);
+  var requestedId = params.get('id');
+  if (!requestedId) return;
+  fetch('/api/products/browse')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var items = data.products || data.data || data;
+      if (!Array.isArray(items)) return;
+      var found = items.find(function (p) { return String(p.id) === requestedId || p.slug === requestedId; });
+      if (!found) return;
+      var imgs = [];
+      try { imgs = JSON.parse(found.images || '[]'); } catch (e) { imgs = []; }
+      var img = imgs[0] || found.image || '/assets/furn-sofa.png';
+      PRODUCT.id = String(found.id || found.slug);
+      PRODUCT.name = found.name || PRODUCT.name;
+      PRODUCT.price_cents = found.price_cents || PRODUCT.price_cents;
+      PRODUCT.image = img;
+      var nameEl = document.getElementById('productName');
+      if (nameEl) nameEl.textContent = PRODUCT.name;
+      var priceEl = document.getElementById('productPrice');
+      if (priceEl) priceEl.textContent = '$' + Math.round(PRODUCT.price_cents / 100).toLocaleString();
+      var imgEl = document.getElementById('galleryMainImg');
+      if (imgEl) { imgEl.src = PRODUCT.image; imgEl.alt = PRODUCT.name; }
+      var crumb = document.getElementById('crumbName');
+      if (crumb) crumb.textContent = PRODUCT.name;
+    })
+    .catch(function () {});
+}
+
+/* ---------- 9. INIT ---------- */
+loadProductFromAPI();
 updateCartCount();
 fetchReviews(PRODUCT.id, function () {
   renderReviewsIntoPage();
