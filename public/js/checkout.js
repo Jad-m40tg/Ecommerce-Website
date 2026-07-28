@@ -165,7 +165,9 @@ document.addEventListener('click', function (event) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(orderData)
   }).then(function (res) {
-    return res.json().then(function (body) {
+    return res.text().then(function (text) {
+      var body;
+      try { body = JSON.parse(text); } catch (e) { body = { error: text || 'Empty response from server' }; }
       if (!res.ok) throw new Error(body.error || 'Order failed');
       return body;
     });
