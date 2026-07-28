@@ -174,7 +174,8 @@
 .confirm-card p { color: var(--gray); font-size: 15px; margin-bottom: 6px; text-wrap: pretty; }
 .confirm-card .order-num { font-size: 14px; font-weight: 700; color: var(--sage); margin-bottom: 20px; }
 
-.confirm-card .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.confirm-card .actions { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+.confirm-card .actions .btn { width: 100%; text-align: center; }
 
 /* ============================================================
    5. SPINNER (loading indicator for place-order button)
