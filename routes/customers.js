@@ -14,7 +14,7 @@ router.use(authenticateToken, requireAdmin);
 // Calculates order_count and total_spent from all their orders.
 router.get('/', (req, res) => {
   const { search, page = 1, limit = 20 } = req.query;
-  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 100);
+  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
 
   // Main query: group orders by email, aggregate stats
   let sql = 'SELECT customer_name, customer_email, customer_phone, customer_address, customer_city, COUNT(*) as order_count, SUM(total_cents) as total_spent_cents, MIN(created_at) as first_order, MAX(created_at) as last_order FROM orders WHERE 1=1';

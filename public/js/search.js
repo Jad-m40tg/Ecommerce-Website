@@ -33,6 +33,7 @@ function addToCart(productId) {
       name: product.name,
       price_cents: product.price_cents,
       image: getProductImage(product),
+      key: String(product.id),
       qty: 1
     });
   }

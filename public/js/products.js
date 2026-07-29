@@ -28,7 +28,7 @@ function addToCart(productId) {
   var existing = cart.find(function (item) { return String(item.id) === String(productId); });
   if (existing) { existing.qty += 1; }
   else {
-    cart.push({ id: product.id, name: product.name, price_cents: product.price_cents, image: getProductImage(product), qty: 1 });
+    cart.push({ id: product.id, name: product.name, price_cents: product.price_cents, image: getProductImage(product), key: String(product.id), qty: 1 });
   }
   saveCart(cart);
   showToast(product.name + ' added to cart');

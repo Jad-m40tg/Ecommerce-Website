@@ -27,7 +27,7 @@ const PUBLIC_SORT = "created_at DESC"; // default sort for customers
 // GET /api/products/browse/featured — Returns featured active products with pagination.
 router.get('/browse/featured', (req, res) => {
   const { page = 1, limit = 20 } = req.query;
-  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 100);
+  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   const offset = (Number(page) - 1) * safeLimit;
   const products = db.prepare("SELECT * FROM products WHERE status = 'active' AND featured = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?").all(safeLimit, offset);
   const { count } = db.prepare("SELECT COUNT(*) as count FROM products WHERE status = 'active' AND featured = 1").get();
@@ -37,7 +37,7 @@ router.get('/browse/featured', (req, res) => {
 // GET /api/products/browse/on-sale — Returns on-sale active products with pagination.
 router.get('/browse/on-sale', (req, res) => {
   const { page = 1, limit = 20 } = req.query;
-  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 100);
+  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   const offset = (Number(page) - 1) * safeLimit;
   const products = db.prepare("SELECT * FROM products WHERE status = 'active' AND on_sale = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?").all(safeLimit, offset);
   const { count } = db.prepare("SELECT COUNT(*) as count FROM products WHERE status = 'active' AND on_sale = 1").get();
@@ -49,7 +49,7 @@ router.get('/browse/on-sale', (req, res) => {
 // Builds SQL dynamically based on which filters are provided.
 router.get('/browse', (req, res) => {
   const { category, search, sort, page = 1, limit = 20 } = req.query;
-  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 100); // cap at 100
+  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999); // cap at 100
   let sql = "SELECT * FROM products WHERE status = 'active'";
   let countSql = "SELECT COUNT(*) as count FROM products WHERE status = 'active'";
   const params = [];
@@ -97,7 +97,7 @@ router.use(authenticateToken, requireAdmin);
 // Admin version shows everything, not just active products.
 router.get('/', (req, res) => {
   const { category, status, search, sort, page = 1, limit = 20 } = req.query;
-  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 100);
+  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   let sql = 'SELECT * FROM products WHERE 1=1';
   let countSql = 'SELECT COUNT(*) as count FROM products WHERE 1=1';
   const params = [];

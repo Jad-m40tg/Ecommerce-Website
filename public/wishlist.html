@@ -152,7 +152,7 @@
         grid.querySelectorAll('[data-remove]').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var id = btn.getAttribute('data-remove');
-            wishList = wishList.filter(function (w) { return w.id !== id; });
+            wishList = wishList.filter(function (w) { return String(w.id) !== String(id); });
             localStorage.setItem('havenwood_wishlist', JSON.stringify(wishList));
             renderWishlist();
             showToast('Removed from wishlist');

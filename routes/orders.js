@@ -129,7 +129,7 @@ router.use(authenticateToken, requireAdmin);
 // GET /api/orders — List all orders with optional status filter and pagination.
 router.get('/', (req, res) => {
   const { status, page = 1, limit = 20 } = req.query;
-  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 100);
+  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   let sql = 'SELECT * FROM orders WHERE 1=1';
   let countSql = 'SELECT COUNT(*) as count FROM orders WHERE 1=1';
   const params = [];

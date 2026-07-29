@@ -13,7 +13,7 @@ router.use(authenticateToken, requireAdmin);
 // Returns total revenue, order count, product count, unique customer count,
 // and the 5 most recent orders — all in a single query batch.
 router.get('/overview', (req, res) => {
-  const revenue = db.prepare("SELECT COALESCE(SUM(total_cents), 0) as total_revenue FROM orders WHERE payment_status = 'paid'").get();
+  const revenue = db.prepare("SELECT COALESCE(SUM(total_cents), 0) as total_revenue FROM orders WHERE order_status = 'delivered'").get();
   const orders = db.prepare('SELECT COUNT(*) as total_orders FROM orders').get();
   const products = db.prepare('SELECT COUNT(*) as total_products FROM products').get();
   const customers = db.prepare('SELECT COUNT(DISTINCT customer_email) as total_customers FROM orders').get();
@@ -38,17 +38,17 @@ router.get('/revenue', (req, res) => {
   if (period === 'weekly') {
     // Last 84 days grouped by ISO week
     sql = `SELECT strftime('%Y-%W', created_at) as period, SUM(total_cents) as revenue_cents, COUNT(*) as order_count
-           FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', '-84 days')
+           FROM orders WHERE order_status = 'delivered' AND created_at >= date('now', '-84 days')
            GROUP BY period ORDER BY period`;
   } else if (period === 'monthly') {
     // Last 12 months grouped by year-month
     sql = `SELECT strftime('%Y-%m', created_at) as period, SUM(total_cents) as revenue_cents, COUNT(*) as order_count
-           FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', '-12 months')
+           FROM orders WHERE order_status = 'delivered' AND created_at >= date('now', '-12 months')
            GROUP BY period ORDER BY period`;
   } else {
     // Default: last 30 days grouped by date
     sql = `SELECT date(created_at) as period, SUM(total_cents) as revenue_cents, COUNT(*) as order_count
-           FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', '-30 days')
+           FROM orders WHERE order_status = 'delivered' AND created_at >= date('now', '-30 days')
            GROUP BY period ORDER BY period`;
   }
 
