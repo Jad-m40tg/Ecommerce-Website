@@ -16,8 +16,10 @@
    2. PRODUCT DETAIL LAYOUT
    ============================================================ */
 .product-detail {
-  max-width: 720px;
-  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 56px;
+  align-items: start;
   padding: 36px 0 20px;
 }
 
@@ -169,7 +171,7 @@
 .qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .qty input:focus { outline: none; }
 
-.buy-row .btn { flex: 1; min-width: 0; }
+.buy-row .btn { flex: 1; min-width: 160px; }
 .buy-row .btn-icon { flex-shrink: 0; }
 
 /* Perks strip */
@@ -543,6 +545,7 @@
    9. RESPONSIVE
    ============================================================ */
 @media (max-width: 960px) {
+  .product-detail { display: block; max-width: 720px; margin: 0 auto; }
   .perks { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
 }

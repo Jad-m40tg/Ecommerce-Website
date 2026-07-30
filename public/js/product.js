@@ -9,7 +9,12 @@ function getCart() {
 }
 function saveCart(cart) {
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  updateCartCount();
+updateCartCount();
+
+/* Reposition reviews on resize */
+window.matchMedia('(min-width: 961px)').addEventListener('change', function () {
+  positionReviews();
+});
 }
 function addToCart(productId, qty, color, size) {
   qty = Math.max(1, qty || 1);
@@ -195,6 +200,7 @@ function fetchReviewsAndRender(product) {
       wireUpReviewDeleteButtons();
       wireUpViewAllButton();
       observeReveals();
+      positionReviews();
     })
     .catch(function (err) {
       console.error('Failed to load reviews:', err);
@@ -204,6 +210,7 @@ function fetchReviewsAndRender(product) {
       var list = document.getElementById('reviewsList');
       if (list) list.innerHTML = renderReviews(product ? product.id : 0);
       observeReveals();
+      positionReviews();
     });
 }
 
@@ -321,8 +328,6 @@ function renderProduct(p) {
   selection.size = typeof sizes[0] === 'object' ? (sizes[0].name || sizes[0]) : sizes[0];
   selection.qty = 1;
 
-  var reviewsHTML = renderReviews(p.id);
-
   var stockHTML = p.stock > 0
     ? '<div class="stock-note">In stock &middot; ships in 2&ndash;4 days</div>'
     : '<div class="stock-note" style="color:var(--wood)">Out of stock</div>';
@@ -330,7 +335,7 @@ function renderProduct(p) {
   document.getElementById('productRoot').innerHTML =
     '<div class="product-detail">' +
 
-      /* 1. IMAGES — full width */
+      /* LEFT COLUMN — gallery images */
       '<div class="reveal">' +
         '<div class="gallery-main">' +
           badgeHTML +
@@ -339,7 +344,7 @@ function renderProduct(p) {
         '<div class="gallery-thumbs">' + thumbs + '</div>' +
       '</div>' +
 
-      /* 2. NAME + RATING + PRICE */
+      /* RIGHT COLUMN — name, price, options, tabs */
       '<div class="product-info reveal">' +
         '<div class="info-category">' + escapeHtml(catLabel) + '</div>' +
         '<h1>' + escapeHtml(p.name) + '</h1>' +
@@ -352,10 +357,8 @@ function renderProduct(p) {
           oldPriceHTML + saveHTML +
         '</div>' +
         stockHTML +
-      '</div>' +
+        '<p class="info-desc">' + escapeHtml(description) + '</p>' +
 
-      /* 3. OPTIONS — colors, sizes, quantity */
-      '<div class="product-info reveal">' +
         '<div class="option-block">' +
           '<label>Color <span>&mdash; <b id="selectedColor">' + escapeHtml(selection.color) + '</b></span></label>' +
           '<div class="swatches" id="swatchList">' + swatches + '</div>' +
@@ -376,10 +379,13 @@ function renderProduct(p) {
             '<button type="button" class="btn-icon" id="wishlistBtn" aria-label="Add to wishlist" title="Add to wishlist"><span class="material-symbols-outlined">favorite_border</span></button>' +
           '</div>' +
         '</div>' +
-      '</div>' +
 
-      /* 4. DESCRIPTION / SPECS / SHIPPING TABS */
-      '<div class="product-info reveal">' +
+        '<div class="perks">' +
+          '<div><b>Free Delivery</b>On orders over $500</div>' +
+          '<div><b>10-Year Warranty</b>On every frame</div>' +
+          '<div><b>30-Day Returns</b>Hassle-free</div>' +
+        '</div>' +
+
         '<div class="tabs">' +
           '<div class="tab-nav" role="tablist">' +
             '<button type="button" class="active" data-tab="desc" role="tab">Description</button>' +
@@ -407,17 +413,28 @@ function renderProduct(p) {
             '</div>' +
           '</div>' +
         '</div>' +
-        '<div class="perks">' +
-          '<div><b>Free Delivery</b>On orders over $500</div>' +
-          '<div><b>10-Year Warranty</b>On every frame</div>' +
-          '<div><b>30-Day Returns</b>Hassle-free</div>' +
-        '</div>' +
       '</div>' +
 
     '</div>';
 
   wireUpDetail(p, colors);
   updateOrderSummary(p);
+}
+
+/* ---------- REPOSITION REVIEWS BY SCREEN WIDTH ---------- */
+function positionReviews() {
+  var isDesktop = window.matchMedia('(min-width: 961px)').matches;
+  var reviewsSection = document.getElementById('reviewsSection');
+  var leftColumn = document.querySelector('.product-detail > .reveal');
+  var orderSection = document.getElementById('orderSection');
+  if (!reviewsSection) return;
+  if (isDesktop && leftColumn) {
+    leftColumn.appendChild(reviewsSection);
+    reviewsSection.style.marginTop = '40px';
+  } else if (!isDesktop && orderSection && orderSection.parentNode) {
+    orderSection.parentNode.insertBefore(reviewsSection, orderSection.nextSibling);
+    reviewsSection.style.marginTop = '';
+  }
 }
 
 /* ---------- WIRE UP INTERACTIONS ---------- */
@@ -766,3 +783,8 @@ function showToast(message) {
 }
 
 updateCartCount();
+
+/* Reposition reviews on resize */
+window.matchMedia('(min-width: 961px)').addEventListener('change', function () {
+  positionReviews();
+});
