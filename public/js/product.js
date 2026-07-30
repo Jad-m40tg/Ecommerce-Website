@@ -500,8 +500,8 @@ function wireUpDetail(p, colors) {
     wished = wishList.some(function (w) { return String(w.id) === String(p.id); });
     if (wished) {
       wishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24">favorite</span>';
-      wishBtn.style.color = 'var(--wood)';
-      wishBtn.style.borderColor = 'var(--wood)';
+      wishBtn.style.color = 'var(--charcoal)';
+      wishBtn.style.borderColor = 'var(--charcoal)';
     }
     wishBtn.addEventListener('click', function () {
       wished = !wished;
