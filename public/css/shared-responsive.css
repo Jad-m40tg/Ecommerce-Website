@@ -60,9 +60,10 @@
 
 /* 500px — navbar/brand/cart sizing, footer stack */
 @media (max-width: 500px) {
-  .navbar-inner { padding: 0 14px; gap: 12px; }
+  .navbar-inner { padding: 0 14px; gap: 10px; }
+  .navbar-actions { gap: 8px; }
   .brand { font-size: 20px; }
-  .cart-btn { font-size: 12px; padding: 7px 12px; }
+  .cart-btn { font-size: 12px; padding: 7px 12px; gap: 6px; }
   .footer-grid { grid-template-columns: 1fr; }
   .footer p { max-width: 100%; }
   .product-card { flex: 0 0 160px; }
@@ -71,11 +72,16 @@
 /* 400px — ultra-small screens */
 @media (max-width: 400px) {
   .container { padding: 0 14px; }
+  .navbar-inner { gap: 6px; }
+  .navbar-actions { gap: 4px; }
   .brand { font-size: 18px; }
-  .nav-search { width: 36px; height: 36px; }
-  .cart-btn { font-size: 11px; padding: 5px 8px; gap: 5px; }
+  .nav-search,
+  .nav-wish { width: 34px; height: 34px; }
+  .nav-search svg,
+  .nav-wish svg { width: 18px; height: 18px; }
+  .cart-btn { font-size: 11px; padding: 5px 8px; gap: 4px; }
   .cart-count { min-width: 16px; height: 16px; font-size: 10px; padding: 0 4px; }
-  .menu-toggle { font-size: 22px; }
+  .menu-toggle { font-size: 20px; }
   .section { padding: 40px 0; }
   .footer-grid { grid-template-columns: 1fr; gap: 28px; }
   .footer p { max-width: 100%; }

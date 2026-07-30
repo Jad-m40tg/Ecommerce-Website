@@ -103,8 +103,9 @@
   font-weight: 700;
 }
 
-/* Search icon button */
-.nav-search {
+/* Icon buttons (search, wishlist) */
+.nav-search,
+.nav-wish {
   display: flex; align-items: center; justify-content: center;
   width: 42px; height: 42px;
   border-radius: 50%;
@@ -112,7 +113,8 @@
   transition: background 0.25s ease;
   flex-shrink: 0;
 }
-.nav-search:hover { background: var(--beige); }
+.nav-search:hover,
+.nav-wish:hover { background: var(--beige); }
 
 /* Mobile hamburger (hidden on desktop) */
 .menu-toggle {
@@ -129,6 +131,7 @@
    ============================================================ */
 @media (max-width: 800px) {
   .menu-toggle { display: block; }
+  .navbar-actions { gap: 10px; }
 
   .nav-links {
     position: absolute;
@@ -143,4 +146,17 @@
   }
   .nav-links.open { display: flex; }
   .nav-links a { display: block; text-align: center; }
+}
+
+@media (max-width: 350px) {
+  .navbar-inner { padding: 0 10px; gap: 4px; }
+  .navbar-actions { gap: 2px; }
+  .brand { font-size: 16px; }
+  .nav-search,
+  .nav-wish { width: 30px; height: 30px; }
+  .nav-search svg,
+  .nav-wish svg { width: 16px; height: 16px; }
+  .cart-btn { font-size: 10px; padding: 4px 6px; }
+  .cart-count { min-width: 14px; height: 14px; font-size: 9px; }
+  .menu-toggle { font-size: 18px; }
 }
