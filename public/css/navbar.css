@@ -41,6 +41,7 @@
   font-weight: 700;
   letter-spacing: 0.01em;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .brand span { color: var(--sage); }
 
@@ -130,7 +131,7 @@
    RESPONSIVE NAVBAR — mobile collapse at 800px
    ============================================================ */
 @media (max-width: 800px) {
-  .menu-toggle { display: block; }
+  .menu-toggle { display: block; margin-left: 6px; }
   .navbar-actions { gap: 10px; }
 
   .nav-links {
@@ -148,15 +149,16 @@
   .nav-links a { display: block; text-align: center; }
 }
 
-@media (max-width: 350px) {
-  .navbar-inner { padding: 0 10px; gap: 4px; }
+@media (max-width: 320px) {
+  .navbar-inner { padding: 0 8px; gap: 3px; }
   .navbar-actions { gap: 2px; }
-  .brand { font-size: 16px; }
+  .brand { font-size: 15px; }
   .nav-search,
-  .nav-wish { width: 30px; height: 30px; }
+  .nav-wish { width: 28px; height: 28px; }
   .nav-search svg,
-  .nav-wish svg { width: 16px; height: 16px; }
-  .cart-btn { font-size: 10px; padding: 4px 6px; }
-  .cart-count { min-width: 14px; height: 14px; font-size: 9px; }
-  .menu-toggle { font-size: 18px; }
+  .nav-wish svg { width: 14px; height: 14px; }
+  .cart-btn { font-size: 9px; padding: 3px 5px; gap: 3px; }
+  .cart-btn svg { width: 14px; height: 14px; }
+  .cart-count { min-width: 12px; height: 12px; font-size: 8px; }
+  .menu-toggle { font-size: 16px; }
 }
