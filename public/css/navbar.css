@@ -90,6 +90,12 @@
 }
 .cart-btn:hover { background: var(--charcoal); color: var(--warm-white); }
 
+/* Cart label/text (visible on desktop, hidden on mobile) */
+.cart-label { display: inline; }
+
+/* Cart icon (hidden on desktop, visible on mobile) */
+.cart-icon { display: none; }
+
 .cart-count {
   display: inline-flex;
   align-items: center;
@@ -133,6 +139,8 @@
 @media (max-width: 800px) {
   .menu-toggle { display: block; margin-left: 6px; }
   .navbar-actions { gap: 10px; }
+  .cart-label { display: none; }
+  .cart-icon { display: inline; }
 
   .nav-links {
     position: absolute;
