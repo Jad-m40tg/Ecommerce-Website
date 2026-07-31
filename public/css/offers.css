@@ -263,10 +263,12 @@
   .product-row .product-card {
     flex: 0 0 260px;
     transform: scale(0.7);
-    transform-origin: left center;
+    transform-origin: left top;
     margin-right: -78px;
   }
   .product-row .product-card:hover { transform: scale(0.7) translateY(-6px); }
+  .section { padding: 32px 0; }
+  .row-header { margin-bottom: 14px; }
 }
 
 @media (max-width: 400px) {
@@ -276,7 +278,7 @@
   .cart-btn { font-size: 11px; padding: 5px 8px; gap: 5px; }
   .cart-count { min-width: 16px; height: 16px; font-size: 10px; padding: 0 4px; }
   .menu-toggle { font-size: 20px; }
-  .section { padding: 40px 0; }
+  .section { padding: 28px 0; }
   .footer-grid { grid-template-columns: 1fr; gap: 28px; }
   .footer p { max-width: 100%; }
   .offer-hero-text { padding: clamp(20px, 3vw, 28px); gap: 10px; }

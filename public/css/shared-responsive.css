@@ -66,10 +66,11 @@
   .cart-btn { font-size: 12px; padding: 7px 12px; gap: 6px; }
   .footer-grid { grid-template-columns: 1fr; }
   .footer p { max-width: 100%; }
+  .product-row { margin-bottom: -80px; }
   .product-row .product-card {
     flex: 0 0 260px;
     transform: scale(0.7);
-    transform-origin: left center;
+    transform-origin: left top;
     margin-right: -78px;
   }
   .product-row .product-card:hover { transform: scale(0.7) translateY(-6px); }

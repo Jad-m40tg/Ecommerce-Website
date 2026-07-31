@@ -585,7 +585,7 @@
   .product-row .product-card {
     flex: 0 0 260px;
     transform: scale(0.7);
-    transform-origin: left center;
+    transform-origin: left top;
     margin-right: -78px;
   }
   .product-row .product-card:hover { transform: scale(0.7) translateY(-6px); }
