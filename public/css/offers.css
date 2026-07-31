@@ -256,7 +256,10 @@
   .count-box { min-width: 42px; padding: 5px 3px; }
   .count-box b { font-size: 14px; }
   .count-box small { font-size: 8px; letter-spacing: 0.05em; }
-  .offer-hero, .offer-hero.reveal.visible { transform: scale(0.92); }
+  .offer-hero, .offer-hero.reveal.visible { transform: scale(0.95); }
+  .offer-hero-text .countdown,
+  .offer-hero-text .btn-primary { align-self: center; }
+  .offer-hero-text .btn-primary { transform: scale(0.9); }
   .product-row .product-card {
     flex: 0 0 260px;
     transform: scale(0.7);

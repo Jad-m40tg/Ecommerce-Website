@@ -348,7 +348,14 @@
   .cart-btn { font-size: 12px; padding: 7px 12px; }
   .footer-grid { grid-template-columns: 1fr; }
   .footer p { max-width: 100%; }
-  .product-card { flex: 0 0 100%; }
+  .offer, .offer.reveal.visible { transform: scale(0.95); }
+  .offer-text .countdown,
+  .offer-text .btn-primary { align-self: center; }
+  .offer-text .btn-primary { transform: scale(0.9); }
+  .count-box { min-width: 42px; padding: 5px 3px; }
+  .count-box b { font-size: 14px; }
+  .count-box small { font-size: 8px; letter-spacing: 0.05em; }
+  .offer-media img { height: 200px; }
 }
 
 @media (max-width: 400px) {
