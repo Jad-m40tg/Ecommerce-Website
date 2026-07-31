@@ -66,13 +66,13 @@
   .cart-btn { font-size: 12px; padding: 7px 12px; gap: 6px; }
   .footer-grid { grid-template-columns: 1fr; }
   .footer p { max-width: 100%; }
-  .product-card { flex: 0 0 180px; }
-  .card-body { padding: 10px 12px 14px; }
-  .card-category { font-size: 10px; }
-  .card-body h3 { font-size: 13px; }
-  .card-price { font-size: 14px; }
-  .card-price s { font-size: 11px; }
-  .card-add, .card-added { padding: 6px 10px; font-size: 11px; }
+  .product-row .product-card {
+    flex: 0 0 260px;
+    transform: scale(0.7);
+    transform-origin: left center;
+    margin-right: -78px;
+  }
+  .product-row .product-card:hover { transform: scale(0.7) translateY(-6px); }
 }
 
 /* 400px — ultra-small screens */
@@ -95,9 +95,4 @@
   .hero p { font-size: 16px; }
   .card-row { flex-direction: column; gap: 14px; }
   .item-media { width: 100%; }
-  .product-card { flex: 0 0 160px; }
-  .card-body { padding: 8px 10px 12px; }
-  .card-body h3 { font-size: 11px; margin: 4px 0 6px; }
-  .card-price { font-size: 12px; }
-  .card-add, .card-added { padding: 4px 8px; font-size: 10px; }
 }

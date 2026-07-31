@@ -249,13 +249,6 @@
   .navbar-inner { padding: 0 14px; gap: 12px; }
   .brand { font-size: 20px; }
   .cart-btn { font-size: 12px; padding: 7px 12px; }
-  .product-card { flex: 0 0 180px; }
-  .card-body { padding: 10px 12px 14px; }
-  .card-category { font-size: 10px; }
-  .card-body h3 { font-size: 13px; }
-  .card-price { font-size: 14px; }
-  .card-price s { font-size: 11px; }
-  .card-add, .card-added { padding: 6px 10px; font-size: 11px; }
   .footer-grid { grid-template-columns: 1fr; }
   .footer p { max-width: 100%; }
   .offer-hero-media img { height: 200px; }
@@ -263,6 +256,14 @@
   .count-box { min-width: 42px; padding: 5px 3px; }
   .count-box b { font-size: 14px; }
   .count-box small { font-size: 8px; letter-spacing: 0.05em; }
+  .offer-hero, .offer-hero.reveal.visible { transform: scale(0.92); }
+  .product-row .product-card {
+    flex: 0 0 260px;
+    transform: scale(0.7);
+    transform-origin: left center;
+    margin-right: -78px;
+  }
+  .product-row .product-card:hover { transform: scale(0.7) translateY(-6px); }
 }
 
 @media (max-width: 400px) {
@@ -275,11 +276,6 @@
   .section { padding: 40px 0; }
   .footer-grid { grid-template-columns: 1fr; gap: 28px; }
   .footer p { max-width: 100%; }
-  .product-card { flex: 0 0 160px; }
-  .card-body { padding: 8px 10px 12px; }
-  .card-body h3 { font-size: 11px; margin: 4px 0 6px; }
-  .card-price { font-size: 12px; }
-  .card-add, .card-added { padding: 4px 8px; font-size: 10px; }
   .offer-hero-text { padding: clamp(20px, 3vw, 28px); gap: 10px; }
   .offer-hero-text .eyebrow { font-size: 11px; }
   .offer-hero-text h2 { font-size: clamp(18px, 5vw, 24px); }
