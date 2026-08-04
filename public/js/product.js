@@ -3,7 +3,7 @@
 var CART_KEY = 'boularas-cart';
 var currentProduct = null;
 var storeSettings = {};
-var settingsPromise = fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) { storeSettings = s || {}; }).catch(function () {});
+var settingsPromise = fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) { storeSettings = s || {}; if (storeSettings.currency) setCurrency(storeSettings.currency); }).catch(function () {});
 
 var lightboxEl = null;
 var lightboxIndex = 0;
@@ -362,7 +362,7 @@ function renderProduct(p) {
 
   var shippingText = (p.shipping_info && p.shipping_info.trim()) ? p.shipping_info
     : (storeSettings.shipping_policy && storeSettings.shipping_policy.trim()) ? storeSettings.shipping_policy
-    : 'Free delivery on orders over $500. Standard delivery takes 2-4 business days; larger pieces are scheduled with a two-hour window.';
+    : 'Free delivery on orders over 66,700 DA. Standard delivery takes 2-4 business days; larger pieces are scheduled with a two-hour window.';
   var returnsText = (p.returns_info && p.returns_info.trim()) ? p.returns_info
     : (storeSettings.returns_policy && storeSettings.returns_policy.trim()) ? storeSettings.returns_policy
     : 'Not the right fit? Send it back within 30 days for a full refund - we will even collect it from your door.';
@@ -416,7 +416,7 @@ function renderProduct(p) {
         '</div>' +
 
         '<div class="perks">' +
-          '<div><b>Free Delivery</b>On orders over $500</div>' +
+          '<div><b>Free Delivery</b>On orders over 66,700 DA</div>' +
           '<div><b>10-Year Warranty</b>On every frame</div>' +
           '<div><b>30-Day Returns</b>Hassle-free</div>' +
         '</div>' +

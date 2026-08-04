@@ -351,7 +351,7 @@ try {
   const settings = [
     ['store_name', 'Boularas'],
     ['store_tagline', 'Premium Furniture & Home'],
-    ['currency', 'USD'],
+    ['currency', 'DZD'],
     ['delivery_fee_cents', '999'],
     ['free_delivery_threshold_cents', '9999'],
     ['contact_email', 'support@boularas.com'],

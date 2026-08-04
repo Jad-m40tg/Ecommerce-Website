@@ -25,12 +25,12 @@ function isInCart(productId) {
 
 /* ---------- PROMOTIONS DATA ---------- */
 var PROMOTIONS = [
-  { icon: 'local_shipping', title: 'Free Delivery', desc: 'On all orders over $500. White-glove delivery included \u2014 we set everything up and remove packaging.', code: 'FREESHIP' },
-  { icon: 'card_giftcard', title: 'New Customer', desc: 'Welcome to Boularas! Get 15% off your first order of $200 or more when you sign up for our list.', code: 'WELCOME15' },
+  { icon: 'local_shipping', title: 'Free Delivery', desc: 'On all orders over 66,700 DA. White-glove delivery included \u2014 we set everything up and remove packaging.', code: 'FREESHIP' },
+  { icon: 'card_giftcard', title: 'New Customer', desc: 'Welcome to Boularas! Get 15% off your first order of 26,680 DA or more when you sign up for our list.', code: 'WELCOME15' },
   { icon: 'layers', title: 'Bundle & Save', desc: 'Buy 3 or more items from the same collection and save 20% automatically at checkout. No code needed.', code: null },
   { icon: 'school', title: 'Student Discount', desc: 'Full-time students get 10% off site-wide year-round. Verify your .edu email and enjoy a better study space.', code: 'STUDENT10' },
   { icon: 'event', title: 'Seasonal Flash Sale', desc: 'New deals drop every Friday at 10 AM. A different category goes on sale each week \u2014 check back often.', code: null },
-  { icon: 'group_add', title: 'Refer a Friend', desc: 'Give $50, get $50. When a friend places their first order over $300 using your referral link, you both earn credit.', code: 'GIFT50' }
+  { icon: 'group_add', title: 'Refer a Friend', desc: 'Give 6,670 DA, get 6,670 DA. When a friend places their first order over 40,020 DA using your referral link, you both earn credit.', code: 'GIFT50' }
 ];
 
 function renderPromotions() {

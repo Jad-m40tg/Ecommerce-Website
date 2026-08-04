@@ -114,11 +114,11 @@
           var overview = results[0];
           var revenueData = results[1];
           var topProducts = results[2];
-          document.getElementById('aRevenue').textContent = '$' + ((overview.total_revenue_cents || 0) / 100).toLocaleString('en-US', { maximumFractionDigits: 0 });
+          document.getElementById('aRevenue').textContent = price(overview.total_revenue_cents || 0);
           document.getElementById('aOrders').textContent = (overview.total_orders || 0).toLocaleString();
           document.getElementById('aProducts').textContent = (overview.total_products || 0).toLocaleString();
-          var aov = overview.total_orders ? ((overview.total_revenue_cents || 0) / overview.total_orders / 100) : 0;
-          document.getElementById('aAOV').textContent = '$' + aov.toFixed(2);
+          var aov = overview.total_orders ? ((overview.total_revenue_cents || 0) / overview.total_orders) : 0;
+          document.getElementById('aAOV').textContent = priceFull(aov);
           document.getElementById('aRevenueD').textContent = 'Paid orders only';
           document.getElementById('aOrdersD').textContent = overview.total_orders + ' total orders';
           renderRevenueChart(revenueData.data || []);
@@ -137,7 +137,7 @@
         var ctx1 = document.getElementById('revenueChart');
         if (!ctx1) return;
         if (revenueChart) revenueChart.destroy();
-        revenueChart = new Chart(ctx1, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Revenue', data: values, backgroundColor: 'rgba(107,127,94,0.7)', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' }, ticks: { callback: function (v) { return '$' + (v / 1000).toFixed(0) + 'k'; } } }, x: { grid: { display: false } } } } });
+        revenueChart = new Chart(ctx1, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Revenue', data: values, backgroundColor: 'rgba(107,127,94,0.7)', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' },                     ticks: { callback: function (v) { return price(v * 100); } } }, x: { grid: { display: false } } } } });
       }
 
       function renderStatusChart() {
@@ -156,7 +156,7 @@
         var list = document.getElementById('topList');
         list.innerHTML = products.map(function (p, i) {
           var pct = ((p.total_revenue_cents || 0) / max * 100).toFixed(1);
-          return '<li class="top-item"><div class="top-row"><span class="name"><span class="rank">' + (i + 1) + '</span> ' + escapeHtml(p.name || 'Unknown') + '</span><span class="value"><strong>$' + ((p.total_revenue_cents || 0) / 100).toLocaleString('en-US', { maximumFractionDigits: 0 }) + '</strong> revenue</span></div><div class="bar-track"><div class="bar-fill" data-pct="' + pct + '"></div></div></li>';
+          return '<li class="top-item"><div class="top-row"><span class="name"><span class="rank">' + (i + 1) + '</span> ' + escapeHtml(p.name || 'Unknown') + '</span><span class="value"><strong>' + price(p.total_revenue_cents || 0) + '</strong> revenue</span></div><div class="bar-track"><div class="bar-fill" data-pct="' + pct + '"></div></div></li>';
         }).join('') || '<li style="text-align:center;padding:24px;color:var(--gray)">No order data yet</li>';
         requestAnimationFrame(function () {
           setTimeout(function () {

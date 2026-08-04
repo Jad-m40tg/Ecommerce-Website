@@ -176,13 +176,13 @@ function wireUpStarPicker() {
 }
 
 /* ---------- 4. HELPERS ---------- */
-function money(n) { return '$' + n.toLocaleString('en-US'); }
+function money(cents) { return price(cents); }
 
 function updateSummary() {
   document.getElementById('sumColor').textContent = selection.color;
   document.getElementById('sumSize').textContent  = selection.size;
   document.getElementById('sumQty').textContent   = selection.qty;
-  document.getElementById('sumTotal').textContent = money(PRODUCT.price_cents * selection.qty / 100);
+  document.getElementById('sumTotal').textContent = money(PRODUCT.price_cents * selection.qty);
 }
 
 /* ---------- 5. DETAIL INTERACTIONS ---------- */
@@ -388,7 +388,7 @@ function loadProductFromAPI() {
       var nameEl = document.getElementById('productName');
       if (nameEl) nameEl.textContent = PRODUCT.name;
       var priceEl = document.getElementById('productPrice');
-      if (priceEl) priceEl.textContent = '$' + Math.round(PRODUCT.price_cents / 100).toLocaleString();
+      if (priceEl) priceEl.textContent = price(PRODUCT.price_cents);
       var imgEl = document.getElementById('galleryMainImg');
       if (imgEl) { imgEl.src = PRODUCT.image; imgEl.alt = PRODUCT.name; }
       var crumb = document.getElementById('crumbName');

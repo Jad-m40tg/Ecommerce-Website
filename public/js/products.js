@@ -16,6 +16,13 @@ function getProductCategory(product) {
   return (product.category || product.category_name || 'uncategorized');
 }
 
+/* Format the price-slider max label in the current display currency */
+function sliderLabel(usdDollars) {
+  var rate = EXCHANGE_RATES[getCurrency()] || EXCHANGE_RATES.DZD;
+  var sym = CURRENCY_SYMBOLS[getCurrency()] || 'DA';
+  return Math.round(usdDollars * rate).toLocaleString('en-US') + ' ' + sym;
+}
+
 /* ---------- CART HELPERS (unified) ---------- */
 var CART_KEY = 'boularas-cart';
 
@@ -139,7 +146,7 @@ function clearFilters() {
   state.maxPrice = 1600;
   state.sort = 'featured';
   document.getElementById('priceSlider').value = 1600;
-  document.getElementById('priceMaxLabel').textContent = 1600;
+  document.getElementById('priceMaxLabel').textContent = sliderLabel(1600);
   document.getElementById('sortSelect').value = 'featured';
   renderCategoryList();
   renderProducts();
@@ -157,7 +164,7 @@ document.getElementById('categoryList').addEventListener('click', function (even
 /* Price slider */
 document.getElementById('priceSlider').addEventListener('input', function () {
   state.maxPrice = Number(this.value);
-  document.getElementById('priceMaxLabel').textContent = this.value;
+  document.getElementById('priceMaxLabel').textContent = sliderLabel(Number(this.value));
   renderProducts();
 });
 

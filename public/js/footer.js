@@ -2,6 +2,7 @@
 (function () {
   fetch('/api/settings').then(function (r) { return r.json(); }).then(function (data) {
     var s = data.settings || data || {};
+    if (s.currency) setCurrency(s.currency);
     if (s.store_name) {
       document.querySelectorAll('.footer .brand').forEach(function (el) {
         if (el.querySelector('img')) return;

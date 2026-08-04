@@ -81,8 +81,8 @@ function formatPriceFull(priceCents, currency) {
 
 // Helper to get the current currency from settings (cached).
 // Falls back to 'USD' if settings haven't loaded yet.
-var _currentCurrency = 'USD';
-function setCurrency(c) { _currentCurrency = c || 'USD'; }
+var _currentCurrency = 'DZD';
+function setCurrency(c) { _currentCurrency = c || 'DZD'; }
 function getCurrency() { return _currentCurrency; }
 
 // Convenience: format using the globally-set currency
