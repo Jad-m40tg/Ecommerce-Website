@@ -18,9 +18,9 @@ function updateCartCount() {
 }
 
 /* ---------- 2. TOTALS MATH ---------- */
-var SHIPPING_FLAT   = 3900;
-var FREE_SHIP_OVER  = 50000;
-var TAX_RATE        = 0.08;
+var SHIPPING_FLAT   = 999;
+var FREE_SHIP_OVER  = 9999;
+var TAX_RATE        = 0;
 
 function calcTotals(cart) {
   var subtotal = cart.reduce(function (s, i) { return s + (i.price_cents || 0) * i.qty; }, 0);
@@ -118,12 +118,6 @@ function validateForm() {
   valid = validateField('address', 'addressError') && valid;
   valid = validateField('city', 'cityError') && valid;
 
-  valid = validateField('state', 'stateError', function (v) {
-    return v !== '';
-  }) && valid;
-
-  valid = validateField('zip', 'zipError') && valid;
-
   return valid;
 }
 
@@ -150,14 +144,19 @@ document.addEventListener('click', function (event) {
   btn.innerHTML = '<span class="spinner"></span> Processing\u2026';
 
   var cart = getCart();
+  var paymentMethod = 'cash_on_delivery';
+  var radios = document.querySelectorAll('input[name="payment_method"]');
+  radios.forEach(function (r) { if (r.checked) paymentMethod = r.value; });
+
   var orderData = {
     customer_name: (document.getElementById('firstName').value || '') + ' ' + (document.getElementById('lastName').value || ''),
     customer_email: document.getElementById('email').value || '',
     customer_phone: document.getElementById('phone').value || '',
-    customer_address: [document.getElementById('address').value, document.getElementById('apt').value, document.getElementById('state').value, document.getElementById('zip').value].filter(Boolean).join(', '),
+    customer_address: [document.getElementById('address').value, document.getElementById('apt').value].filter(Boolean).join(', '),
     customer_city: document.getElementById('city').value || '',
     items: cart.map(function (item) { return { product_id: Number(item.id), quantity: item.qty }; }),
-    notes: ''
+    notes: '',
+    payment_method: paymentMethod
   };
 
   fetch('/api/orders', {
@@ -172,12 +171,23 @@ document.addEventListener('click', function (event) {
       return body;
     });
   }).then(function (data) {
-    saveCart([]);
-    renderSummary();
-    var orderId = (data.order && data.order.id) || data.id || 'BL-' + Date.now().toString(36).toUpperCase();
-    document.getElementById('orderNumber').textContent = 'Order #' + orderId;
-    document.getElementById('confirmOverlay').classList.add('open');
-    showToast('Order placed!');
+    var orderId = (data.order && data.order.id) || data.id;
+    var trackingCode = (data.order && data.order.tracking_code) || data.tracking_code || '';
+
+    if (paymentMethod === 'cash_on_delivery') {
+      saveCart([]);
+      renderSummary();
+      document.getElementById('orderNumber').textContent = 'Order #' + orderId + (trackingCode ? ' — Tracking: ' + trackingCode : '');
+      document.getElementById('confirmOverlay').classList.add('open');
+      showToast('Order placed!');
+    } else {
+      saveCart([]);
+      if (data.payment_url) {
+        window.location.href = data.payment_url;
+      } else {
+        throw new Error('Payment URL not received from server');
+      }
+    }
   }).catch(function (err) {
     btn.innerHTML = 'Place Order';
     btn.disabled = false;

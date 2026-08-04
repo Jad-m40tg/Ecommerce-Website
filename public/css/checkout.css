@@ -168,7 +168,8 @@
 }
 
 .confirm-card h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 500;
   font-size: 26px; margin-bottom: 8px;
 }
 .confirm-card p { color: var(--gray); font-size: 15px; margin-bottom: 6px; text-wrap: pretty; }
@@ -239,4 +240,15 @@
   .section { padding: 40px 0; }
   .footer-grid { grid-template-columns: 1fr; gap: 28px; }
   .footer p { max-width: 100%; }
+}
+
+/* Payment method radio highlight */
+.payment-option:has(input:checked) {
+  border-color: var(--sage) !important;
+}
+.payment-option:has(input:not(:checked)) {
+  opacity: 0.6;
+}
+.payment-option:hover {
+  opacity: 1;
 }

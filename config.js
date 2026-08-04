@@ -14,5 +14,9 @@ module.exports = {
   JWT_SECRET: process.env.JWT_SECRET,       // secret key used to sign/verify login tokens
   JWT_EXPIRES: '7d',                         // how long a login token stays valid
   PORT: process.env.PORT || 5000,            // which port the server listens on
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5000' // which website is allowed to call the API
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5000', // which website is allowed to call the API
+  CHARGILY_SECRET_KEY: process.env.CHARGILY_SECRET_KEY || '',
+  CHARGILY_PUBLIC_KEY: process.env.CHARGILY_PUBLIC_KEY || '',
+  CHARGILY_ENV: process.env.CHARGILY_ENV || 'test',
+  APP_URL: process.env.APP_URL || 'http://localhost:5000'
 };

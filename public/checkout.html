@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="css/skeleton.css" />
   <link rel="stylesheet" href="css/shared-responsive.css" />
   <link rel="stylesheet" href="css/checkout.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 <body>
 
@@ -99,7 +100,7 @@
             <div class="form-row">
               <div class="field">
                 <label for="phone">Phone</label>
-                <input type="tel" id="phone" placeholder="(555) 000-0000" />
+                <input type="tel" id="phone" placeholder="0555 12 34 56" />
               </div>
             </div>
           </section>
@@ -122,36 +123,21 @@
             <div class="form-row full">
               <div class="field">
                 <label for="address">Address <span class="required">*</span></label>
-                <input type="text" id="address" placeholder="123 Main Street" required />
+                <input type="text" id="address" placeholder="Rue Didouche Mourad" required />
                 <div class="error-msg" id="addressError">Required.</div>
               </div>
             </div>
             <div class="form-row full">
               <div class="field">
                 <label for="apt">Apartment, suite, etc. (optional)</label>
-                <input type="text" id="apt" placeholder="Apt 4B" />
+                <input type="text" id="apt" placeholder="Appartement (optionnel)" />
               </div>
             </div>
-            <div class="form-row">
+            <div class="form-row full">
               <div class="field">
                 <label for="city">City <span class="required">*</span></label>
-                <input type="text" id="city" placeholder="Portland" required />
+                <input type="text" id="city" placeholder="Algiers" required />
                 <div class="error-msg" id="cityError">Required.</div>
-              </div>
-              <div class="field">
-                <label for="state">State <span class="required">*</span></label>
-                <select id="state" required>
-                  <option value="">Select state</option>
-                  <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option><option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option><option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option><option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option><option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NY">NY</option><option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option><option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option>
-                </select>
-                <div class="error-msg" id="stateError">Required.</div>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="field">
-                <label for="zip">ZIP Code <span class="required">*</span></label>
-                <input type="text" id="zip" placeholder="97201" required />
-                <div class="error-msg" id="zipError">Required.</div>
               </div>
             </div>
           </section>
@@ -170,11 +156,11 @@
                       <div style="font-size:13px;color:var(--gray);margin-top:2px">Pay with cash when your order arrives. Available in all wilayas.</div>
                     </div>
                   </label>
-                  <label style="display:flex;align-items:center;gap:12px;padding:16px;border:2px solid var(--beige);border-radius:12px;cursor:pointer;transition:border-color .2s;opacity:0.6">
-                    <input type="radio" name="payment_method" value="baridimob" disabled style="width:18px;height:18px" />
+                  <label style="display:flex;align-items:center;gap:12px;padding:16px;border:2px solid var(--beige);border-radius:12px;cursor:pointer;transition:border-color .2s">
+                    <input type="radio" name="payment_method" value="card" style="width:18px;height:18px;accent-color:var(--sage)" />
                     <div>
-                      <strong style="font-size:15px">BaridiMob / CCP</strong>
-                      <div style="font-size:13px;color:var(--gray);margin-top:2px">Coming soon â€” pay online via BaridiMob or CCP card. You'll be redirected to complete the payment.</div>
+                      <strong style="font-size:15px">Pay Now — CIB / Edahabia / BaridiMob</strong>
+                      <div style="font-size:13px;color:var(--gray);margin-top:2px">You'll be redirected to Chargily to complete the payment securely.</div>
                     </div>
                   </label>
                 </div>
@@ -229,6 +215,14 @@
             <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> <span class="footer-contact-email">support@boularas.com</span></li>
           </ul>
         </div>
+        <div>
+          <h4>Follow Us</h4>
+          <div class="footer-social">
+            <a href="https://www.tiktok.com/@boularess25?_r=1&_t=ZS-98W6rVEqXzN" target="_blank" rel="noopener" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="https://www.instagram.com/boularess.d?utm_source=qr&igsh=eDVjcDQ2eDl3a2Rp" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://m.facebook.com/Boulars/" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+          </div>
+        </div>
       </div>
       <div class="footer-bottom">&copy; 2026 Boularas. All rights reserved. A fictional brand for learning purposes.</div>
     </div>
@@ -243,6 +237,7 @@
       <div class="check" aria-hidden="true">&#10003;</div>
       <h2>Order Confirmed</h2>
       <p>Thank you! Your order has been placed and you'll receive a confirmation email shortly.</p>
+      <p style="font-size:13px;color:var(--gray);margin-top:8px">Use your tracking code to follow your order status.</p>
       <div class="order-num" id="orderNumber"></div>
       <div class="actions">
         <a href="products.html" class="btn btn-primary">Continue Shopping</a>

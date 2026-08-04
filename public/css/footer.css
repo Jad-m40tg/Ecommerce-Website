@@ -10,7 +10,7 @@
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr auto;
   gap: 40px;
   padding-bottom: 48px;
 }
@@ -42,3 +42,12 @@
   font-size: 13.5px;
   color: #96907f;
 }
+
+/* Social media icons */
+.footer-social { display: flex; gap: 16px; margin-top: 2px; }
+.footer-social a {
+  color: var(--sage);
+  font-size: 22px;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+.footer-social a:hover { color: #a8c96a; transform: translateY(-2px); }

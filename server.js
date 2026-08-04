@@ -18,9 +18,9 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://kit.fontawesome.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'"],
       scriptSrcAttr: ["'unsafe-inline'"]
@@ -85,6 +85,7 @@ app.use('/api/products', require('./routes/products')); // Product browsing + CR
 
 // Checkout rate limiter is applied inside routes/orders.js before the POST handler.
 app.use('/api/orders', require('./routes/orders'));     // Customer checkout + admin order management
+app.use('/api/payments', require('./routes/payments')); // Payment status, webhook, tracking
 
 app.use('/api/customers', require('./routes/customers')); // Admin customer list
 app.use('/api/analytics', require('./routes/analytics')); // Admin analytics dashboard

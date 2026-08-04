@@ -743,33 +743,39 @@ document.getElementById('orderForm').addEventListener('submit', function (event)
   });
   if (firstInvalid) { firstInvalid.focus(); showToast('Please fix the highlighted fields'); return; }
 
-  var btn = event.target.querySelector('[type="submit"], .btn-primary');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Processing\u2026'; }
+  if (!currentProduct) { showToast('Product not loaded yet'); return; }
 
-  fetch('/api/orders', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      customer_name: document.getElementById('fName').value,
-      customer_email: document.getElementById('fEmail').value,
-      customer_phone: document.getElementById('fPhone').value,
-      customer_address: document.getElementById('fAddress').value,
-      customer_city: document.getElementById('fCity').value,
-      items: [{ product_id: currentProduct ? currentProduct.id : null, quantity: selection.qty }],
-      notes: (document.getElementById('fNotes') && document.getElementById('fNotes').value) || ''
-    })
-  }).then(function (r) {
-    return r.text().then(function (text) {
-      var body; try { body = JSON.parse(text); } catch (e) { body = { error: text || 'Empty response' }; }
-      if (!r.ok) throw new Error(body.error || 'Order failed');
-      return body;
-    });
-  }).then(function () {
-    openModal();
-  }).catch(function (err) {
-    if (btn) { btn.disabled = false; btn.textContent = 'Confirm Order'; }
-    showToast(err.message || 'Failed to place order');
+  var cart = [];
+  try { cart = JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch (e) { cart = []; }
+
+  var img = '';
+  try {
+    var imgs = typeof currentProduct.images === 'string' ? JSON.parse(currentProduct.images) : (currentProduct.images || []);
+    img = (imgs.length && imgs[0]) ? imgs[0] : '';
+  } catch (e) { img = ''; }
+
+  var cartItem = {
+    id: currentProduct.id,
+    name: currentProduct.name,
+    price_cents: currentProduct.price_cents,
+    image: img,
+    qty: selection.qty,
+    color: selection.color || '',
+    size: selection.size || ''
+  };
+
+  var existing = cart.find(function (ci) {
+    return ci.id === cartItem.id && ci.color === cartItem.color && ci.size === cartItem.size;
   });
+  if (existing) {
+    existing.qty += cartItem.qty;
+  } else {
+    cart.push(cartItem);
+  }
+
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  showToast('Added to cart! Redirecting to checkout...');
+  setTimeout(function () { window.location.href = 'checkout.html'; }, 800);
 });
 
 document.getElementById('modalCloseBtn').addEventListener('click', function () {

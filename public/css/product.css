@@ -427,7 +427,7 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 32px; margin: 0 auto 18px;
 }
-.modal-card h3 { font-size: 24px; margin-bottom: 8px; }
+.modal-card h3 { font-family: 'Inter', sans-serif !important; font-weight: 500; font-size: 24px; margin-bottom: 8px; }
 .modal-card p { color: var(--gray); margin-bottom: 24px; font-size: 15px; }
 
 @keyframes pop {

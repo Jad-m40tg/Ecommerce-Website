@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Successful — Boularas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/navbar.css" />
+  <link rel="stylesheet" href="css/buttons.css" />
+  <style>
+    .success-page{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+    .success-card{max-width:480px;width:100%;text-align:center;background:var(--white);border:1px solid var(--beige);border-radius:var(--radius-lg);padding:48px 36px;box-shadow:var(--shadow-soft)}
+    .success-icon{width:72px;height:72px;border-radius:50%;background:rgba(107,127,94,.12);color:var(--sage);display:grid;place-items:center;margin:0 auto 20px;font-size:36px;font-weight:700}
+    .success-card h1{font-family:'Inter',sans-serif !important;font-weight:500;font-size:28px;margin-bottom:8px}
+    .success-card p{color:var(--gray);font-size:15px;line-height:1.6}
+    .tracking-code{display:inline-block;margin:20px 0;padding:12px 24px;background:var(--cream);border:1px solid var(--beige);border-radius:var(--radius-md);font-family:monospace;font-size:20px;font-weight:700;letter-spacing:2px;color:var(--charcoal)}
+    .success-actions{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+    .spinner-lg{width:32px;height:32px;border:3px solid var(--beige);border-top-color:var(--sage);border-radius:50%;animation:spin .8s linear infinite;margin:20px auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="althome.html" class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" class="brand-logo" /></a>
+      <nav aria-label="Main navigation">
+        <ul class="nav-links" id="navLinks">
+          <li><a href="althome.html">Home</a></li>
+          <li><a href="products.html">Shop</a></li>
+          <li><a href="categories.html">Categories</a></li>
+          <li><a href="offers.html">Offers</a></li>
+        </ul>
+      </nav>
+      <div class="navbar-actions">
+        <a href="search-results.html" class="nav-search" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></a>
+        <a href="wishlist.html" class="nav-wish" aria-label="Wishlist"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></a>
+        <a href="cart.html" class="cart-btn" aria-label="Cart"><span class="cart-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span><span class="cart-label">Cart</span> <span class="cart-count" id="cartCount">0</span></a>
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">&#9776;</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="success-page">
+    <div class="success-card" id="successContent">
+      <div class="spinner-lg" id="loadingSpinner"></div>
+      <p id="loadingText" style="margin-top:12px">Verifying your payment...</p>
+    </div>
+  </main>
+
+  <script src="utils.js"></script>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var orderId = params.get('order_id');
+      var content = document.getElementById('successContent');
+
+      if (!orderId) {
+        content.innerHTML = '<div class="success-icon">?</div><h1>Invalid Link</h1><p>No order information found. Please check your email for the correct link.</p><div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+        return;
+      }
+
+      var attempts = 0;
+      var maxAttempts = 15;
+      var pollInterval = setInterval(function () {
+        attempts++;
+        if (attempts > maxAttempts) {
+          clearInterval(pollInterval);
+          content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Processing</h1><p>Your payment is being processed. You will receive a confirmation email shortly.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+          return;
+        }
+
+        fetch('/api/payments/status/' + orderId).then(function (r) { return r.json(); }).then(function (data) {
+          if (data.payment_status === 'paid') {
+            clearInterval(pollInterval);
+            var tc = data.tracking_code || '';
+            content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed and your order is being processed.</p>' +
+              (tc ? '<div class="tracking-code">' + tc + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code — use it to follow your order.</p>' : '') +
+              '<div class="success-actions"><a href="track.html' + (tc ? '?code=' + tc : '') + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+          } else if (data.checkout_status === 'failed' || data.checkout_status === 'expired') {
+            clearInterval(pollInterval);
+            window.location.href = 'payment-failed.html?order_id=' + orderId;
+          }
+        }).catch(function () {});
+      }, 2000);
+    })();
+  </script>
+</body>
+</html>

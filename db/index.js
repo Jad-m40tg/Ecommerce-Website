@@ -31,4 +31,25 @@ for (const [name, sql] of Object.entries(columnMigrations)) {
   }
 }
 
+const orderColumns = db.pragma('table_info(orders)').map((col) => col.name);
+const orderMigrations = {
+  payment_method: "ALTER TABLE orders ADD COLUMN payment_method TEXT DEFAULT 'cash_on_delivery'",
+  payment_reference: "ALTER TABLE orders ADD COLUMN payment_reference TEXT DEFAULT ''",
+  payment_payload: "ALTER TABLE orders ADD COLUMN payment_payload TEXT DEFAULT ''",
+  paid_at: "ALTER TABLE orders ADD COLUMN paid_at TEXT",
+  tracking_number: "ALTER TABLE orders ADD COLUMN tracking_number TEXT DEFAULT ''",
+  carrier: "ALTER TABLE orders ADD COLUMN carrier TEXT DEFAULT ''",
+  tracking_url: "ALTER TABLE orders ADD COLUMN tracking_url TEXT DEFAULT ''",
+  tracking_code: "ALTER TABLE orders ADD COLUMN tracking_code TEXT DEFAULT ''"
+};
+for (const [name, sql] of Object.entries(orderMigrations)) {
+  if (!orderColumns.includes(name)) {
+    try {
+      db.exec(sql);
+    } catch (err) {
+      console.error('Migration failed for orders.' + name + ':', err.message);
+    }
+  }
+}
+
 module.exports = db;
