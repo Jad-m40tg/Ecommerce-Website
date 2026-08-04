@@ -1,6 +1,7 @@
 /* ============================================================
-   DESIGN TOKENS (CSS VARIABLES)
+   GLOBAL CSS VARIABLES
    Single source of truth for the entire design system.
+   Change a value here and it applies across all pages.
    ============================================================ */
 :root {
   /* Colors */

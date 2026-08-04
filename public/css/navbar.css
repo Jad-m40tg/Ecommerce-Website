@@ -42,8 +42,18 @@
   letter-spacing: 0.01em;
   white-space: nowrap;
   flex-shrink: 0;
+  line-height: 0;
 }
 .brand span { color: var(--sage); }
+
+/* Brand logo image */
+.brand-logo {
+  display: block;
+  height: 40px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+}
 
 /* Pill-style nav links */
 .nav-links {
@@ -161,6 +171,7 @@
   .navbar-inner { padding: 0 8px; gap: 3px; }
   .navbar-actions { gap: 2px; }
   .brand { font-size: 15px; }
+  .brand-logo { height: 24px; }
   .nav-search,
   .nav-wish { width: 28px; height: 28px; }
   .nav-search svg,

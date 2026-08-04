@@ -22,7 +22,7 @@ No test, lint, or typecheck scripts exist.
 
 Run `npm run db:init` to (re)create all tables and seed data:
 
-- **admins** — email, name, avatar, password_hash, role. Default: `admin@havenwood.com` / `password123`
+- **admins** — email, name, avatar, password_hash, role. Default: `admin@boularas.com` / `password123`
 - **products** — price_cents (integer), colors/sizes/tags/images (JSON strings), featured, on_sale, status (active/draft)
 - **orders** — customer info embedded (no customer accounts), items (JSON array), payment_status, order_status, total_cents
 - **categories** — name, slug (unique), image, sort_order

@@ -13,4 +13,22 @@ db.pragma('journal_mode = WAL');
 // SQLite will reject the insert if that product doesn't exist
 db.pragma('foreign_keys = ON');
 
+// Idempotent schema migration — adds new columns to existing databases
+// without wiping data. Safe to run on every boot.
+const productColumns = db.pragma('table_info(products)').map((col) => col.name);
+const columnMigrations = {
+  specifications: "ALTER TABLE products ADD COLUMN specifications TEXT DEFAULT '[]'",
+  shipping_info: "ALTER TABLE products ADD COLUMN shipping_info TEXT DEFAULT ''",
+  returns_info: "ALTER TABLE products ADD COLUMN returns_info TEXT DEFAULT ''"
+};
+for (const [name, sql] of Object.entries(columnMigrations)) {
+  if (!productColumns.includes(name)) {
+    try {
+      db.exec(sql);
+    } catch (err) {
+      console.error('Migration failed for products.' + name + ':', err.message);
+    }
+  }
+}
+
 module.exports = db;

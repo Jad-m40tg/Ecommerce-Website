@@ -17,7 +17,7 @@ function getProductCategory(product) {
 }
 
 /* ---------- CART HELPERS (unified) ---------- */
-var CART_KEY = 'havenwood-cart';
+var CART_KEY = 'boularas-cart';
 
 function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
 function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }

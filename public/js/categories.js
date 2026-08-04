@@ -4,7 +4,7 @@ var CATEGORIES = [];
 var PRODUCTS = [];
 
 /* ---------- CART HELPERS (unified) ---------- */
-var CART_KEY = 'havenwood-cart';
+var CART_KEY = 'boularas-cart';
 
 function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
 function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }
@@ -47,7 +47,7 @@ function renderCategories() {
 
 /* ---------- PRODUCT CARDS + ROW ---------- */
 function productCardHTML(product) {
-  var stars = '\u2605'.repeat(Math.round(product.rating || 4.7));
+  var stars = '\u2605'.repeat(Math.round(product.rating || 0));
   var badge = '';
   if (product.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
   if (product.badge === 'new')  badge = '<span class="card-badge">New</span>';
@@ -162,7 +162,7 @@ fetch('/api/products/browse')
         category_name: (p.category_name || p.category || 'Uncategorized'),
         price_cents: p.price_cents || 0,
         compare_at_price_cents: p.compare_at_price_cents || null,
-        rating: parseFloat(p.rating) || 4.7,
+        rating: parseFloat(p.rating) || 0,
         reviews: parseInt(p.reviews, 10) || 0,
         image: img,
         badge: p.on_sale ? 'sale' : (p.is_new ? 'new' : null)

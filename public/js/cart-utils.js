@@ -2,7 +2,7 @@
    CART UTILS — Shared cart functions (load on ALL pages)
    Single source of truth for localStorage key + cart shape
    ============================================================ */
-const CART_KEY = 'havenwood-cart';
+const CART_KEY = 'boularas-cart';
 
 /** Get cart array from localStorage (never throws) */
 function getCart() {

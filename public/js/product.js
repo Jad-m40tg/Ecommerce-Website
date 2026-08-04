@@ -1,7 +1,13 @@
 /* product.js — product.html specific logic */
 
-var CART_KEY = 'havenwood-cart';
+var CART_KEY = 'boularas-cart';
 var currentProduct = null;
+var storeSettings = {};
+var settingsPromise = fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) { storeSettings = s || {}; }).catch(function () {});
+
+var lightboxEl = null;
+var lightboxIndex = 0;
+var lightboxImages = [];
 
 function getCart() {
   try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
@@ -164,13 +170,23 @@ if (!requestedId) {
         colors: [],
         sizes: [],
         tags: [],
+        images: [],
         image: getProductImage(apiProduct),
         featured: apiProduct.featured,
-        on_sale: apiProduct.on_sale
+        on_sale: apiProduct.on_sale,
+        brand: apiProduct.brand || '',
+        sku: apiProduct.sku || '',
+        specifications: [],
+        shipping_info: '',
+        returns_info: ''
       };
       try { currentProduct.colors = typeof apiProduct.colors === 'string' ? JSON.parse(apiProduct.colors) : (apiProduct.colors || []); } catch (e) { currentProduct.colors = []; }
       try { currentProduct.sizes = typeof apiProduct.sizes === 'string' ? JSON.parse(apiProduct.sizes) : (apiProduct.sizes || []); } catch (e) { currentProduct.sizes = []; }
       try { currentProduct.tags = typeof apiProduct.tags === 'string' ? JSON.parse(apiProduct.tags) : (apiProduct.tags || []); } catch (e) { currentProduct.tags = []; }
+      try { currentProduct.images = typeof apiProduct.images === 'string' ? JSON.parse(apiProduct.images) : (apiProduct.images || []); } catch (e) { currentProduct.images = []; }
+      try { currentProduct.specifications = typeof apiProduct.specifications === 'string' ? JSON.parse(apiProduct.specifications) : (apiProduct.specifications || []); } catch (e) { currentProduct.specifications = []; }
+      currentProduct.shipping_info = apiProduct.shipping_info || '';
+      currentProduct.returns_info = apiProduct.returns_info || '';
 
       document.getElementById('orderSection').style.display = 'block';
       fetchReviewsAndRender(currentProduct);
@@ -193,22 +209,21 @@ function fetchReviewsAndRender(product) {
     .then(function (r) { return r.json(); })
     .then(function (data) {
       currentReviews = data.reviews || [];
-      renderProduct(product);
-      renderRelated(product);
-      var list = document.getElementById('reviewsList');
-      if (list) list.innerHTML = renderReviews(product.id);
-      wireUpReviewDeleteButtons();
-      wireUpViewAllButton();
-      observeReveals();
-      positionReviews();
     })
     .catch(function (err) {
       console.error('Failed to load reviews:', err);
       currentReviews = [];
+    })
+    .then(function () {
+      return settingsPromise;
+    })
+    .then(function () {
       renderProduct(product);
       renderRelated(product);
       var list = document.getElementById('reviewsList');
       if (list) list.innerHTML = renderReviews(product ? product.id : 0);
+      wireUpReviewDeleteButtons();
+      wireUpViewAllButton();
       observeReveals();
       positionReviews();
     });
@@ -271,7 +286,7 @@ function wireUpViewAllButton() {
 
 /* ---------- RENDER PRODUCT ---------- */
 function renderProduct(p) {
-  var description = p.description || 'A thoughtfully designed piece from the Havenwood collection.';
+  var description = p.description || 'A thoughtfully designed piece from the Boularas collection.';
   var colors = p.colors && p.colors.length > 0 ? p.colors : ['Natural'];
   var sizes = p.sizes && p.sizes.length > 0 ? p.sizes : ['Standard'];
 
@@ -279,7 +294,7 @@ function renderProduct(p) {
   var oldPriceDollars = p.old_price_cents ? Math.round(p.old_price_cents / 100) : null;
 
   var reviewCount = currentReviews.length;
-  var avgRating = 4.7;
+  var avgRating = 0;
   if (reviewCount > 0) {
     var sum = currentReviews.reduce(function (s, r) { return s + r.rating; }, 0);
     avgRating = Math.round((sum / reviewCount) * 10) / 10;
@@ -301,9 +316,16 @@ function renderProduct(p) {
   var oldPriceHTML = oldPriceDollars ? '<s>' + price(oldPriceDollars * 100) + '</s>' : '';
   var saveHTML = oldPriceDollars ? '<span class="save">Save ' + price((oldPriceDollars - priceDollars) * 100) + '</span>' : '';
 
-  var thumbs = [0, 1, 2, 3].map(function (i) {
-    return '<button type="button" class="' + (i === 0 ? 'active' : '') + '" data-thumb="' + i + '" aria-label="View image ' + (i + 1) + '"><img src="' + p.image + '" alt="" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
-  }).join('');
+  var galleryImages = (p.images && p.images.length > 0) ? p.images.filter(function (img) { return !!img; }) : [];
+  lightboxImages = galleryImages.length > 0 ? galleryImages : [p.image];
+  var thumbs;
+  if (galleryImages.length > 0) {
+    thumbs = galleryImages.map(function (img, i) {
+      return '<button type="button" class="' + (i === 0 ? 'active' : '') + '" data-thumb="' + i + '" aria-label="View image ' + (i + 1) + '"><img src="' + img + '" alt="" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
+    }).join('');
+  } else {
+    thumbs = '<button type="button" class="active" data-thumb="0" aria-label="View image 1"><img src="' + p.image + '" alt="" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
+  }
 
   var swatches;
   if (typeof colors[0] === 'object') {
@@ -314,9 +336,8 @@ function renderProduct(p) {
     }).join('');
     selection.color = colors[0].name || colors[0];
   } else {
-    var colorNames = ['#e8e0d3', '#6b7f5e', '#2b2926', '#a67c52', '#c9a97a'];
     swatches = colors.map(function (name, i) {
-      return '<button type="button" class="swatch ' + (i === 0 ? 'active' : '') + '" style="background:' + (colorNames[i] || '#e8e0d3') + '" data-color="' + escapeHtml(name) + '" aria-label="Color: ' + escapeHtml(name) + '"></button>';
+      return '<button type="button" class="swatch ' + (i === 0 ? 'active' : '') + '" style="background:' + colorHex(name) + '" data-color="' + escapeHtml(name) + '" aria-label="Color: ' + escapeHtml(name) + '"></button>';
     }).join('');
     selection.color = colors[0];
   }
@@ -331,6 +352,20 @@ function renderProduct(p) {
   var stockHTML = p.stock > 0
     ? '<div class="stock-note">In stock &middot; ships in 2&ndash;4 days</div>'
     : '<div class="stock-note" style="color:var(--wood)">Out of stock</div>';
+
+  var specsRows = '';
+  if (p.specifications && p.specifications.length > 0) {
+    specsRows = p.specifications.map(function (s) {
+      return '<tr><th>' + escapeHtml(s.label) + '</th><td>' + escapeHtml(s.value) + '</td></tr>';
+    }).join('');
+  }
+
+  var shippingText = (p.shipping_info && p.shipping_info.trim()) ? p.shipping_info
+    : (storeSettings.shipping_policy && storeSettings.shipping_policy.trim()) ? storeSettings.shipping_policy
+    : 'Free delivery on orders over $500. Standard delivery takes 2-4 business days; larger pieces are scheduled with a two-hour window.';
+  var returnsText = (p.returns_info && p.returns_info.trim()) ? p.returns_info
+    : (storeSettings.returns_policy && storeSettings.returns_policy.trim()) ? storeSettings.returns_policy
+    : 'Not the right fit? Send it back within 30 days for a full refund - we will even collect it from your door.';
 
   document.getElementById('productRoot').innerHTML =
     '<div class="product-detail">' +
@@ -400,16 +435,16 @@ function renderProduct(p) {
             '<div class="tab-panel" data-panel="specs">' +
               '<h3>The details</h3>' +
               '<table class="specs-table"><tbody>' +
-                '<tr><th>Brand</th><td>' + escapeHtml(p.brand || 'Havenwood') + '</td></tr>' +
+                '<tr><th>Brand</th><td>' + escapeHtml(p.brand || 'Boularas') + '</td></tr>' +
                 '<tr><th>Category</th><td>' + escapeHtml(catLabel) + '</td></tr>' +
                 (p.sku ? '<tr><th>SKU</th><td>' + escapeHtml(p.sku) + '</td></tr>' : '') +
+                specsRows +
               '</tbody></table>' +
             '</div>' +
             '<div class="tab-panel" data-panel="ship">' +
               '<h3>Delivery &amp; returns</h3>' +
-              '<p><b>Free delivery</b> on orders over $500. Standard delivery takes 2&ndash;4 business days; larger pieces are scheduled with a two-hour window.</p>' +
-              '<p><b>30-day returns.</b> Not the right fit? Send it back within 30 days for a full refund &mdash; we&rsquo;ll even collect it from your door.</p>' +
-              '<p><b>10-year warranty</b> covers frames, joinery, and mechanisms. Everyday wear on upholstery and finishes is normal and expected.</p>' +
+              '<p><b>Shipping</b> ' + escapeHtml(shippingText) + '</p>' +
+              '<p><b>Returns</b> ' + escapeHtml(returnsText) + '</p>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -437,14 +472,82 @@ function positionReviews() {
   }
 }
 
+/* ---------- LIGHTBOX ---------- */
+function ensureLightbox() {
+  if (lightboxEl) return lightboxEl;
+  lightboxEl = document.createElement('div');
+  lightboxEl.className = 'lightbox';
+  lightboxEl.setAttribute('role', 'dialog');
+  lightboxEl.setAttribute('aria-modal', 'true');
+  lightboxEl.innerHTML =
+    '<button type="button" class="lightbox-btn lightbox-close" aria-label="Close">&#10005;</button>' +
+    '<button type="button" class="lightbox-btn lightbox-prev" aria-label="Previous image">&#8249;</button>' +
+    '<button type="button" class="lightbox-btn lightbox-next" aria-label="Next image">&#8250;</button>' +
+    '<img id="lightboxImg" alt="" />';
+  document.body.appendChild(lightboxEl);
+  lightboxEl.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
+  lightboxEl.querySelector('.lightbox-prev').addEventListener('click', function () { lightboxStep(-1); });
+  lightboxEl.querySelector('.lightbox-next').addEventListener('click', function () { lightboxStep(1); });
+  lightboxEl.addEventListener('click', function (event) { if (event.target === lightboxEl) closeLightbox(); });
+  return lightboxEl;
+}
+
+function updateLightbox() {
+  if (!lightboxEl) return;
+  var src = lightboxImages[lightboxIndex] || '';
+  var main = document.getElementById('galleryMainImg');
+  var img = document.getElementById('lightboxImg');
+  img.src = src;
+  img.setAttribute('data-category', main ? (main.getAttribute('data-category') || '') : '');
+  img.setAttribute('onerror', 'handleImageError(this)');
+  img.removeAttribute('data-fallback');
+  lightboxEl.classList.toggle('single', lightboxImages.length <= 1);
+}
+
+function openLightbox(src) {
+  var idx = lightboxImages.indexOf(src);
+  lightboxIndex = idx >= 0 ? idx : 0;
+  ensureLightbox();
+  updateLightbox();
+  lightboxEl.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  if (!lightboxEl) return;
+  lightboxEl.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function lightboxStep(dir) {
+  if (lightboxImages.length <= 1) return;
+  lightboxIndex = (lightboxIndex + dir + lightboxImages.length) % lightboxImages.length;
+  updateLightbox();
+}
+
+document.addEventListener('keydown', function (event) {
+  if (!lightboxEl || !lightboxEl.classList.contains('open')) return;
+  if (event.key === 'Escape') closeLightbox();
+  else if (event.key === 'ArrowLeft') lightboxStep(-1);
+  else if (event.key === 'ArrowRight') lightboxStep(1);
+});
+
 /* ---------- WIRE UP INTERACTIONS ---------- */
 function wireUpDetail(p, colors) {
   document.querySelectorAll('[data-thumb]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      document.querySelectorAll('[data-thumb]').forEach(function (b) { b.classList.remove('active'); });
-      btn.classList.add('active');
+      var thumbImg = btn.querySelector('img');
+      var src = thumbImg ? thumbImg.getAttribute('src') : btn.getAttribute('data-src');
+      if (src) openLightbox(src);
     });
   });
+
+  var galleryMain = document.getElementById('galleryMainImg');
+  if (galleryMain) {
+    galleryMain.addEventListener('click', function () {
+      openLightbox(this.getAttribute('src'));
+    });
+  }
 
   document.getElementById('swatchList').addEventListener('click', function (event) {
     var swatch = event.target.closest('[data-color]');
@@ -496,7 +599,7 @@ function wireUpDetail(p, colors) {
   var wishBtn = document.getElementById('wishlistBtn');
   var wished = false;
   if (wishBtn) {
-    var wishList = JSON.parse(localStorage.getItem('havenwood_wishlist') || '[]');
+    var wishList = JSON.parse(localStorage.getItem('boularas_wishlist') || '[]');
     wished = wishList.some(function (w) { return String(w.id) === String(p.id); });
     if (wished) {
       wishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24">favorite</span>';
@@ -513,7 +616,7 @@ function wireUpDetail(p, colors) {
       } else {
         wishList = wishList.filter(function (w) { return String(w.id) !== String(p.id); });
       }
-      localStorage.setItem('havenwood_wishlist', JSON.stringify(wishList));
+      localStorage.setItem('boularas_wishlist', JSON.stringify(wishList));
       showToast(wished ? 'Added to wishlist' : 'Removed from wishlist');
     });
   }

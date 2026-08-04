@@ -16,6 +16,7 @@
 }
 
 .footer .brand { color: var(--warm-white); margin-bottom: 14px; display: inline-block; }
+.footer .brand-logo { height: 36px; width: auto; max-width: 150px; object-fit: contain; }
 .footer p { font-size: 14.5px; max-width: 320px; }
 
 .footer h4 {

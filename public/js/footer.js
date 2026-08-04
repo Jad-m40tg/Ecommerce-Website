@@ -4,6 +4,7 @@
     var s = data.settings || data || {};
     if (s.store_name) {
       document.querySelectorAll('.footer .brand').forEach(function (el) {
+        if (el.querySelector('img')) return;
         el.innerHTML = s.store_name.replace(/\w+/, '<span>$&</span>');
       });
     }

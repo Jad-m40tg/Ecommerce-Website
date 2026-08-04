@@ -1,7 +1,7 @@
 /* checkout.js — checkout.html specific logic */
 
 /* ---------- 1. CART STORAGE ---------- */
-var CART_KEY = 'havenwood-cart';
+var CART_KEY = 'boularas-cart';
 
 function getCart() {
   try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
@@ -174,7 +174,7 @@ document.addEventListener('click', function (event) {
   }).then(function (data) {
     saveCart([]);
     renderSummary();
-    var orderId = (data.order && data.order.id) || data.id || 'HW-' + Date.now().toString(36).toUpperCase();
+    var orderId = (data.order && data.order.id) || data.id || 'BL-' + Date.now().toString(36).toUpperCase();
     document.getElementById('orderNumber').textContent = 'Order #' + orderId;
     document.getElementById('confirmOverlay').classList.add('open');
     showToast('Order placed!');

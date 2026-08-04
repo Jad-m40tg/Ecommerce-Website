@@ -1,7 +1,7 @@
 /* cart.js — cart.html specific logic */
 
 /* ---------- 1. CART STORAGE ---------- */
-var CART_KEY = 'havenwood-cart';
+var CART_KEY = 'boularas-cart';
 
 function getCart() {
   try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
@@ -38,7 +38,7 @@ var FREE_SHIP_OVER  = 50000;
 var TAX_RATE        = 0.08;
 
 var PROMOS = {
-  HAVEN10:  { label: '10% off subtotal', pct: 0.10 },
+  BOUL10:   { label: '10% off subtotal', pct: 0.10 },
   WELCOME5: { label: '5% off subtotal',  pct: 0.05 }
 };
 var appliedPromo = null;
@@ -157,12 +157,12 @@ function renderSummary() {
       '<span>Promo code</span>' +
     '</div>' +
     '<div class="promo">' +
-      '<input type="text" id="promoInput" placeholder="e.g. HAVEN10" ' +
+      '<input type="text" id="promoInput" placeholder="e.g. BOUL10" ' +
         (appliedPromo ? 'value="' + escapeHtml(appliedPromo.code) + '" disabled' : '') + ' />' +
       '<button type="button" id="promoBtn">' + (appliedPromo ? 'Remove' : 'Apply') + '</button>' +
     '</div>' +
     '<div class="promo-msg" id="promoMsg">' +
-      (appliedPromo ? '&#10003; ' + escapeHtml(appliedPromo.label) + ' applied.' : 'Try HAVEN10 or WELCOME5.') +
+      (appliedPromo ? '&#10003; ' + escapeHtml(appliedPromo.label) + ' applied.' : 'Try BOUL10 or WELCOME5.') +
     '</div>' +
 
     '<div class="summary-divider"></div>' +

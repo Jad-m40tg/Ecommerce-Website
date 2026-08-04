@@ -12,7 +12,7 @@ const PRODUCTS = [
 ];
 
 /* ---------- CART HELPERS (unified) ---------- */
-const CART_KEY = 'havenwood-cart';
+const CART_KEY = 'boularas-cart';
 
 function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
 function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }

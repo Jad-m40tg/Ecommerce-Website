@@ -10,7 +10,7 @@
  *   rating, reviews, on_sale, compare_at_price_cents, featured, badge
  */
 function productCardHTML(product) {
-  const stars = '\u2605'.repeat(Math.round(product.rating || 4.7));
+  const stars = '\u2605'.repeat(Math.round(product.rating || 0));
   let badge = '';
   if (product.badge === 'sale' || (product.on_sale && product.compare_at_price_cents)) {
     badge = '<span class="card-badge sale">Sale</span>';

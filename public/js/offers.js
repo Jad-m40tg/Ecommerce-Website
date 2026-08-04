@@ -3,7 +3,7 @@
 var PRODUCTS = [];
 
 /* ---------- CART HELPERS (unified) ---------- */
-var CART_KEY = 'havenwood-cart';
+var CART_KEY = 'boularas-cart';
 
 function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
 function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }
@@ -26,7 +26,7 @@ function isInCart(productId) {
 /* ---------- PROMOTIONS DATA ---------- */
 var PROMOTIONS = [
   { icon: 'local_shipping', title: 'Free Delivery', desc: 'On all orders over $500. White-glove delivery included \u2014 we set everything up and remove packaging.', code: 'FREESHIP' },
-  { icon: 'card_giftcard', title: 'New Customer', desc: 'Welcome to Havenwood! Get 15% off your first order of $200 or more when you sign up for our list.', code: 'WELCOME15' },
+  { icon: 'card_giftcard', title: 'New Customer', desc: 'Welcome to Boularas! Get 15% off your first order of $200 or more when you sign up for our list.', code: 'WELCOME15' },
   { icon: 'layers', title: 'Bundle & Save', desc: 'Buy 3 or more items from the same collection and save 20% automatically at checkout. No code needed.', code: null },
   { icon: 'school', title: 'Student Discount', desc: 'Full-time students get 10% off site-wide year-round. Verify your .edu email and enjoy a better study space.', code: 'STUDENT10' },
   { icon: 'event', title: 'Seasonal Flash Sale', desc: 'New deals drop every Friday at 10 AM. A different category goes on sale each week \u2014 check back often.', code: null },
@@ -52,7 +52,7 @@ function renderPromotions() {
 
 /* ---------- PRODUCT CARDS ---------- */
 function productCardHTML(product) {
-  var stars = '\u2605'.repeat(Math.round(product.rating || 4.7));
+  var stars = '\u2605'.repeat(Math.round(product.rating || 0));
   var badge = '';
   if (product.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
   if (product.badge === 'new')  badge = '<span class="card-badge">New</span>';
@@ -124,7 +124,7 @@ document.querySelectorAll('[data-scroll]').forEach(function (button) {
 });
 
 /* ---------- COUNTDOWN TIMER ---------- */
-var COUNTDOWN_KEY = 'havenwood-sale-end';
+var COUNTDOWN_KEY = 'boularas-sale-end';
 var DEFAULT_DURATION = 3 * 24 * 60 * 60 * 1000;
 
 function getSaleEndDate() {
@@ -205,7 +205,7 @@ fetch('/api/products/browse/on-sale')
         category_name: (p.category_name || p.category || 'Uncategorized'),
         price_cents: p.price_cents || 0,
         compare_at_price_cents: p.compare_at_price_cents || null,
-        rating: parseFloat(p.rating) || 4.7,
+        rating: parseFloat(p.rating) || 0,
         reviews: parseInt(p.reviews, 10) || 0,
         image: img,
         badge: 'sale'

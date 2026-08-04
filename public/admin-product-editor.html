@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Product Editor — Havenwood Admin</title>
-  <meta name="description" content="Create or edit a Havenwood product." />
+  <title>Product Editor — Boularas Admin</title>
+  <meta name="description" content="Create or edit a Boularas product." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -69,6 +69,21 @@
     .toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);background:var(--charcoal);color:var(--warm-white);padding:13px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:500;box-shadow:var(--shadow-lift);opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s ease;z-index:90}
     .toast.show{opacity:1;transform:translate(-50%,0)}
 
+    .color-chips{display:flex;flex-wrap:wrap;gap:8px;min-height:38px;margin-bottom:12px}
+    .color-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px 6px 8px;border-radius:var(--radius-pill);background:var(--warm-white);border:1.5px solid var(--beige);font-size:13px;font-weight:600;color:var(--charcoal)}
+    .color-chip .dot{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.15);flex-shrink:0}
+    .color-chip .rm{width:18px;height:18px;border-radius:50%;background:var(--danger);color:var(--white);border:none;cursor:pointer;font-size:14px;line-height:1;display:grid;place-items:center;padding:0}
+    .color-chip .rm:hover{background:var(--charcoal)}
+    .color-input-row{display:flex;gap:10px;margin-bottom:14px}
+    .color-input-row .input{flex:1}
+    .color-palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:264px;overflow-y:auto;padding:4px}
+    .palette-swatch{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:var(--radius-md);border:1.5px solid var(--beige);background:var(--warm-white);cursor:pointer;transition:border-color .2s ease,background .2s ease,transform .15s ease;font-family:inherit}
+    .palette-swatch:hover{border-color:var(--sage);transform:translateY(-1px)}
+    .palette-swatch.active{border-color:var(--sage);background:var(--cream)}
+    .palette-swatch .dot{width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(0,0,0,.15)}
+    .palette-swatch .pname{font-size:11px;font-weight:600;color:var(--charcoal);text-align:center;line-height:1.15}
+    .palette-swatch.active .pname{color:var(--sage-dark)}
+
     @media(max-width:1080px){.form-grid{grid-template-columns:1fr}}
     @media(max-width:860px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.side-nav{flex-direction:row;overflow-x:auto;gap:6px}.side-nav a{white-space:nowrap}.nav-label,.sidebar-foot{display:none}.sidebar .brand{border-bottom:none;padding-bottom:12px;margin-bottom:8px}.topbar{padding:0 20px;gap:10px}.admin-chip .who{display:none}.content{padding:20px}}
   </style>
@@ -77,7 +92,7 @@
 
   <div class="app">
     <aside class="sidebar">
-      <div class="brand">Haven<span>wood</span></div>
+      <div class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" style="height:36px;width:auto;max-width:170px;object-fit:contain" /></div>
       <span class="nav-label">Main</span>
       <ul class="side-nav">
         <li><a href="admin-dashboard.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a></li>
@@ -113,6 +128,8 @@
               <div class="field"><label for="pPrice">Price <span class="hint">(cents)</span></label><input class="input" type="number" id="pPrice" min="0" step="1" required /></div>
               <div class="field"><label for="pStock">Stock</label><input class="input" type="number" id="pStock" min="0" step="1" value="0" /></div>
               <div class="field"><label for="pCategory">Category</label><select class="input" id="pCategory"></select></div>
+              <div class="field"><label for="pSku">SKU</label><input class="input" type="text" id="pSku" placeholder="BL-SOF-001" /></div>
+              <div class="field"><label for="pBrand">Brand</label><input class="input" type="text" id="pBrand" placeholder="Boularas" /></div>
               <div class="field"><label for="pStatus">Status</label><select class="input" id="pStatus"><option value="active">Active</option><option value="draft">Draft</option></select></div>
               <div class="field full"><label for="pDesc">Description</label><textarea class="textarea" id="pDesc" rows="4"></textarea></div>
             </div>
@@ -129,7 +146,31 @@
             <h2 class="panel-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Options</h2>
             <div class="form-grid">
               <div class="field"><label for="pSizes">Sizes <span class="hint">(comma-separated)</span></label><input class="input" type="text" id="pSizes" placeholder="S, M, L, XL" /></div>
-              <div class="field"><label for="pColors">Colors <span class="hint">(comma-separated)</span></label><input class="input" type="text" id="pColors" placeholder="Charcoal, Sage, Wood" /></div>
+              <div class="field full">
+                <label>Colors <span class="hint">click a swatch to pick, or type a custom name + Add</span></label>
+                <div class="color-chips" id="colorChips"></div>
+                <div class="color-input-row">
+                  <input class="input" type="text" id="colorInput" placeholder="Type a color name, e.g. Slate" />
+                  <button type="button" class="qa-btn" id="addColorBtn">Add</button>
+                </div>
+                <div class="color-palette" id="colorPalette"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2 class="panel-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>Specifications</h2>
+            <div class="form-grid">
+              <div id="specRows" class="field full" style="display:flex;flex-direction:column;gap:10px;"></div>
+              <div class="field full"><button type="button" class="qa-btn" id="addSpecBtn">+ Add specification</button></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2 class="panel-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Shipping &amp; Returns</h2>
+            <div class="form-grid">
+              <div class="field full"><label for="pShippingInfo">Shipping Information <span class="hint">Falls back to the store shipping policy in Settings when left blank</span></label><textarea class="textarea" id="pShippingInfo" rows="3" placeholder="Delivery time, packaging, carriers..."></textarea></div>
+              <div class="field full"><label for="pReturnsInfo">Returns Information <span class="hint">Falls back to the store returns policy in Settings when left blank</span></label><textarea class="textarea" id="pReturnsInfo" rows="3" placeholder="Return window, condition, refund process..."></textarea></div>
             </div>
           </section>
 
@@ -182,10 +223,19 @@
           document.getElementById('pStock').value = p.stock != null ? p.stock : 0;
           document.getElementById('pDesc').value = p.description || '';
           document.getElementById('pStatus').value = p.status || 'active';
+          document.getElementById('pSku').value = p.sku || '';
+          document.getElementById('pBrand').value = p.brand || '';
+          document.getElementById('pShippingInfo').value = p.shipping_info || '';
+          document.getElementById('pReturnsInfo').value = p.returns_info || '';
+          var parsedSpecs = []; try { parsedSpecs = Array.isArray(p.specifications) ? p.specifications : typeof p.specifications === 'string' ? JSON.parse(p.specifications || '[]') : []; } catch (e) { parsedSpecs = []; }
+          document.getElementById('specRows').innerHTML = '';
+          parsedSpecs.forEach(function (spec) { addSpecRow(spec.label, spec.value); });
           var parsedSizes = []; try { parsedSizes = Array.isArray(p.sizes) ? p.sizes : typeof p.sizes === 'string' ? JSON.parse(p.sizes || '[]') : []; } catch (e) { parsedSizes = []; }
           document.getElementById('pSizes').value = parsedSizes.join(', ');
           var parsedColors = []; try { parsedColors = Array.isArray(p.colors) ? p.colors : typeof p.colors === 'string' ? JSON.parse(p.colors || '[]') : []; } catch (e) { parsedColors = []; }
-          document.getElementById('pColors').value = parsedColors.join(', ');
+          selectedColors = parsedColors.map(function (c) { return typeof c === 'string' ? c : (c.name || ''); }).filter(Boolean);
+          renderColorChips();
+          renderPalette();
           if (p.category) document.getElementById('pCategory').value = p.category;
           try { imageUrls = Array.isArray(p.images) ? p.images : typeof p.images === 'string' ? JSON.parse(p.images || '[]') : []; } catch (e) { imageUrls = []; }
           renderImages();
@@ -199,6 +249,63 @@
         var thumbs = imageUrls.slice(1).map(function (url, i) { return '<div class="img-preview"><img src="' + escapeHtml(url) + '" alt="Product image ' + (i + 2) + '" /><button type="button" class="rm" data-idx="' + (i + 1) + '">&times;</button></div>'; }).join('');
         grid.innerHTML = main + '<div class="img-thumbs">' + thumbs + '</div>';
       }
+
+      function addSpecRow(label, value) {
+        var row = document.createElement('div');
+        row.className = 'spec-row';
+        row.style.display = 'grid';
+        row.style.gridTemplateColumns = '1fr 1fr 32px';
+        row.style.gap = '10px';
+        row.innerHTML = '<input class="input" type="text" placeholder="Material" value="' + escapeHtml(label || '') + '" /><input class="input" type="text" placeholder="Solid white oak" value="' + escapeHtml(value || '') + '" /><button type="button" title="Remove specification" style="width:32px;height:32px;border-radius:50%;background:var(--danger);color:var(--white);border:none;cursor:pointer;font-size:16px;line-height:1;justify-self:end;align-self:center">&times;</button>';
+        row.querySelector('button').addEventListener('click', function () { row.remove(); });
+        document.getElementById('specRows').appendChild(row);
+      }
+
+      document.getElementById('addSpecBtn').addEventListener('click', function () { addSpecRow('', ''); });
+
+      var selectedColors = [];
+      function addColor(name) {
+        name = String(name || '').trim();
+        if (!name) return;
+        var exists = selectedColors.some(function (c) { return c.toLowerCase() === name.toLowerCase(); });
+        if (exists) return;
+        selectedColors.push(name);
+        renderColorChips();
+        renderPalette();
+      }
+      function removeColor(name) {
+        selectedColors = selectedColors.filter(function (c) { return c.toLowerCase() !== name.toLowerCase(); });
+        renderColorChips();
+        renderPalette();
+      }
+      function renderColorChips() {
+        var el = document.getElementById('colorChips');
+        if (selectedColors.length === 0) { el.innerHTML = '<span class="hint" style="font-size:12.5px;align-self:center">No colors selected yet.</span>'; return; }
+        el.innerHTML = selectedColors.map(function (name) {
+          return '<span class="color-chip"><span class="dot" style="background:' + colorHex(name) + '"></span>' + escapeHtml(name) + '<button type="button" class="rm" data-name="' + escapeHtml(name) + '" title="Remove ' + escapeHtml(name) + '">&times;</button></span>';
+        }).join('');
+      }
+      function renderPalette() {
+        var el = document.getElementById('colorPalette');
+        if (!el) return;
+        el.innerHTML = Object.keys(COLOR_HEX).map(function (name) {
+          var active = selectedColors.some(function (c) { return c.toLowerCase() === name.toLowerCase(); });
+          return '<button type="button" class="palette-swatch ' + (active ? 'active' : '') + '" data-name="' + escapeHtml(name) + '" title="' + escapeHtml(name) + '"><span class="dot" style="background:' + COLOR_HEX[name] + '"></span><span class="pname">' + escapeHtml(name) + '</span></button>';
+        }).join('');
+      }
+
+      document.getElementById('colorInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); addColor(this.value); this.value = ''; } });
+      document.getElementById('addColorBtn').addEventListener('click', function () { var inp = document.getElementById('colorInput'); addColor(inp.value); inp.value = ''; });
+      document.getElementById('colorChips').addEventListener('click', function (e) { var btn = e.target.closest('.rm'); if (btn) removeColor(btn.getAttribute('data-name')); });
+      document.getElementById('colorPalette').addEventListener('click', function (e) {
+        var btn = e.target.closest('.palette-swatch');
+        if (!btn) return;
+        var name = btn.getAttribute('data-name');
+        var exists = selectedColors.some(function (c) { return c.toLowerCase() === name.toLowerCase(); });
+        if (exists) removeColor(name); else addColor(name);
+      });
+      renderPalette();
+      renderColorChips();
 
       document.getElementById('imgGrid').addEventListener('click', function (e) {
         var btn = e.target.closest('.rm');
@@ -239,8 +346,13 @@
           category: document.getElementById('pCategory').value || null,
           status: document.getElementById('pStatus').value,
           description: document.getElementById('pDesc').value.trim(),
+          brand: document.getElementById('pBrand').value.trim(),
+          sku: document.getElementById('pSku').value.trim(),
+          shipping_info: document.getElementById('pShippingInfo').value.trim(),
+          returns_info: document.getElementById('pReturnsInfo').value.trim(),
+          specifications: Array.from(document.querySelectorAll('.spec-row')).map(function (row) { var inp = row.querySelectorAll('input'); return { label: inp[0].value.trim(), value: inp[1].value.trim() }; }).filter(function (s) { return s.label || s.value; }),
           sizes: document.getElementById('pSizes').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean),
-          colors: document.getElementById('pColors').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean),
+          colors: selectedColors,
           images: imageUrls
         };
 

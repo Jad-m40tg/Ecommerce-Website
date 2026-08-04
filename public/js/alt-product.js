@@ -15,7 +15,7 @@ var selection = {
 };
 
 /* ---------- 2. CART HELPERS ---------- */
-var CART_KEY = 'havenwood-cart';
+var CART_KEY = 'boularas-cart';
 
 function getCart() {
   try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
@@ -246,7 +246,7 @@ document.getElementById('addToCartBtn').addEventListener('click', function () {
 /* Wishlist toggle */
 var wishBtn = document.getElementById('wishlistBtn');
 var wished = false;
-var wishList = JSON.parse(localStorage.getItem('havenwood_wishlist') || '[]');
+var wishList = JSON.parse(localStorage.getItem('boularas_wishlist') || '[]');
 wished = wishList.some(function (w) { return w.id === PRODUCT.id; });
 if (wished) {
   wishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24">favorite</span>';
@@ -263,7 +263,7 @@ wishBtn.addEventListener('click', function () {
   } else {
     wishList = wishList.filter(function (w) { return w.id !== PRODUCT.id; });
   }
-  localStorage.setItem('havenwood_wishlist', JSON.stringify(wishList));
+  localStorage.setItem('boularas_wishlist', JSON.stringify(wishList));
   showToast(wished ? 'Added to wishlist' : 'Removed from wishlist');
 });
 

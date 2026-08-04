@@ -1,5 +1,5 @@
     /* ---------- 1. GLOBALS ---------- */
-    var CART_KEY = 'havenwood-cart';
+    var CART_KEY = 'boularas-cart';
     var currentProduct = null;
 
     function getCart() {
@@ -240,7 +240,7 @@
     /* ---------- 7. RENDER PRODUCT ---------- */
 
     function renderProduct(p) {
-      var description = p.description || 'A thoughtfully designed piece from the Havenwood collection.';
+      var description = p.description || 'A thoughtfully designed piece from the Boularas collection.';
       var colors = p.colors && p.colors.length > 0 ? p.colors : ['Natural'];
       var sizes = p.sizes && p.sizes.length > 0 ? p.sizes : ['Standard'];
 
@@ -401,7 +401,7 @@
                 '<div class="tab-panel" data-panel="specs">' +
                   '<h3>The details</h3>' +
                   '<table class="specs-table"><tbody>' +
-                    '<tr><th>Brand</th><td>' + escapeHtml(p.brand || 'Havenwood') + '</td></tr>' +
+                    '<tr><th>Brand</th><td>' + escapeHtml(p.brand || 'Boularas') + '</td></tr>' +
                     '<tr><th>Category</th><td>' + escapeHtml(catLabel) + '</td></tr>' +
                     (p.sku ? '<tr><th>SKU</th><td>' + escapeHtml(p.sku) + '</td></tr>' : '') +
                   '</tbody></table>' +

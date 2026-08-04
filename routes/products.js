@@ -128,19 +128,20 @@ router.get('/:id', (req, res) => {
 // Database auto-generates the ID (client cannot supply one).
 // Validates that price is a non-negative number.
 router.post('/', (req, res, next) => {
-  const { name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, featured, on_sale, status } = req.body;
+  const { name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status } = req.body;
   if (!name || price_cents === undefined) return res.status(400).json({ error: 'name, price_cents required' });
   if (typeof price_cents !== 'number' || price_cents < 0) return res.status(400).json({ error: 'price_cents must be a non-negative number' });
   if (stock !== undefined && (typeof stock !== 'number' || stock < 0)) return res.status(400).json({ error: 'stock must be a non-negative number' });
 
   const stmt = db.prepare(`
-    INSERT INTO products (name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, featured, on_sale, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO products (name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   try {
-    // Array/object fields (colors, sizes, tags, images) are stored as JSON strings in SQLite
+    // Array/object fields (colors, sizes, tags, images, specifications) are stored as JSON strings in SQLite
     const result = stmt.run(name, description || '', price_cents, old_price_cents || null, category || '', brand || '', sku || null, stock || 0,
-      JSON.stringify(colors || []), JSON.stringify(sizes || []), JSON.stringify(tags || []), JSON.stringify(images || []),
+      JSON.stringify(colors || []), JSON.stringify(sizes || []), JSON.stringify(tags || []), JSON.stringify(images || []), JSON.stringify(specifications || []),
+      shipping_info || '', returns_info || '',
       featured ? 1 : 0, on_sale ? 1 : 0, status || 'active');
     res.status(201).json({ id: result.lastInsertRowid });
   } catch (e) {
@@ -155,7 +156,7 @@ router.put('/:id', (req, res) => {
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
   if (!product) return res.status(404).json({ error: 'Product not found' });
 
-  const fields = ['name', 'description', 'price_cents', 'old_price_cents', 'category', 'brand', 'sku', 'stock', 'colors', 'sizes', 'tags', 'images', 'featured', 'on_sale', 'status'];
+  const fields = ['name', 'description', 'price_cents', 'old_price_cents', 'category', 'brand', 'sku', 'stock', 'colors', 'sizes', 'tags', 'images', 'specifications', 'shipping_info', 'returns_info', 'featured', 'on_sale', 'status'];
   const updates = [];
   const values = [];
 
@@ -163,7 +164,7 @@ router.put('/:id', (req, res) => {
     if (req.body[field] !== undefined) {
       updates.push(`${field} = ?`);
       // Array/object fields need to be stringified before saving
-      if (['colors', 'sizes', 'tags', 'images'].includes(field)) {
+      if (['colors', 'sizes', 'tags', 'images', 'specifications'].includes(field)) {
         values.push(JSON.stringify(req.body[field]));
       } else {
         values.push(req.body[field]);

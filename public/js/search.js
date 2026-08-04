@@ -17,7 +17,7 @@ function getProductCategory(product) {
 }
 
 /* ---------- CART HELPERS (unified) ---------- */
-var CART_KEY = 'havenwood-cart';
+var CART_KEY = 'boularas-cart';
 
 function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
 function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }
@@ -99,7 +99,7 @@ function performSearch() {
     grid.innerHTML =
       '<div class="no-results" style="grid-column: 1 / -1;">' +
         '<div class="icon" aria-hidden="true"><span class="material-symbols-outlined">search</span></div>' +
-        '<h2>Search Havenwood</h2>' +
+        '<h2>Search Boularas</h2>' +
         '<p>Find your perfect piece \u2014 try searching for "sofa", "desk", or "lamp".</p>' +
       '</div>';
     return;
