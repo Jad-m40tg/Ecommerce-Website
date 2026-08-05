@@ -18,5 +18,8 @@ module.exports = {
   CHARGILY_SECRET_KEY: process.env.CHARGILY_SECRET_KEY || '',
   CHARGILY_PUBLIC_KEY: process.env.CHARGILY_PUBLIC_KEY || '',
   CHARGILY_ENV: process.env.CHARGILY_ENV || 'test',
-  APP_URL: process.env.APP_URL || 'http://localhost:5000'
+  APP_URL: process.env.APP_URL || 'http://localhost:5000',
+  NOEST_API_TOKEN: process.env.NOEST_API_TOKEN || '',
+  NOEST_USER_GUID: process.env.NOEST_USER_GUID || '',
+  ENABLE_NOEST_VALIDATION: process.env.ENABLE_NOEST_VALIDATION === 'true'
 };

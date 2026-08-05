@@ -93,6 +93,7 @@ app.use('/api/settings', require('./routes/settings'));   // Store settings (pub
 app.use('/api/categories', require('./routes/categories')); // Category browsing + CRUD
 app.use('/api/reviews', require('./routes/reviews'));     // Product reviews (public + admin)
 app.use('/api/upload', require('./routes/upload'));       // Admin image upload
+app.use('/api/delivery', require('./routes/delivery'));   // NOEST delivery integration
 
 // ============================================================
 // SPA FALLBACK — serves althome.html for all non-API, non-upload routes.

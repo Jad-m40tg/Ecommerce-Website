@@ -180,7 +180,7 @@ router.get('/:id', (req, res) => {
 });
 
 router.patch('/:id', (req, res) => {
-  const { status, payment_status, tracking_number, carrier, tracking_url } = req.body;
+  const { status, payment_status, tracking_number, carrier, tracking_url, noest_tracking, noest_status } = req.body;
 
   const updates = [];
   const values = [];
@@ -207,6 +207,8 @@ router.patch('/:id', (req, res) => {
   if (tracking_number !== undefined) { updates.push('tracking_number = ?'); values.push(tracking_number); }
   if (carrier !== undefined) { updates.push('carrier = ?'); values.push(carrier); }
   if (tracking_url !== undefined) { updates.push('tracking_url = ?'); values.push(tracking_url); }
+  if (noest_tracking !== undefined) { updates.push('noest_tracking = ?'); values.push(noest_tracking); }
+  if (noest_status !== undefined) { updates.push('noest_status = ?'); values.push(noest_status); }
 
   if (!updates.length) return res.status(400).json({ error: 'No valid fields to update' });
 

@@ -60,6 +60,26 @@
     .notif-item .notif-text strong{font-weight:600}
     .notif-item .notif-time{font-size:11px;color:var(--gray);margin-top:2px}
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
+    .noest-section{background:rgba(107,127,94,.06);border:1px solid rgba(107,127,94,.2);border-radius:var(--radius-md);padding:16px;margin-top:12px}
+    .noest-section h4{font-size:13px;font-weight:600;color:var(--sage-dark);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .noest-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .noest-fields .field{display:flex;flex-direction:column;gap:4px}
+    .noest-fields .field label{font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.04em}
+    .noest-fields select,.noest-fields input{padding:7px 10px;border:1.5px solid var(--beige);border-radius:var(--radius-sm);font-size:13px;background:var(--white)}
+    .noest-fields select:focus,.noest-fields input:focus{outline:none;border-color:var(--sage)}
+    .noest-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .noest-btn{padding:7px 16px;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;transition:background .2s,opacity .2s}
+    .noest-btn:disabled{opacity:.5;cursor:not-allowed}
+    .noest-btn.primary{background:var(--sage);color:var(--white)}.noest-btn.primary:hover{background:var(--sage-dark)}
+    .noest-btn.secondary{background:var(--cream);color:var(--charcoal);border:1px solid var(--beige)}.noest-btn.secondary:hover{background:var(--beige)}
+    .noest-btn.danger{background:rgba(179,83,46,.1);color:var(--danger)}.noest-btn.danger:hover{background:rgba(179,83,46,.18)}
+    .noest-status{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--radius-pill);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+    .noest-status.pending{background:rgba(201,138,58,.12);color:var(--warning)}
+    .noest-status.validated,.noest-status.shipped{background:rgba(107,127,94,.12);color:var(--sage)}
+    .noest-status.cancelled{background:rgba(179,83,46,.1);color:var(--danger)}
+    .noest-status.delivered{background:rgba(107,127,94,.14);color:var(--sage-dark)}
+    .noest-tracking-display{font-family:monospace;font-size:13px;font-weight:600;color:var(--charcoal);background:var(--cream);padding:6px 12px;border-radius:var(--radius-sm);display:inline-block;margin:4px 0}
+    .noest-loading{color:var(--gray);font-size:12px;font-style:italic}
   </style>
 </head>
 <body>
@@ -284,11 +304,37 @@
           html += '</div></div>';
         }
 
+        // NOEST Delivery section
+        html += '<div class="modal-section"><h3>NOEST Delivery</h3>';
+        if (order.noest_tracking) {
+          var noestSt = (order.noest_status || 'PENDING').toLowerCase();
+          html += '<div style="margin-bottom:10px"><span class="noest-status ' + escapeHtml(noestSt) + '">' + escapeHtml(order.noest_status || 'PENDING') + '</span></div>';
+          html += '<div class="noest-tracking-display">' + escapeHtml(order.noest_tracking) + '</div>';
+          html += '<div class="noest-actions" style="margin-top:10px">';
+          html += '<button class="noest-btn secondary" id="noestTrackBtn" data-tracking="' + escapeHtml(order.noest_tracking) + '">Track Live</button>';
+          html += '<a class="noest-btn secondary" id="noestLabelBtn" href="#" target="_blank" data-tracking="' + escapeHtml(order.noest_tracking) + '">Print Label</a>';
+          if (noestSt !== 'validated' && noestSt !== 'shipped' && noestSt !== 'delivered') {
+            html += '<button class="noest-btn danger" id="noestCancelBtn" data-tracking="' + escapeHtml(order.noest_tracking) + '">Cancel</button>';
+          }
+          html += '</div>';
+          html += '<div id="noestTrackResult" style="margin-top:10px"></div>';
+        } else {
+          html += '<div class="noest-fields">';
+          html += '<div class="field"><label>Wilaya</label><select id="noestWilaya"><option value="">Loading...</option></select></div>';
+          html += '<div class="field"><label>Commune</label><select id="noestCommune"><option value="">Select wilaya first</option></select></div>';
+          html += '<div class="field"><label>Type</label><select id="noestType"><option value="1">Delivery</option><option value="2">Exchange</option><option value="3">Pickup</option></select></div>';
+          html += '<div class="field"><label>Weight (kg)</label><input type="number" id="noestWeight" value="1" min="0.1" step="0.1" /></div>';
+          html += '</div>';
+          html += '<div class="noest-actions">';
+          html += '<button class="noest-btn primary" id="noestShipBtn">Ship with NOEST</button>';
+          html += '</div>';
+          html += '<div id="noestShipResult" style="margin-top:10px"></div>';
+        }
+        html += '</div>';
+
         if (order.notes) {
           html += '<div class="modal-section"><h3>Notes</h3><p style="font-size:14px;color:var(--gray)">' + escapeHtml(order.notes) + '</p></div>';
         }
-
-        html += '<div class="detail-field" style="margin-top:12px"><div class="label">Tracking Code</div><div class="value" style="font-family:monospace;font-size:16px;font-weight:700;letter-spacing:2px">' + escapeHtml(order.tracking_code || '-') + '</div></div>';
 
         document.getElementById('modalBody').innerHTML = html;
         document.getElementById('detailModal').classList.add('open');
@@ -304,6 +350,148 @@
             })
             .catch(function () { showToast('Failed to update payment status'); });
         });
+
+        // NOEST handlers
+        if (!order.noest_tracking) {
+          // Load wilayas
+          apiFetch('/api/delivery/wilayas').then(function (wilayas) {
+            var sel = document.getElementById('noestWilaya');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Select wilaya</option>';
+            (wilayas || []).forEach(function (w) {
+              var name = w.nom || w.name || '';
+              var id = w.code || w.id || '';
+              if (w.is_active === 0 || w.isActive === false) return;
+              sel.innerHTML += '<option value="' + id + '">' + id + ' - ' + escapeHtml(name) + '</option>';
+            });
+            // Pre-select from order city
+            if (order.customer_city) {
+              var match = (wilayas || []).find(function (w) { return (w.nom || w.name || '').toLowerCase() === order.customer_city.toLowerCase(); });
+              if (match) sel.value = match.id || match.wilaya_id;
+            }
+          }).catch(function () {
+            var sel = document.getElementById('noestWilaya');
+            if (sel) sel.innerHTML = '<option value="">Failed to load</option>';
+          });
+
+          // Wilaya change -> load communes
+          document.getElementById('noestWilaya').addEventListener('change', function () {
+            var wid = this.value;
+            var csel = document.getElementById('noestCommune');
+            if (!wid) { csel.innerHTML = '<option value="">Select wilaya first</option>'; return; }
+            csel.innerHTML = '<option value="">Loading...</option>';
+            apiFetch('/api/delivery/communes/' + wid).then(function (communes) {
+              csel.innerHTML = '<option value="">Select commune</option>';
+              (communes || []).forEach(function (c) {
+                var name = c.nom || c.name || '';
+                if (c.is_active === 0 || c.isActive === false) return;
+                csel.innerHTML += '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
+              });
+            }).catch(function () { csel.innerHTML = '<option value="">Failed to load</option>'; });
+          });
+
+          // Trigger wilaya change if pre-selected
+          var wilayaSel = document.getElementById('noestWilaya');
+          if (wilayaSel && wilayaSel.value) {
+            wilayaSel.dispatchEvent(new Event('change'));
+          }
+
+          // Ship button
+          document.getElementById('noestShipBtn').addEventListener('click', function () {
+            var btn = this;
+            var wilaya = document.getElementById('noestWilaya').value;
+            var commune = document.getElementById('noestCommune').value;
+            var typeId = document.getElementById('noestType').value;
+            var poids = document.getElementById('noestWeight').value;
+            if (!wilaya) { showToast('Select a wilaya'); return; }
+            if (!commune) { showToast('Select a commune'); return; }
+            btn.disabled = true;
+            btn.textContent = 'Shipping...';
+            document.getElementById('noestShipResult').innerHTML = '<div class="noest-loading">Creating NOEST order...</div>';
+            apiFetch('/api/delivery/ship', {
+              method: 'POST',
+              body: JSON.stringify({ order_id: order.id, type_id: typeId, poids: poids, wilaya_id: wilaya, commune: commune })
+            }).then(function (result) {
+              if (result.success) {
+                order.noest_tracking = result.tracking;
+                order.noest_status = result.status || 'PENDING';
+                order.carrier = 'NOEST';
+                order.tracking_number = result.tracking;
+                showToast('Shipped! Tracking: ' + result.tracking);
+                openDetail(order);
+                render();
+              } else {
+                document.getElementById('noestShipResult').innerHTML = '<div style="color:var(--danger);font-size:13px">' + escapeHtml(result.error || 'Shipping failed') + '</div>';
+                btn.disabled = false;
+                btn.textContent = 'Ship with NOEST';
+              }
+            }).catch(function (err) {
+              document.getElementById('noestShipResult').innerHTML = '<div style="color:var(--danger);font-size:13px">' + escapeHtml(err.message || 'Network error') + '</div>';
+              btn.disabled = false;
+              btn.textContent = 'Ship with NOEST';
+            });
+          });
+        } else {
+          // Track button
+          var trackBtn = document.getElementById('noestTrackBtn');
+          if (trackBtn) {
+            trackBtn.addEventListener('click', function () {
+              var t = this.dataset.tracking;
+              var resultDiv = document.getElementById('noestTrackResult');
+              resultDiv.innerHTML = '<div class="noest-loading">Fetching live status...</div>';
+              apiFetch('/api/delivery/track', { method: 'POST', body: JSON.stringify({ tracking: t }) })
+                .then(function (data) {
+                  var info = data.data || data;
+                  if (Array.isArray(info) && info.length > 0) info = info[0];
+                  var events = info.events || info.trackings || info;
+                  if (Array.isArray(events)) {
+                    resultDiv.innerHTML = '<div style="max-height:200px;overflow-y:auto">' + events.slice(0, 10).map(function (ev) {
+                      var desc = ev.description || ev.event_key || ev.status || JSON.stringify(ev);
+                      var date = ev.date || ev.created_at || ev.event_date || '';
+                      return '<div style="padding:6px 0;border-bottom:1px solid var(--beige);font-size:12px"><span style="color:var(--gray)">' + escapeHtml(date) + '</span> ' + escapeHtml(desc) + '</div>';
+                    }).join('') + '</div>';
+                  } else {
+                    resultDiv.innerHTML = '<pre style="font-size:11px;max-height:200px;overflow:auto;background:var(--cream);padding:8px;border-radius:var(--radius-sm)">' + escapeHtml(JSON.stringify(data, null, 2)) + '</pre>';
+                  }
+                }).catch(function (err) {
+                  resultDiv.innerHTML = '<div style="color:var(--danger);font-size:13px">' + escapeHtml(err.message || 'Failed to track') + '</div>';
+                });
+            });
+          }
+
+          // Label button
+          var labelBtn = document.getElementById('noestLabelBtn');
+          if (labelBtn) {
+            apiFetch('/api/delivery/label/' + order.noest_tracking).then(function (data) {
+              if (data.url) labelBtn.href = data.url;
+            }).catch(function () {});
+          }
+
+          // Cancel button
+          var cancelBtn = document.getElementById('noestCancelBtn');
+          if (cancelBtn) {
+            cancelBtn.addEventListener('click', function () {
+              if (!confirm('Cancel this NOEST order? This cannot be undone.')) return;
+              var t = this.dataset.tracking;
+              this.disabled = true;
+              apiFetch('/api/delivery/cancel', { method: 'POST', body: JSON.stringify({ tracking: t }) })
+                .then(function (result) {
+                  if (result.success) {
+                    order.noest_tracking = '';
+                    order.noest_status = 'CANCELLED';
+                    order.carrier = '';
+                    order.tracking_number = '';
+                    showToast('NOEST order cancelled');
+                    openDetail(order);
+                    render();
+                  } else {
+                    showToast('Cancel failed: ' + (result.error || 'Unknown error'));
+                    cancelBtn.disabled = false;
+                  }
+                }).catch(function () { showToast('Cancel failed'); cancelBtn.disabled = false; });
+            });
+          }
+        }
       }
 
       document.getElementById('modalCloseBtn').addEventListener('click', function () { document.getElementById('detailModal').classList.remove('open'); });

@@ -40,7 +40,10 @@ const orderMigrations = {
   tracking_number: "ALTER TABLE orders ADD COLUMN tracking_number TEXT DEFAULT ''",
   carrier: "ALTER TABLE orders ADD COLUMN carrier TEXT DEFAULT ''",
   tracking_url: "ALTER TABLE orders ADD COLUMN tracking_url TEXT DEFAULT ''",
-  tracking_code: "ALTER TABLE orders ADD COLUMN tracking_code TEXT DEFAULT ''"
+  tracking_code: "ALTER TABLE orders ADD COLUMN tracking_code TEXT DEFAULT ''",
+  noest_tracking: "ALTER TABLE orders ADD COLUMN noest_tracking TEXT DEFAULT ''",
+  noest_status: "ALTER TABLE orders ADD COLUMN noest_status TEXT DEFAULT ''",
+  noest_payload: "ALTER TABLE orders ADD COLUMN noest_payload TEXT DEFAULT ''"
 };
 for (const [name, sql] of Object.entries(orderMigrations)) {
   if (!orderColumns.includes(name)) {
