@@ -1,5 +1,10 @@
 /* checkout.css — checkout.html specific styles */
 
+.page-head h1 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+
 /* ============================================================
    1. BREADCRUMB
    ============================================================ */
@@ -39,8 +44,8 @@
 }
 
 .form-section h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px; margin-bottom: 18px; color: var(--charcoal);
+  font-family: 'Inter', sans-serif;
+  font-size: 20px; margin-bottom: 18px; color: var(--charcoal); font-weight: 600;
 }
 
 .form-row {
@@ -87,8 +92,8 @@
 }
 
 .summary h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 24px; margin-bottom: 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 24px; margin-bottom: 18px; font-weight: 600;
 }
 
 /* Items inside summary */
@@ -117,7 +122,7 @@
   padding: 10px 0 20px; font-size: 15px; color: var(--gray);
 }
 .summary-total .value {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', sans-serif;
   font-size: 30px; font-weight: 600; color: var(--charcoal);
 }
 

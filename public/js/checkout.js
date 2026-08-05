@@ -53,7 +53,7 @@ function renderSummary() {
   var itemsHtml = cart.map(function (item) {
     return (
       '<div class="summary-item">' +
-        '<div class="thumb"><img src="' + item.image + '" alt="' + escapeHtml(item.name) + '" /></div>' +
+        '<div class="thumb"><img src="' + item.image + '" alt="' + escapeHtml(item.name) + '" onerror="handleImageError(this)" /></div>' +
         '<div class="info">' +
           '<div class="name">' + escapeHtml(item.name) + '</div>' +
           '<div class="qty-label">Qty: ' + item.qty + '</div>' +

@@ -1,5 +1,10 @@
 /* product.css — product.html specific styles */
 
+.page-head h1 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+
 /* ============================================================
    1. BREADCRUMB
    ============================================================ */
@@ -85,7 +90,7 @@
   display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px;
 }
 .info-price .price {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', sans-serif;
   font-size: 32px; font-weight: 600; color: var(--charcoal);
 }
 .info-price s { font-size: 17px; color: var(--gray); }
@@ -390,7 +395,7 @@
 }
 .order-summary .line { display: flex; justify-content: space-between; }
 .order-summary .total {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', sans-serif;
   font-size: 22px; color: var(--charcoal);
   margin-top: 8px; padding-top: 12px; border-top: 1px dashed var(--beige);
 }

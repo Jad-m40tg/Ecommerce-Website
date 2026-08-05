@@ -26,7 +26,7 @@
     *{margin:0;padding:0;box-sizing:border-box}
     html,body{min-height:100%}
     body{font-family:'Inter',sans-serif; background:var(--warm-white); color:var(--charcoal); -webkit-font-smoothing:antialiased; line-height:1.55}
-    h1,h2,h3{font-family:'Playfair Display',serif; line-height:1.2}
+    h1,h2,h3{font-family:'Inter',sans-serif; line-height:1.2; font-weight:600}
     a{color:inherit; text-decoration:none}
     button,input,select{font-family:inherit}
     img{display:block; max-width:100%}
@@ -93,7 +93,7 @@
     .stat-icon{width:36px; height:36px; border-radius:10px; display:grid; place-items:center; background:var(--cream); color:var(--sage)}
     .stat-icon.wood{background:rgba(166,124,82,.15); color:var(--wood)}
     .stat-icon.sage{background:rgba(107,127,94,.15); color:var(--sage)}
-    .stat-value{font-family:'Playfair Display',serif; font-size:30px; font-weight:700; color:var(--charcoal); margin-top:10px}
+    .stat-value{font-family:'Inter',sans-serif; font-size:30px; font-weight:700; color:var(--charcoal); margin-top:10px}
     .stat-delta{display:inline-flex; align-items:center; gap:4px; font-size:12.5px; font-weight:600; margin-top:6px}
     .stat-delta.up{color:var(--sage)}
     .stat-delta.down{color:var(--danger)}
@@ -268,6 +268,7 @@
   </div>
 
   <script src="utils.js"></script>
+  <script src="js/admin-topbar.js"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');
@@ -291,81 +292,6 @@
         window.location.href = 'admin-login.html';
       });
 
-      apiFetch('/api/auth/me').then(function (data) {
-        var user = data.user || data;
-        if (user && user.name) document.getElementById('adminName').textContent = user.name.split(' ')[0];
-      }).catch(function (err) { console.error(err); });
-
-      /* Notifications */
-      var notifPanel = document.getElementById('notifPanel');
-      var notifBtn = document.getElementById('notifBtn');
-      var notifBody = document.getElementById('notifBody');
-      var notifDot = document.getElementById('notifDot');
-      var notifClear = document.getElementById('notifClear');
-      var seenNotifs = JSON.parse(localStorage.getItem('seen_notifs') || '[]');
-
-      function timeAgo(dateStr) {
-        var diff = Date.now() - new Date(dateStr).getTime();
-        var mins = Math.floor(diff / 60000);
-        if (mins < 1) return 'Just now';
-        if (mins < 60) return mins + 'm ago';
-        var hrs = Math.floor(mins / 60);
-        if (hrs < 24) return hrs + 'h ago';
-        return Math.floor(hrs / 24) + 'd ago';
-      }
-
-      function loadNotifications() {
-        apiFetch('/api/orders?limit=9999').then(function (data) {
-          var orders = data.orders || data || [];
-          var notifs = [];
-          orders.slice(0, 20).forEach(function (o) {
-            var key = 'order_' + o.id + '_' + o.order_status;
-            var icon = o.order_status === 'pending' ? '&#9888;' : o.order_status === 'shipped' ? '&#128666;' : '&#10003;';
-            notifs.push({ key: key, icon: icon, text: '<strong>#' + (o.id || '').toString().slice(0,8) + '</strong> ' + escapeHtml(o.customer_name || 'Customer') + ' — ' + (o.order_status || 'pending'), time: o.created_at });
-          });
-          var unseen = notifs.filter(function (n) { return seenNotifs.indexOf(n.key) === -1; });
-          if (unseen.length > 0) {
-            notifDot.style.display = 'block';
-          } else {
-            notifDot.style.display = 'none';
-          }
-          if (notifs.length === 0) {
-            notifBody.innerHTML = '<div class="notif-empty">No notifications yet</div>';
-          } else {
-            notifBody.innerHTML = notifs.map(function (n) {
-              return '<div class="notif-item" data-key="' + n.key + '"><div class="notif-icon">' + n.icon + '</div><div><div class="notif-text">' + n.text + '</div><div class="notif-time">' + timeAgo(n.time) + '</div></div></div>';
-            }).join('');
-          }
-        }).catch(function () {});
-      }
-
-      notifBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        var isOpen = notifPanel.style.display !== 'none';
-        notifPanel.style.display = isOpen ? 'none' : 'flex';
-        if (!isOpen) {
-          notifBody.querySelectorAll('.notif-item').forEach(function (item) {
-            var key = item.getAttribute('data-key');
-            if (seenNotifs.indexOf(key) === -1) seenNotifs.push(key);
-          });
-          localStorage.setItem('seen_notifs', JSON.stringify(seenNotifs));
-          notifDot.style.display = 'none';
-        }
-      });
-
-      notifClear.addEventListener('click', function () {
-        notifBody.querySelectorAll('.notif-item').forEach(function (item) {
-          var key = item.getAttribute('data-key');
-          if (seenNotifs.indexOf(key) === -1) seenNotifs.push(key);
-        });
-        localStorage.setItem('seen_notifs', JSON.stringify(seenNotifs));
-        notifDot.style.display = 'none';
-        notifBody.innerHTML = '<div class="notif-empty">No new notifications</div>';
-      });
-
-      document.addEventListener('click', function () { notifPanel.style.display = 'none'; });
-      notifPanel.addEventListener('click', function (e) { e.stopPropagation(); });
-      loadNotifications();
 
       var totalRevenue = 0, totalOrders = 0;
       var recentOrders = [];

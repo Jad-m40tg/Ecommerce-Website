@@ -1,5 +1,10 @@
 /* cart.css — cart.html specific styles */
 
+.page-head h1 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+
 /* ============================================================
    1. BREADCRUMB
    ============================================================ */
@@ -105,7 +110,7 @@
   align-self: start; min-width: 90px;
 }
 .item-price .line-total {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', sans-serif;
   font-size: 22px; font-weight: 600; color: var(--charcoal);
 }
 .item-price small { color: var(--gray); font-size: 12.5px; }
@@ -117,7 +122,7 @@
 }
 .empty-cart .emoji { font-size: 48px; margin-bottom: 14px; }
 .empty-cart h2 {
-  font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 8px;
+  font-family: 'Inter', sans-serif; font-size: 26px; margin-bottom: 8px; font-weight: 600;
 }
 .empty-cart p { color: var(--gray); margin-bottom: 22px; }
 
@@ -131,7 +136,7 @@
   padding: 28px;
 }
 
-.summary h2 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 18px; }
+.summary h2 { font-family: 'Inter', sans-serif; font-size: 24px; margin-bottom: 18px; font-weight: 600; }
 
 .summary-line { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; font-size: 14.5px; color: var(--gray); }
 .summary-line b { color: var(--charcoal); font-weight: 600; }
@@ -143,7 +148,7 @@
   padding: 10px 0 20px; font-size: 15px; color: var(--gray);
 }
 .summary-total .value {
-  font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 600; color: var(--charcoal);
+  font-family: 'Inter', sans-serif; font-size: 30px; font-weight: 600; color: var(--charcoal);
 }
 
 /* Promo code input */
