@@ -110,12 +110,13 @@ router.get('/categories', (req, res) => {
 // who ordered before that month). Returns last 12 months.
 router.get('/customer-growth', (req, res) => {
   const data = db.prepare(`
-    SELECT strftime('%Y-%m', created_at) as month, COUNT(DISTINCT customer_email) as new_customers
-    FROM orders
-    WHERE customer_email NOT IN (
-      SELECT customer_email FROM orders o2
-      WHERE o2.created_at < date(orders.created_at, 'start of month')
+    WITH first_orders AS (
+      SELECT customer_email, MIN(created_at) as first_order_date
+      FROM orders
+      GROUP BY customer_email
     )
+    SELECT strftime('%Y-%m', first_order_date) as month, COUNT(*) as new_customers
+    FROM first_orders
     GROUP BY month
     ORDER BY month DESC
     LIMIT 12

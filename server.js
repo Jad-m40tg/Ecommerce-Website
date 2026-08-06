@@ -37,7 +37,11 @@ app.use(cors({
 
 // Body parsing — JSON and URL-encoded form data.
 // 1MB limit prevents memory exhaustion from oversized payloads.
-app.use(express.json({ limit: '1mb' }));
+// Raw body capture for webhook signature verification (before JSON parsing).
+app.use(express.json({
+  limit: '1mb',
+  verify: (req, res, buf) => { req.rawBody = buf; }
+}));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Rate limiters — prevent brute-force attacks and abuse.

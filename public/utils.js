@@ -26,80 +26,27 @@ function safeInnerHTML(element, html) {
 }
 
 // ============================================================
-// Currency formatting
+// Currency formatting (DZD only)
 // ============================================================
 
-// Exchange rates relative to USD (1 USD = X foreign currency).
-// Prices in the DB are always stored as USD cents (price_cents).
-// This function converts and formats for display.
-var EXCHANGE_RATES = {
-  USD: 1.0,
-  EUR: 0.92,
-  GBP: 0.79,
-  DZD: 133.40
-};
-
-var CURRENCY_SYMBOLS = {
-  USD: '$',
-  EUR: '\u20AC',
-  GBP: '\u00A3',
-  DZD: 'DA'
-};
-
-// Format a price from cents (stored as USD) into the display currency.
-// Usage: formatPrice(129999) → "$1,300" (USD by default)
-//        formatPrice(129999, 'DZD') → "173,419 DA"
-function formatPrice(priceCents, currency) {
-  currency = currency || 'USD';
-  var rate = EXCHANGE_RATES[currency] || 1.0;
-  var symbol = CURRENCY_SYMBOLS[currency] || '$';
-  var converted = (priceCents / 100) * rate;
-
-  // DZD doesn't use decimals in everyday pricing — round to whole number
-  if (currency === 'DZD') {
-    converted = Math.round(converted);
-    return converted.toLocaleString('en-US') + ' ' + symbol;
-  }
-
-  return symbol + converted.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+function formatPrice(priceCents) {
+  return Math.round(priceCents / 100).toLocaleString('en-US') + ' DA';
 }
 
-// Format price with cents (for admin panels where exact amounts matter)
-function formatPriceFull(priceCents, currency) {
-  currency = currency || 'USD';
-  var rate = EXCHANGE_RATES[currency] || 1.0;
-  var symbol = CURRENCY_SYMBOLS[currency] || '$';
-  var converted = (priceCents / 100) * rate;
-
-  if (currency === 'DZD') {
-    converted = Math.round(converted);
-    return converted.toLocaleString('en-US') + ' ' + symbol;
-  }
-
-  return symbol + converted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function formatPriceFull(priceCents) {
+  return Math.round(priceCents / 100).toLocaleString('en-US') + ' DA';
 }
 
-// Helper to get the current currency from settings (cached).
-// Falls back to 'USD' if settings haven't loaded yet.
-var _currentCurrency = 'DZD';
-function setCurrency(c) { _currentCurrency = c || 'DZD'; }
-function getCurrency() { return _currentCurrency; }
-
-// Convenience: format using the globally-set currency
-function price(cents) { return formatPrice(cents, _currentCurrency); }
-function priceFull(cents) { return formatPriceFull(cents, _currentCurrency); }
+function price(cents) { return formatPrice(cents); }
+function priceFull(cents) { return formatPriceFull(cents); }
 
 // Expose to all HTML pages since this is loaded via <script src="utils.js">
 window.escapeHtml = escapeHtml;
 window.safeInnerHTML = safeInnerHTML;
 window.formatPrice = formatPrice;
 window.formatPriceFull = formatPriceFull;
-window.setCurrency = setCurrency;
-window.getCurrency = getCurrency;
 window.price = price;
 window.priceFull = priceFull;
-window.EXCHANGE_RATES = EXCHANGE_RATES;
-window.CURRENCY_SYMBOLS = CURRENCY_SYMBOLS;
 
 // ============================================================
 // Image fallback for products with missing upload images

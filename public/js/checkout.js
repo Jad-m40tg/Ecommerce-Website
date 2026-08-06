@@ -18,9 +18,17 @@ function updateCartCount() {
 }
 
 /* ---------- 2. TOTALS MATH ---------- */
-var SHIPPING_FLAT   = 999;
-var FREE_SHIP_OVER  = 9999;
+var SHIPPING_FLAT   = 999;    // default, overridden by API
+var FREE_SHIP_OVER  = 9999;   // default, overridden by API
 var TAX_RATE        = 0;
+
+var storeSettings = {};
+fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) {
+  storeSettings = s || {};
+  if (s.delivery_fee_cents != null) SHIPPING_FLAT = s.delivery_fee_cents;
+  if (s.free_delivery_threshold_cents != null) FREE_SHIP_OVER = s.free_delivery_threshold_cents;
+  renderSummary();
+}).catch(function () {});
 
 function calcTotals(cart) {
   var subtotal = cart.reduce(function (s, i) { return s + (i.price_cents || 0) * i.qty; }, 0);
@@ -181,10 +189,10 @@ document.addEventListener('click', function (event) {
       document.getElementById('confirmOverlay').classList.add('open');
       showToast('Order placed!');
     } else {
-      saveCart([]);
       if (data.payment_url) {
         window.location.href = data.payment_url;
       } else {
+        saveCart([]);
         throw new Error('Payment URL not received from server');
       }
     }

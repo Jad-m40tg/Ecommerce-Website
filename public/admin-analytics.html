@@ -153,7 +153,7 @@
         var ctx1 = document.getElementById('revenueChart');
         if (!ctx1) return;
         if (revenueChart) revenueChart.destroy();
-        revenueChart = new Chart(ctx1, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Revenue', data: values, backgroundColor: 'rgba(107,127,94,0.7)', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' },                     ticks: { callback: function (v) { return price(v * 100); } } }, x: { grid: { display: false } } } } });
+        revenueChart = new Chart(ctx1, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Revenue', data: values, backgroundColor: 'rgba(107,127,94,0.7)', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' },                     ticks: { callback: function (v) { return price(v); } } }, x: { grid: { display: false } } } } });
       }
 
       function renderStatusChart() {

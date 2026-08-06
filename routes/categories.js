@@ -12,13 +12,13 @@ const router = express.Router();
 // PUBLIC endpoints — no authentication required
 // ============================================================
 
-// GET /api/categories — List all categories, sorted by sort_order then name.
+// GET /api/categories — Public. List all categories sorted by sort_order then name.
 router.get('/', (req, res) => {
   const categories = db.prepare('SELECT * FROM categories ORDER BY sort_order ASC, name ASC').all();
   res.json({ categories });
 });
 
-// GET /api/categories/:slug — Get a single category by its URL-friendly slug (e.g. "living-room").
+// GET /api/categories/:slug — Public. Get a single category by URL-friendly slug.
 router.get('/:slug', (req, res) => {
   const cat = db.prepare('SELECT * FROM categories WHERE slug = ?').get(req.params.slug);
   if (!cat) return res.status(404).json({ error: 'Category not found' });
@@ -30,8 +30,7 @@ router.get('/:slug', (req, res) => {
 // ============================================================
 router.use(authenticateToken, requireAdmin);
 
-// POST /api/categories — Create a new category.
-// Requires name and slug. Slug must be unique (used in URLs like /category/living-room).
+// POST /api/categories — Admin only. Create a new category (requires name, slug auto-generated if omitted).
 router.post('/', (req, res, next) => {
   const { name, slug, image, description, sort_order } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
@@ -46,8 +45,7 @@ router.post('/', (req, res, next) => {
   }
 });
 
-// PUT /api/categories/:slug — Update an existing category (partial update).
-// Finds by slug, updates only the fields that were sent in the request body.
+// PUT /api/categories/:slug — Admin only. Update a category by slug (partial update).
 router.put('/:slug', (req, res) => {
   const cat = db.prepare('SELECT * FROM categories WHERE slug = ?').get(req.params.slug);
   if (!cat) return res.status(404).json({ error: 'Category not found' });
@@ -65,7 +63,7 @@ router.put('/:slug', (req, res) => {
   res.json({ success: true });
 });
 
-// DELETE /api/categories/:slug — Delete a category permanently.
+// DELETE /api/categories/:slug — Admin only. Delete a category by slug.
 router.delete('/:slug', (req, res) => {
   const result = db.prepare('DELETE FROM categories WHERE slug = ?').run(req.params.slug);
   if (result.changes === 0) return res.status(404).json({ error: 'Category not found' });

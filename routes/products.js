@@ -48,7 +48,7 @@ router.get('/browse/on-sale', (req, res) => {
 // Query params: ?category=bedroom&search=sofa&sort=price_asc&page=1&limit=20
 // Builds SQL dynamically based on which filters are provided.
 router.get('/browse', (req, res) => {
-  const { category, search, sort, page = 1, limit = 20 } = req.query;
+  const { category, search, sort, page = 1, limit = 20, display_section } = req.query;
   const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999); // cap at 100
   let sql = "SELECT * FROM products WHERE status = 'active'";
   let countSql = "SELECT COUNT(*) as count FROM products WHERE status = 'active'";
@@ -68,6 +68,13 @@ router.get('/browse', (req, res) => {
     countSql += ' AND (name LIKE ? OR description LIKE ?)';
     params.push(`%${search}%`, `%${search}%`);
     countParams.push(`%${search}%`, `%${search}%`);
+  }
+  // Add display_section filter if provided
+  if (display_section) {
+    sql += ' AND display_section = ?';
+    countSql += ' AND display_section = ?';
+    params.push(display_section);
+    countParams.push(display_section);
   }
 
   // Add sorting and pagination
@@ -128,21 +135,21 @@ router.get('/:id', (req, res) => {
 // Database auto-generates the ID (client cannot supply one).
 // Validates that price is a non-negative number.
 router.post('/', (req, res, next) => {
-  const { name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status } = req.body;
+  const { name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status, display_section } = req.body;
   if (!name || price_cents === undefined) return res.status(400).json({ error: 'name, price_cents required' });
   if (typeof price_cents !== 'number' || price_cents < 0) return res.status(400).json({ error: 'price_cents must be a non-negative number' });
   if (stock !== undefined && (typeof stock !== 'number' || stock < 0)) return res.status(400).json({ error: 'stock must be a non-negative number' });
 
   const stmt = db.prepare(`
-    INSERT INTO products (name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO products (name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status, display_section)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   try {
     // Array/object fields (colors, sizes, tags, images, specifications) are stored as JSON strings in SQLite
     const result = stmt.run(name, description || '', price_cents, old_price_cents || null, category || '', brand || '', sku || null, stock || 0,
       JSON.stringify(colors || []), JSON.stringify(sizes || []), JSON.stringify(tags || []), JSON.stringify(images || []), JSON.stringify(specifications || []),
       shipping_info || '', returns_info || '',
-      featured ? 1 : 0, on_sale ? 1 : 0, status || 'active');
+      featured ? 1 : 0, on_sale ? 1 : 0, status || 'active', display_section || '');
     res.status(201).json({ id: result.lastInsertRowid });
   } catch (e) {
     if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') return res.status(409).json({ error: 'SKU already exists' });
@@ -156,7 +163,7 @@ router.put('/:id', (req, res) => {
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
   if (!product) return res.status(404).json({ error: 'Product not found' });
 
-  const fields = ['name', 'description', 'price_cents', 'old_price_cents', 'category', 'brand', 'sku', 'stock', 'colors', 'sizes', 'tags', 'images', 'specifications', 'shipping_info', 'returns_info', 'featured', 'on_sale', 'status'];
+  const fields = ['name', 'description', 'price_cents', 'old_price_cents', 'category', 'brand', 'sku', 'stock', 'colors', 'sizes', 'tags', 'images', 'specifications', 'shipping_info', 'returns_info', 'featured', 'on_sale', 'status', 'display_section'];
   const updates = [];
   const values = [];
 

@@ -56,8 +56,8 @@ function productCardHTML(product) {
   var badge = '';
   if (product.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
   if (product.badge === 'new')  badge = '<span class="card-badge">New</span>';
-  var oldPrice = product.price_cents && product.compare_at_price_cents
-    ? '<s>' + price(product.compare_at_price_cents) + '</s>' : '';
+  var oldPrice = product.price_cents && product.old_price_cents
+    ? '<s>' + price(product.old_price_cents) + '</s>' : '';
   var priceHtml = product.price_cents ? price(product.price_cents) : '';
   var inCart = isInCart(product.id);
   var btnClass = inCart ? 'card-added' : 'card-add';
@@ -204,7 +204,8 @@ fetch('/api/products/browse/on-sale')
         slug: p.slug || '',
         category_name: (p.category_name || p.category || 'Uncategorized'),
         price_cents: p.price_cents || 0,
-        compare_at_price_cents: p.compare_at_price_cents || null,
+        old_price_cents: p.old_price_cents || null,
+        on_sale: !!p.on_sale,
         rating: parseFloat(p.rating) || 0,
         reviews: parseInt(p.reviews, 10) || 0,
         image: img,

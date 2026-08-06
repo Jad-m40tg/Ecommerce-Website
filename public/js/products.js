@@ -16,11 +16,9 @@ function getProductCategory(product) {
   return (product.category || product.category_name || 'uncategorized');
 }
 
-/* Format the price-slider max label in the current display currency */
-function sliderLabel(usdDollars) {
-  var rate = EXCHANGE_RATES[getCurrency()] || EXCHANGE_RATES.DZD;
-  var sym = CURRENCY_SYMBOLS[getCurrency()] || 'DA';
-  return Math.round(usdDollars * rate).toLocaleString('en-US') + ' ' + sym;
+/* Format the price-slider max label in DZD */
+function sliderLabel(cents) {
+  return Math.round(cents / 100).toLocaleString('en-US') + ' DA';
 }
 
 /* ---------- CART HELPERS (unified) ---------- */
@@ -28,14 +26,19 @@ var CART_KEY = 'boularas-cart';
 
 function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
 function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }
-function addToCart(productId) {
+function addToCart(productId, options) {
+  options = options || {};
   var product = PRODUCTS.find(function (p) { return String(p.id) === String(productId); });
   if (!product) return;
+  var qty = Math.max(1, options.qty || 1);
+  var color = options.color || '';
+  var size = options.size || '';
   var cart = getCart();
-  var existing = cart.find(function (item) { return String(item.id) === String(productId); });
-  if (existing) { existing.qty += 1; }
+  var key = String(productId) + '|' + color + '|' + size;
+  var existing = cart.find(function (item) { return item.key === key; });
+  if (existing) { existing.qty += qty; }
   else {
-    cart.push({ id: product.id, name: product.name, price_cents: product.price_cents, image: getProductImage(product), key: String(product.id), qty: 1 });
+    cart.push({ id: product.id, name: product.name, price_cents: product.price_cents, image: getProductImage(product), key: key, color: color, size: size, qty: qty });
   }
   saveCart(cart);
   showToast(product.name + ' added to cart');

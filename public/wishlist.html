@@ -128,7 +128,7 @@
         if (t) { t.textContent = msg; t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 2200); }
       }
       function updateCartCount() {
-        var cart = JSON.parse(localStorage.getItem('boularas_cart') || '[]');
+        var cart = JSON.parse(localStorage.getItem('boularas-cart') || '[]');
         var count = cart.reduce(function (s, item) { return s + (item.qty || 1); }, 0);
         var el = document.getElementById('cartCount');
         if (el) el.textContent = count;
@@ -144,10 +144,10 @@
           return;
         }
         grid.innerHTML = wishList.map(function (item) {
-          var img = item.image || 'images/placeholder.jpg';
+          var img = item.image || '/placeholder.jpg';
           var price = price(item.price_cents || 0);
           return '<div class="wish-card" data-wish-id="' + item.id + '">' +
-            '<img class="wish-img" src="' + img + '" alt="' + (item.name || 'Product') + '" onerror="this.src=\'images/placeholder.jpg\'" />' +
+            '<img class="wish-img" src="' + img + '" alt="' + (item.name || 'Product') + '" onerror="this.src=\'/placeholder.jpg\'" />' +
             '<div class="wish-body">' +
               '<div class="wish-name">' + (item.name || 'Product') + '</div>' +
               '<div class="wish-price">' + price + '</div>' +

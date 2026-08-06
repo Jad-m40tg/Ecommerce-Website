@@ -28,6 +28,7 @@ function generateTrackingCode() {
   return code;
 }
 
+// GET /api/orders/track?code=XXXX — Public order tracking by tracking code.
 router.get('/track', (req, res) => {
   const { code } = req.query;
   if (!code || code.length < 4) {
@@ -38,6 +39,7 @@ router.get('/track', (req, res) => {
   res.json({ order });
 });
 
+// POST /api/orders — Create a new order (public, rate-limited). Validates items, reserves stock, optionally initiates online payment.
 router.post('/', checkoutLimiter, async (req, res, next) => {
   try {
     const { customer_name, customer_email, customer_phone, customer_address, customer_city, items, notes, payment_method } = req.body;
@@ -70,7 +72,7 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
 
     const isOnlinePayment = payment_method && payment_method !== 'cash_on_delivery';
     const trackingCode = generateTrackingCode();
-    const orderStatus = 'processing';
+    const orderStatus = isOnlinePayment ? 'processing' : 'pending';
 
     const createOrder = db.transaction(() => {
       let subtotal_cents = 0;
@@ -114,7 +116,7 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
     };
 
     if (isOnlinePayment) {
-      const dzdAmount = Math.round((total_cents / 100) * 133.40);
+      const dzdAmount = Math.round(total_cents / 100);
       try {
         const checkout = await createCheckout({
           amount: dzdAmount,
@@ -154,6 +156,7 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
 
 router.use(authenticateToken, requireAdmin);
 
+// GET /api/orders — List all orders (admin only). Supports status filter and pagination.
 router.get('/', (req, res) => {
   const { status, page = 1, limit = 20 } = req.query;
   const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
@@ -173,12 +176,14 @@ router.get('/', (req, res) => {
   res.json({ orders, total: count, page: Number(page), limit: safeLimit });
 });
 
+// GET /api/orders/:id — Get a single order by ID (admin only).
 router.get('/:id', (req, res) => {
   const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
   if (!order) return res.status(404).json({ error: 'Order not found' });
   res.json(order);
 });
 
+// PATCH /api/orders/:id — Update order status, payment status, or tracking info (admin only).
 router.patch('/:id', (req, res) => {
   const { status, payment_status, tracking_number, carrier, tracking_url, noest_tracking, noest_status } = req.body;
 

@@ -33,9 +33,17 @@ function seedSampleCart() {
 }
 
 /* ---------- 3. TOTALS MATH ---------- */
-var SHIPPING_FLAT   = 3900;
-var FREE_SHIP_OVER  = 50000;
-var TAX_RATE        = 0.08;
+var SHIPPING_FLAT   = 999;    // default, overridden by API
+var FREE_SHIP_OVER  = 9999;   // default, overridden by API
+var TAX_RATE        = 0;
+
+var storeSettings = {};
+fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) {
+  storeSettings = s || {};
+  if (s.delivery_fee_cents != null) SHIPPING_FLAT = s.delivery_fee_cents;
+  if (s.free_delivery_threshold_cents != null) FREE_SHIP_OVER = s.free_delivery_threshold_cents;
+  if (getCart().length > 0) renderCart();
+}).catch(function () {});
 
 var PROMOS = {
   BOUL10:   { label: '10% off subtotal', pct: 0.10 },
@@ -290,7 +298,5 @@ function showToast(message) {
 }
 
 /* ---------- BOOT ---------- */
-if (getCart().length === 0) seedSampleCart();
-
 updateCartCount();
 renderCart();

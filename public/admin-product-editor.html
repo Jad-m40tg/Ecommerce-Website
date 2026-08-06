@@ -142,12 +142,13 @@
             <h2 class="panel-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Basic Information</h2>
             <div class="form-grid">
               <div class="field full"><label for="pName">Product Name</label><input class="input" type="text" id="pName" required /></div>
-              <div class="field"><label for="pPrice">Price <span class="hint">(cents)</span></label><input class="input" type="number" id="pPrice" min="0" step="1" required /></div>
+              <div class="field"><label for="pPrice">Price <span class="hint">(DA)</span></label><input class="input" type="number" id="pPrice" min="0" step="0.01" required /></div>
               <div class="field"><label for="pStock">Stock</label><input class="input" type="number" id="pStock" min="0" step="1" value="0" /></div>
               <div class="field"><label for="pCategory">Category</label><select class="input" id="pCategory"></select></div>
               <div class="field"><label for="pSku">SKU</label><input class="input" type="text" id="pSku" placeholder="BL-SOF-001" /></div>
               <div class="field"><label for="pBrand">Brand</label><input class="input" type="text" id="pBrand" placeholder="Boularas" /></div>
               <div class="field"><label for="pStatus">Status</label><select class="input" id="pStatus"><option value="active">Active</option><option value="draft">Draft</option></select></div>
+              <div class="field"><label for="pDisplaySection">Show on Home</label><select class="input" id="pDisplaySection"><option value="">Don't show</option><option value="best_sellers">Best Sellers</option><option value="popular">Popular Right Now</option><option value="new_arrivals">Newly Added</option></select></div>
               <div class="field full"><label for="pDesc">Description</label><textarea class="textarea" id="pDesc" rows="4"></textarea></div>
             </div>
           </section>
@@ -235,10 +236,11 @@
         apiFetch('/api/products/' + editId).then(function (data) {
           var p = data.product || data;
           document.getElementById('pName').value = p.name || '';
-          document.getElementById('pPrice').value = p.price_cents || '';
+          document.getElementById('pPrice').value = p.price_cents ? (p.price_cents / 100).toFixed(2) : '';
           document.getElementById('pStock').value = p.stock != null ? p.stock : 0;
           document.getElementById('pDesc').value = p.description || '';
           document.getElementById('pStatus').value = p.status || 'active';
+          document.getElementById('pDisplaySection').value = p.display_section || '';
           document.getElementById('pSku').value = p.sku || '';
           document.getElementById('pBrand').value = p.brand || '';
           document.getElementById('pShippingInfo').value = p.shipping_info || '';
@@ -352,8 +354,9 @@
       document.getElementById('productForm').addEventListener('submit', function (e) {
         e.preventDefault();
         var name = document.getElementById('pName').value.trim();
-        var price = parseInt(document.getElementById('pPrice').value, 10);
-        if (!name || isNaN(price)) { showToast('Name and price are required'); return; }
+        var priceDzd = parseFloat(document.getElementById('pPrice').value);
+        if (!name || isNaN(priceDzd)) { showToast('Name and price are required'); return; }
+        var price = Math.round(priceDzd * 100);
 
         var body = {
           name: name,
@@ -361,6 +364,7 @@
           stock: parseInt(document.getElementById('pStock').value, 10) || 0,
           category: document.getElementById('pCategory').value || null,
           status: document.getElementById('pStatus').value,
+          display_section: document.getElementById('pDisplaySection').value || '',
           description: document.getElementById('pDesc').value.trim(),
           brand: document.getElementById('pBrand').value.trim(),
           sku: document.getElementById('pSku').value.trim(),

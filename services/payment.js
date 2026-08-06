@@ -39,7 +39,11 @@ function verifyWebhookSignature(rawBody, signature) {
     .createHmac('sha256', CHARGILY_SECRET_KEY)
     .update(rawBody)
     .digest('hex');
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+
+  const sigBuf = Buffer.from(signature);
+  const expBuf = Buffer.from(expected);
+  if (sigBuf.length !== expBuf.length) return false;
+  return crypto.timingSafeEqual(sigBuf, expBuf);
 }
 
 module.exports = { createCheckout, getCheckout, verifyWebhookSignature, BASE_URL };

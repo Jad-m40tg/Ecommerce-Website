@@ -3,7 +3,7 @@
 var CART_KEY = 'boularas-cart';
 var currentProduct = null;
 var storeSettings = {};
-var settingsPromise = fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) { storeSettings = s || {}; if (storeSettings.currency) setCurrency(storeSettings.currency); }).catch(function () {});
+var settingsPromise = fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) { storeSettings = s || {}; }).catch(function () {});
 
 var lightboxEl = null;
 var lightboxIndex = 0;
@@ -15,13 +15,13 @@ function getCart() {
 }
 function saveCart(cart) {
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
-updateCartCount();
+  updateCartCount();
+}
 
 /* Reposition reviews on resize */
 window.matchMedia('(min-width: 961px)').addEventListener('change', function () {
   positionReviews();
 });
-}
 function addToCart(productId, qty, color, size) {
   qty = Math.max(1, qty || 1);
   if (!currentProduct) return;

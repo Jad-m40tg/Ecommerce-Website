@@ -9,7 +9,7 @@ const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// GET /api/reviews?product_id=X — public
+// GET /api/reviews?product_id=X — Public. List reviews for a product.
 router.get('/', (req, res) => {
   const { product_id } = req.query;
   if (!product_id) return res.status(400).json({ error: 'product_id is required' });
@@ -24,7 +24,7 @@ router.get('/', (req, res) => {
   res.json({ reviews, total: reviews.length });
 });
 
-// POST /api/reviews — public
+// POST /api/reviews — Public. Submit a review for a product (rating 1-5, optional comment).
 router.post('/', (req, res) => {
 
   const { product_id, customer_name, rating, comment } = req.body;
@@ -32,6 +32,12 @@ router.post('/', (req, res) => {
   // Validate product_id
   if (!product_id || isNaN(parseInt(product_id, 10))) {
     return res.status(400).json({ error: 'Valid product_id is required' });
+  }
+
+  // Check product exists
+  const product = db.prepare("SELECT id FROM products WHERE id = ? AND status = 'active'").get(parseInt(product_id, 10));
+  if (!product) {
+    return res.status(404).json({ error: 'Product not found' });
   }
 
   // Validate customer_name
@@ -58,7 +64,7 @@ router.post('/', (req, res) => {
   });
 });
 
-// DELETE /api/reviews/:id — admin only
+// DELETE /api/reviews/:id — Admin only. Delete a review by ID.
 router.delete('/:id', authenticateToken, requireAdmin, (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.status(400).json({ error: 'Invalid review id' });

@@ -332,31 +332,51 @@
         }).join('');
       }
 
-      var weekLabels = ['W-8','W-7','W-6','W-5','W-4','W-3','W-2','Last'];
-      var weekValues = [4200, 5800, 6100, 5400, 7200, 8100, 7600, 9200];
       var ctx = document.getElementById('revenueChart');
       if (ctx) {
-        new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: weekLabels,
-            datasets: [{
-              label: 'Revenue',
-              data: weekValues,
-              backgroundColor: 'rgba(107,127,94,0.7)',
-              borderRadius: 6,
-              borderSkipped: false
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-              y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' }, ticks: { callback: function (v) { return price(v * 100); } } },
-              x: { grid: { display: false } }
+        apiFetch('/api/analytics/revenue?period=weekly').then(function (data) {
+          var items = data.data || [];
+          var weekLabels = items.map(function (d) { return d.period.split('-').pop(); });
+          var weekValues = items.map(function (d) { return d.revenue_cents / 100; });
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: weekLabels,
+              datasets: [{
+                label: 'Revenue',
+                data: weekValues,
+                backgroundColor: 'rgba(107,127,94,0.7)',
+                borderRadius: 6,
+                borderSkipped: false
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' }, ticks: { callback: function (v) { return price(v * 100); } } },
+                x: { grid: { display: false } }
+              }
             }
-          }
+          });
+        }).catch(function () {
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: [],
+              datasets: [{ label: 'Revenue', data: [], backgroundColor: 'rgba(107,127,94,0.7)', borderRadius: 6, borderSkipped: false }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' }, ticks: { callback: function (v) { return price(v * 100); } } },
+                x: { grid: { display: false } }
+              }
+            }
+          });
         });
       }
     })();

@@ -4,28 +4,43 @@ const { getCheckout, verifyWebhookSignature } = require('../services/payment');
 
 const router = express.Router();
 
-router.get('/status/:checkoutId', async (req, res) => {
+router.get('/status/:id', async (req, res) => {
   try {
-    const checkout = await getCheckout(req.params.checkoutId);
-    if (!checkout) return res.status(404).json({ error: 'Checkout not found' });
+    const param = req.params.id;
 
-    let order = null;
-    if (checkout.metadata && checkout.metadata.order_id) {
-      order = db.prepare('SELECT * FROM orders WHERE id = ?').get(checkout.metadata.order_id);
+    // Try looking up by order ID first
+    let order = db.prepare('SELECT * FROM orders WHERE id = ?').get(param);
+    let checkout = null;
+
+    if (order && order.payment_reference) {
+      try { checkout = await getCheckout(order.payment_reference); } catch (e) { /* ignore */ }
     }
-    if (!order) {
-      order = db.prepare('SELECT * FROM orders WHERE payment_reference = ?').get(checkout.id);
+
+    // If not found as order, try as Chargily checkout ID
+    if (!checkout) {
+      try { checkout = await getCheckout(param); } catch (e) { /* ignore */ }
     }
+
+    if (checkout && !order) {
+      if (checkout.metadata && checkout.metadata.order_id) {
+        order = db.prepare('SELECT * FROM orders WHERE id = ?').get(checkout.metadata.order_id);
+      }
+      if (!order) {
+        order = db.prepare('SELECT * FROM orders WHERE payment_reference = ?').get(checkout.id);
+      }
+    }
+
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
-    if (checkout.status === 'paid' && order.payment_status !== 'paid') {
+    // Sync payment status from Chargily if checkout exists and payment was completed
+    if (checkout && checkout.status === 'paid' && order.payment_status !== 'paid') {
       db.prepare("UPDATE orders SET payment_status = 'paid', payment_reference = ?, paid_at = CURRENT_TIMESTAMP, payment_payload = ? WHERE id = ?")
         .run(checkout.id, JSON.stringify(checkout), order.id);
       order.payment_status = 'paid';
     }
 
     res.json({
-      checkout_status: checkout.status,
+      checkout_status: checkout ? checkout.status : null,
       order_id: order.id,
       payment_status: order.payment_status,
       tracking_code: order.tracking_code
@@ -36,16 +51,18 @@ router.get('/status/:checkoutId', async (req, res) => {
   }
 });
 
-router.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+router.post('/webhook', (req, res) => {
   try {
     const signature = req.headers['signature'] || req.headers['x-webhook-signature'] || '';
-    const rawBody = req.body;
+    // Use raw body captured by express.json verify callback in server.js
+    // This preserves the exact bytes Chargily signed, avoiding re-serialization issues
+    const rawBody = req.rawBody ? req.rawBody.toString() : JSON.stringify(req.body);
 
     if (!verifyWebhookSignature(rawBody, signature)) {
       return res.status(401).json({ error: 'Invalid signature' });
     }
 
-    const event = JSON.parse(rawBody.toString());
+    const event = req.body;
 
     if (event.type === 'checkout.paid' || (event.data && event.data.status === 'paid')) {
       const checkout = event.data || event;
@@ -65,19 +82,6 @@ router.post('/webhook', express.raw({ type: 'application/json' }), (req, res) =>
     console.error('Webhook error:', err);
     res.status(500).json({ error: 'Webhook processing failed' });
   }
-});
-
-router.get('/track', (req, res) => {
-  const { code } = req.query;
-  if (!code || code.length < 4) {
-    return res.status(400).json({ error: 'Please provide a valid tracking code' });
-  }
-
-  const order = db.prepare('SELECT id, order_status, payment_status, payment_method, tracking_number, carrier, tracking_url, tracking_code, created_at, updated_at, items, total_cents FROM orders WHERE tracking_code = ?').get(code.toUpperCase());
-
-  if (!order) return res.status(404).json({ error: 'Order not found. Please check your tracking code.' });
-
-  res.json({ order });
 });
 
 module.exports = router;

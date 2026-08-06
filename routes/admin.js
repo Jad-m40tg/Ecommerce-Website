@@ -10,15 +10,14 @@ const router = express.Router();
 // Every route in this file requires login + admin role
 router.use(authenticateToken, requireAdmin);
 
-// GET /api/admin/me — Return the logged-in admin's profile (without password hash).
+// GET /api/admin/me — Return the logged-in admin's profile (no password hash).
 router.get('/me', (req, res) => {
   const admin = db.prepare('SELECT id, email, name, avatar, role FROM admins WHERE id = ?').get(req.user.id);
   if (!admin) return res.status(404).json({ error: 'Admin not found' });
   res.json({ admin });
 });
 
-// PUT /api/admin/me — Update the admin's name, email, or avatar.
-// Only updates fields that are included in the request body (partial update).
+// PUT /api/admin/me — Update admin name, email, or avatar (partial update).
 router.put('/me', (req, res) => {
   const { name, email, avatar } = req.body;
   const updates = [];
@@ -39,9 +38,7 @@ router.put('/me', (req, res) => {
   res.json({ admin });
 });
 
-// PUT /api/admin/password — Change the admin's password.
-// Requires the current password for verification, then sets the new one.
-// Also bumps token_version to revoke all other active sessions.
+// PUT /api/admin/password — Change admin password (requires current password, revokes other sessions).
 router.put('/password', async (req, res) => {
   const { current_password, new_password } = req.body;
   if (!current_password || !new_password) return res.status(400).json({ error: 'current_password and new_password required' });

@@ -56,8 +56,7 @@ function validateMagicBytes(filePath) {
   return false;
 }
 
-// POST /api/upload — Upload a single image file.
-// Field name in the form must be "image".
+// POST /api/upload — Admin only. Upload a single image file (field: "image").
 router.post('/', upload.single('image'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 

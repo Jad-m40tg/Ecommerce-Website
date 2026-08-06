@@ -45,7 +45,7 @@ router.post('/ship', async (req, res) => {
     // Map customer data to NOEST fields
     const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
     const produit = items.map(function (i) { return (i.name || 'Product') + ' x' + (i.quantity || 1); }).join(', ');
-    let montant = order.payment_method === 'cash_on_delivery' ? Math.round(order.total_cents / 100 * 133.40) : 0;
+    let montant = order.payment_method === 'cash_on_delivery' ? Math.round(order.total_cents / 100) : 0;
     if (montant > 150000) {
       console.warn(`[NOEST] COD amount ${montant} DZD exceeds limit, capping to 149999 DZD for order ${order.id}`);
       montant = 149999;
@@ -133,7 +133,10 @@ router.post('/track', async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error('[NOEST] Track error:', err.message);
-    res.status(500).json({ error: err.message || 'Failed to track' });
+    // Distinguish client errors (4xx from NOEST) from server errors (5xx)
+    const match = (err.message || '').match(/NOEST API error (\d+)/);
+    const status = match ? (parseInt(match[1]) < 500 ? 422 : 500) : 500;
+    res.status(status).json({ error: err.message || 'Failed to track' });
   }
 });
 
