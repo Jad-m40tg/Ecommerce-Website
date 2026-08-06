@@ -160,7 +160,7 @@
         var statusCounts = {};
         allOrders.forEach(function (o) { var s = o.order_status || 'pending'; statusCounts[s] = (statusCounts[s] || 0) + 1; });
         var sLabels = Object.keys(statusCounts); var sValues = Object.values(statusCounts);
-        var sColors = sLabels.map(function (s) { return s === 'delivered' ? '#6b7f5e' : s === 'pending' ? '#c98a3a' : s === 'shipped' ? '#a67c52' : s === 'cancelled' ? '#b3532e' : '#6f6a62'; });
+        var sColors = sLabels.map(function (s) { return s === 'delivered' ? '#6b7f5e' : s === 'confirmed' ? '#5d9e6e' : s === 'processing' ? '#5b7fa6' : s === 'pending' ? '#c98a3a' : s === 'shipped' ? '#a67c52' : s === 'cancelled' ? '#b3532e' : '#6f6a62'; });
         var ctx2 = document.getElementById('statusChart');
         if (ctx2 && sLabels.length) {
           new Chart(ctx2, { type: 'doughnut', data: { labels: sLabels, datasets: [{ data: sValues, backgroundColor: sColors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } } });

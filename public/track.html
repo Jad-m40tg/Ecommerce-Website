@@ -61,6 +61,7 @@
     .error-msg{color:var(--danger);font-size:14px;margin-top:8px;display:none}
     .error-msg.visible{display:block}
     @media(max-width:600px){.track-input-group{flex-direction:column}}
+    @media(max-width:500px){.track-page{padding:24px 14px}.order-info,.tracking-info{padding:18px}}
   </style>
 </head>
 <body>
@@ -90,7 +91,7 @@
     <p class="subtitle">Enter your tracking code to see your order status and delivery timeline.</p>
 
     <div class="track-input-group">
-      <input type="text" id="trackInput" placeholder="e.g. ABCD1234" maxlength="8" autocomplete="off" />
+      <input type="text" id="trackInput" placeholder="e.g. ABCD1234 or NOEST code" maxlength="30" autocomplete="off" />
       <button type="button" class="btn btn-primary" id="trackBtn">Track</button>
     </div>
     <div class="error-msg" id="trackError"></div>
@@ -101,12 +102,6 @@
       <div class="tracking-info" id="trackingInfo" style="display:none"></div>
     </div>
   </main>
-
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">&copy; 2026 Boularas. All rights reserved.</div>
-    </div>
-  </footer>
 
   <script src="utils.js"></script>
   <script>
@@ -153,7 +148,7 @@
         document.getElementById('trackBtn').disabled = true;
         document.getElementById('trackBtn').textContent = 'Checking...';
 
-        fetch('/api/payments/track?code=' + encodeURIComponent(code.toUpperCase()))
+        fetch('/api/orders/track?code=' + encodeURIComponent(code.toUpperCase()))
           .then(function (r) {
             if (!r.ok) return r.json().then(function (d) { throw new Error(d.error || 'Not found'); });
             return r.json();

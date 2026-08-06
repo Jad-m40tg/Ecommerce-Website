@@ -350,7 +350,7 @@ function renderProduct(p) {
   selection.qty = 1;
 
   var stockHTML = p.stock > 0
-    ? '<div class="stock-note">In stock &middot; ships in 2&ndash;4 days</div>'
+    ? '<div class="stock-note">In stock (' + p.stock + ' left) &middot; ships in 2&ndash;4 days</div>'
     : '<div class="stock-note" style="color:var(--wood)">Out of stock</div>';
 
   var specsRows = '';
@@ -576,19 +576,31 @@ function wireUpDetail(p, colors) {
   document.querySelectorAll('[data-qty]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var step = Number(btn.getAttribute('data-qty'));
-      var next = Math.max(1, Math.min(99, Number(qtyInput.value) + step));
+      var next = Math.max(1, Math.min(p.stock || 99, 99, Number(qtyInput.value) + step));
       qtyInput.value = next;
       selection.qty = next;
       updateOrderSummary(p);
+      var plusBtn = document.querySelector('[data-qty="1"]');
+      if (plusBtn) plusBtn.disabled = Number(qtyInput.value) >= (p.stock || 99);
+      var minusBtn = document.querySelector('[data-qty="-1"]');
+      if (minusBtn) minusBtn.disabled = Number(qtyInput.value) <= 1;
     });
   });
   if (qtyInput) {
     qtyInput.addEventListener('change', function () {
-      selection.qty = Math.max(1, Math.min(99, Number(qtyInput.value) || 1));
+      selection.qty = Math.max(1, Math.min(p.stock || 99, 99, Number(qtyInput.value) || 1));
       qtyInput.value = selection.qty;
       updateOrderSummary(p);
+      var plusBtn = document.querySelector('[data-qty="1"]');
+      if (plusBtn) plusBtn.disabled = Number(qtyInput.value) >= (p.stock || 99);
+      var minusBtn = document.querySelector('[data-qty="-1"]');
+      if (minusBtn) minusBtn.disabled = Number(qtyInput.value) <= 1;
     });
   }
+
+  // Initial button state
+  var plusBtn = document.querySelector('[data-qty="1"]');
+  if (plusBtn && p.stock <= 1) plusBtn.disabled = true;
 
   document.getElementById('addToCartBtn').addEventListener('click', function () {
     addToCart(p.id, selection.qty, selection.color, selection.size);
@@ -755,6 +767,7 @@ document.getElementById('orderForm').addEventListener('submit', function (event)
   } catch (e) { img = ''; }
 
   var cartItem = {
+    key: currentProduct.id + '|' + (selection.color || '') + '|' + (selection.size || ''),
     id: currentProduct.id,
     name: currentProduct.name,
     price_cents: currentProduct.price_cents,

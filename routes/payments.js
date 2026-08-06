@@ -33,7 +33,8 @@ router.get('/status/:id', async (req, res) => {
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
     // Sync payment status from Chargily if checkout exists and payment was completed
-    if (checkout && checkout.status === 'paid' && order.payment_status !== 'paid') {
+    // Do NOT overwrite refunded status — admin may have intentionally refunded
+    if (checkout && checkout.status === 'paid' && order.payment_status !== 'paid' && order.payment_status !== 'refunded') {
       db.prepare("UPDATE orders SET payment_status = 'paid', payment_reference = ?, paid_at = CURRENT_TIMESTAMP, payment_payload = ? WHERE id = ?")
         .run(checkout.id, JSON.stringify(checkout), order.id);
       order.payment_status = 'paid';
@@ -43,7 +44,10 @@ router.get('/status/:id', async (req, res) => {
       checkout_status: checkout ? checkout.status : null,
       order_id: order.id,
       payment_status: order.payment_status,
-      tracking_code: order.tracking_code
+      order_status: order.order_status,
+      tracking_code: order.noest_tracking || null,
+      lookup_code: order.tracking_code,
+      noest_status: order.noest_status || null
     });
   } catch (err) {
     console.error('Payment status error:', err);
@@ -70,7 +74,7 @@ router.post('/webhook', (req, res) => {
 
       if (orderId) {
         const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
-        if (order && order.payment_status !== 'paid') {
+        if (order && order.payment_status !== 'paid' && order.payment_status !== 'refunded') {
           db.prepare("UPDATE orders SET payment_status = 'paid', payment_reference = ?, paid_at = CURRENT_TIMESTAMP, payment_payload = ? WHERE id = ?")
             .run(checkout.id || checkout.checkout_id || '', JSON.stringify(checkout), orderId);
         }

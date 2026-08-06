@@ -13,18 +13,28 @@
   <link rel="stylesheet" href="css/navbar.css" />
   <link rel="stylesheet" href="css/buttons.css" />
   <style>
-    .success-page{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
-    .success-card{max-width:480px;width:100%;text-align:center;background:var(--white);border:1px solid var(--beige);border-radius:var(--radius-lg);padding:48px 36px;box-shadow:var(--shadow-soft)}
-    .success-icon{width:72px;height:72px;border-radius:50%;background:rgba(107,127,94,.12);color:var(--sage);display:grid;place-items:center;margin:0 auto 20px;font-size:36px;font-weight:700}
+    .success-page{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;overflow-x:hidden}
+    .success-card{max-width:480px;width:100%;text-align:center;background:var(--white);border:1px solid var(--beige);border-radius:var(--radius-lg);padding:48px 36px;box-shadow:var(--shadow-soft);box-sizing:border-box}
+    .success-icon{width:72px;height:72px;border-radius:50%;background:rgba(107,127,94,.12);color:var(--sage);display:grid;place-items:center;margin:0 auto 20px;font-size:52px;font-weight:700;overflow:visible}
+    .success-icon.danger{background:var(--cream);color:var(--danger)}
+    .success-icon.warning{border-radius:var(--radius-md)}
+    .success-icon .material-symbols-outlined{font-size:inherit !important}
     .success-card h1{font-family:'Inter',sans-serif !important;font-weight:500;font-size:28px;margin-bottom:8px}
     .success-card p{color:var(--gray);font-size:15px;line-height:1.6}
     .tracking-code{display:inline-block;margin:20px 0;padding:12px 24px;background:var(--cream);border:1px solid var(--beige);border-radius:var(--radius-md);font-family:monospace;font-size:20px;font-weight:700;letter-spacing:2px;color:var(--charcoal)}
     .success-actions{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
     .spinner-lg{width:32px;height:32px;border:3px solid var(--beige);border-top-color:var(--sage);border-radius:50%;animation:spin .8s linear infinite;margin:20px auto}
     @keyframes spin{to{transform:rotate(360deg)}}
+    .call-note{background:var(--cream);border:1px solid var(--beige);border-radius:var(--radius-md);padding:14px 18px;margin-top:16px;font-size:14px;color:var(--charcoal)}
+    .call-note a{color:var(--sage);font-weight:600;text-decoration:none}
+    .call-note a:hover{text-decoration:underline}
+    .wait-badge{display:inline-flex;align-items:center;gap:8px;margin:20px 0;padding:10px 18px;background:var(--cream);border:1px solid var(--beige);border-radius:var(--radius-pill);font-size:14px;font-weight:600;color:var(--gray)}
+    .wait-badge .spinner-sm{width:14px;height:14px;border:2px solid var(--beige);border-top-color:var(--sage);border-radius:50%;animation:spin .8s linear infinite}
+    .cancelled-badge{display:inline-flex;align-items:center;gap:8px;margin:14px 0;padding:10px 18px;background:rgba(179,83,46,.1);border:1px solid rgba(179,83,46,.25);border-radius:var(--radius-pill);font-size:14px;font-weight:600;color:var(--danger)}
+    @media(max-width:500px){.success-page{padding:24px 14px;overflow-x:hidden}.success-card{padding:28px 18px;box-sizing:border-box}.success-card h1{font-size:22px}.tracking-code{font-size:16px;padding:10px 16px;letter-spacing:1px}}
   </style>
 </head>
-<body>
+<body style="overflow-x:hidden">
   <header class="navbar">
     <div class="container navbar-inner">
       <a href="althome.html" class="brand"><img src="/assets/Boularas_Logo.png" alt="Havenwood logo" class="brand-logo" /></a>
@@ -66,6 +76,14 @@
 
       var attempts = 0;
       var maxAttempts = 15;
+      var storePhone = '';
+
+      fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) {
+        storePhone = s.contact_phone || '';
+      }).catch(function () {});
+
+      function phoneHref(p) { return 'tel:+' + String(p).replace(/\D/g, ''); }
+
       var pollInterval = setInterval(function () {
         attempts++;
         if (attempts > maxAttempts) {
@@ -75,12 +93,45 @@
         }
 
         fetch('/api/payments/status/' + orderId).then(function (r) { return r.json(); }).then(function (data) {
-          if (data.payment_status === 'paid') {
+          if (data.payment_status === 'refunded' && data.order_status === 'cancelled') {
+            clearInterval(pollInterval);
+            content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Order Cancelled & Refunded</h1><p>Your order has been cancelled and your payment has been refunded.</p>' +
+              '<div class="cancelled-badge">Cancelled & Refunded</div>' +
+              (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+          } else if (data.payment_status === 'refunded') {
+            clearInterval(pollInterval);
+            content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">refund</span></div><h1>Payment Refunded</h1><p>Your order has been refunded. If you have any questions, please contact us.</p>' +
+              '<div class="cancelled-badge">Refunded</div>' +
+              (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+          } else if (data.payment_status === 'paid') {
             clearInterval(pollInterval);
             var tc = data.tracking_code || '';
-            content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed and your order is being processed.</p>' +
-              (tc ? '<div class="tracking-code">' + tc + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code — use it to follow your order.</p>' : '') +
-              '<div class="success-actions"><a href="track.html' + (tc ? '?code=' + tc : '') + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+            var orderCancelled = data.order_status === 'cancelled';
+            var noestCancelled = data.noest_status === 'CANCELLED';
+            var cancelled = orderCancelled || noestCancelled;
+
+            if (orderCancelled) {
+              content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Payment Successful — Order Cancelled</h1><p>Thank you! Your payment was confirmed but your order has been cancelled by our team.</p>' +
+                '<div class="cancelled-badge">Order cancelled</div>' +
+                (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+            } else if (tc) {
+              content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed and your order is being processed.</p>' +
+                '<div class="tracking-code">' + tc + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code — use it to follow your order.</p>' +
+                '<div class="success-actions"><a href="track.html' + (tc ? '?code=' + tc : '') + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+            } else if (noestCancelled) {
+              content.innerHTML = '<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Payment Successful — Shipment Cancelled</h1><p>Your payment has been confirmed but the shipment was cancelled.</p>' +
+                '<div class="cancelled-badge">Shipment cancelled</div>' +
+                (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+            } else {
+              content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed. Your tracking code will appear here as soon as your order is shipped.</p>' +
+                '<div class="wait-badge"><span class="spinner-sm"></span>Waiting for tracking code</div>' +
+                (storePhone ? '<div class="call-note">Questions about your order? Call us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+            }
           } else if (data.checkout_status === 'failed' || data.checkout_status === 'expired') {
             clearInterval(pollInterval);
             window.location.href = 'payment-failed.html?order_id=' + orderId;

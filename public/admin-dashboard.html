@@ -309,7 +309,7 @@
           var orders = data.orders || data || [];
           totalOrders = orders.length;
           document.getElementById('statOrders').textContent = totalOrders.toLocaleString();
-          var delivered = orders.filter(function (o) { return o.order_status === 'delivered'; });
+          var delivered = orders.filter(function (o) { return o.payment_status === 'paid'; });
           totalRevenue = delivered.reduce(function (s, o) { return s + (o.total_cents || 0); }, 0);
           document.getElementById('statRevenue').textContent = price(totalRevenue);
         }).catch(function () {});

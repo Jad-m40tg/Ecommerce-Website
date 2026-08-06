@@ -56,4 +56,35 @@ router.get('/:email', (req, res) => {
   res.json({ ...customer, ...stats, orders });
 });
 
+// PATCH /api/customers/:email — Update customer data across all their orders.
+// Since customers are extracted from orders, we update every order with this email.
+router.patch('/:email', (req, res) => {
+  const oldEmail = decodeURIComponent(req.params.email);
+  const { customer_name, customer_email, customer_phone, customer_address, customer_city } = req.body;
+
+  const existing = db.prepare('SELECT COUNT(*) as count FROM orders WHERE customer_email = ?').get(oldEmail);
+  if (!existing || existing.count === 0) return res.status(404).json({ error: 'Customer not found' });
+
+  const updates = [];
+  const values = [];
+
+  if (customer_name !== undefined) { updates.push('customer_name = ?'); values.push(customer_name); }
+  if (customer_email !== undefined && customer_email !== oldEmail) {
+    const dup = db.prepare('SELECT COUNT(*) as count FROM orders WHERE customer_email = ?').get(customer_email);
+    if (dup && dup.count > 0) return res.status(400).json({ error: 'Email already in use' });
+    updates.push('customer_email = ?'); values.push(customer_email);
+  }
+  if (customer_phone !== undefined) { updates.push('customer_phone = ?'); values.push(customer_phone); }
+  if (customer_address !== undefined) { updates.push('customer_address = ?'); values.push(customer_address); }
+  if (customer_city !== undefined) { updates.push('customer_city = ?'); values.push(customer_city); }
+
+  if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
+
+  updates.push('updated_at = CURRENT_TIMESTAMP');
+  values.push(oldEmail);
+
+  const result = db.prepare(`UPDATE orders SET ${updates.join(', ')} WHERE customer_email = ?`).run(...values);
+  res.json({ success: true, updated_orders: result.changes });
+});
+
 module.exports = router;

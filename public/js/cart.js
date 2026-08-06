@@ -4,8 +4,22 @@
 var CART_KEY = 'boularas-cart';
 
 function getCart() {
-  try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
-  catch { return []; }
+  var cart;
+  try { cart = JSON.parse(localStorage.getItem(CART_KEY)) || []; }
+  catch { cart = []; }
+
+  var seen = {};
+  var changed = false;
+  cart.forEach(function (item) {
+    if (!item.key || seen[item.key]) {
+      item.key = (item.id || 'item') + '|' + (item.color || '') + '|' + (item.size || '') + '|' + Math.random().toString(36).slice(2, 8);
+      changed = true;
+    }
+    seen[item.key] = true;
+  });
+
+  if (changed) localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  return cart;
 }
 function saveCart(cart) {
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
@@ -191,6 +205,7 @@ function renderSummary() {
 }
 
 /* ---------- 5. EVENT HANDLERS ---------- */
+var removeTimers = {};
 
 /* Delegated clicks / input on the items list */
 document.getElementById('cartItems').addEventListener('click', function (event) {
@@ -208,19 +223,19 @@ document.getElementById('cartItems').addEventListener('click', function (event) 
     cart[index].qty = Math.max(1, cart[index].qty - 1);
     saveCart(cart); renderCart();
   } else if (action === 'remove') {
-    var row = btn.closest('.cart-item');
     var itemKey = btn.getAttribute('data-key');
-    if (row && itemKey) {
-      row.classList.add('removing');
-      setTimeout(function () {
-        var fresh = getCart();
-        var idx = fresh.findIndex(function (c) { return c.key === itemKey; });
-        if (idx !== -1) fresh.splice(idx, 1);
-        saveCart(fresh);
-        renderCart();
-        showToast('Item removed from cart');
-      }, 280);
-    }
+    if (!itemKey || removeTimers[itemKey]) return;
+    var row = btn.closest('.cart-item');
+    if (row) row.classList.add('removing');
+    removeTimers[itemKey] = setTimeout(function () {
+      delete removeTimers[itemKey];
+      var fresh = getCart();
+      var idx = fresh.findIndex(function (c) { return c.key === itemKey; });
+      if (idx !== -1) fresh.splice(idx, 1);
+      saveCart(fresh);
+      renderCart();
+      showToast('Item removed from cart');
+    }, 280);
   }
 });
 

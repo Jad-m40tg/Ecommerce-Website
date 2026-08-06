@@ -146,6 +146,12 @@
 /* ============================================================
    RESPONSIVE NAVBAR — mobile collapse at 800px
    ============================================================ */
+@media (max-width: 900px) {
+  .navbar-inner { gap: 14px; padding: 0 18px; }
+  .nav-links a { padding: 8px 12px; font-size: 13.5px; }
+  .navbar-actions { gap: 8px; }
+}
+
 @media (max-width: 800px) {
   .menu-toggle { display: block; margin-left: 6px; }
   .navbar-actions { gap: 10px; }
@@ -167,7 +173,34 @@
   .nav-links a { display: block; text-align: center; }
 }
 
-@media (max-width: 320px) {
+@media (max-width: 480px) {
+  .navbar-inner { padding: 0 12px; gap: 10px; }
+  .navbar-actions { gap: 6px; }
+  .brand { font-size: 20px; }
+  .brand-logo { height: 32px; }
+  .nav-search, .nav-wish { width: 34px; height: 34px; }
+  .nav-search svg, .nav-wish svg { width: 16px; height: 16px; }
+  .cart-btn { font-size: 12px; padding: 6px 10px; gap: 5px; }
+  .cart-btn svg { width: 16px; height: 16px; }
+  .cart-count { min-width: 16px; height: 16px; font-size: 9px; }
+  .menu-toggle { font-size: 22px; margin-left: 2px; }
+}
+
+@media (max-width: 398px) {
+  .navbar-inner { padding: 0 10px; gap: 8px; }
+  .navbar-actions { gap: 4px; }
+  .brand-logo { height: 28px; max-width: 100px; }
+  .nav-search,
+  .nav-wish { width: 30px; height: 30px; flex-shrink: 0; }
+  .nav-search svg,
+  .nav-wish svg { width: 15px; height: 15px; }
+  .cart-btn { font-size: 11px; padding: 6px 8px; gap: 3px; }
+  .cart-btn svg { width: 15px; height: 15px; }
+  .cart-count { min-width: 14px; height: 14px; font-size: 8px; }
+  .menu-toggle { font-size: 18px; margin-left: 2px; }
+}
+
+@media (max-width: 340px) {
   .navbar-inner { padding: 0 8px; gap: 3px; }
   .navbar-actions { gap: 2px; }
   .brand { font-size: 15px; }

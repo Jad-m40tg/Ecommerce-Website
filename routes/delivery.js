@@ -45,15 +45,17 @@ router.post('/ship', async (req, res) => {
     // Map customer data to NOEST fields
     const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
     const produit = items.map(function (i) { return (i.name || 'Product') + ' x' + (i.quantity || 1); }).join(', ');
-    let montant = order.payment_method === 'cash_on_delivery' ? Math.round(order.total_cents / 100) : 0;
+    let montant = Math.round(order.total_cents / 100);
     if (montant > 150000) {
-      console.warn(`[NOEST] COD amount ${montant} DZD exceeds limit, capping to 149999 DZD for order ${order.id}`);
+      console.warn(`[NOEST] Amount ${montant} DZD exceeds limit, capping to 149999 DZD for order ${order.id}`);
       montant = 149999;
     }
 
+    const phone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
+
     const result = await noest.createOrder({
       client: order.customer_name,
-      phone: order.customer_phone,
+      phone: phone,
       adresse: order.customer_address,
       wilaya_id: Number(wilaya_id) || 16,
       commune: commune || order.customer_city || 'Alger',

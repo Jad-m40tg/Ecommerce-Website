@@ -37,6 +37,12 @@
     .notif-item .notif-text strong{font-weight:600}
     .notif-item .notif-time{font-size:11px;color:var(--gray);margin-top:2px}
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
+    .modal-overlay{position:fixed;inset:0;background:rgba(43,41,38,.45);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s ease}.modal-overlay.open{opacity:1;pointer-events:auto}
+    .modal-card{width:100%;max-width:460px;background:var(--white);border:1.5px solid var(--beige);border-radius:var(--radius-lg);box-shadow:var(--shadow-lift);overflow:hidden;overflow-x:hidden;transform:translateY(12px);transition:transform .25s ease}.modal-overlay.open .modal-card{transform:translateY(0)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--beige)}.modal-head h3{font-size:17px;font-weight:600}.modal-close{position:sticky;top:8px;float:right;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--beige);background:var(--cream);color:var(--charcoal);display:grid;place-items:center;cursor:pointer;font-size:18px;transition:background .2s,border-color .2s}.modal-close:hover{border-color:var(--danger);color:var(--danger);background:rgba(179,83,46,.08)}
+    .modal-body{padding:22px;display:flex;flex-direction:column;gap:16px}
+    .modal-field{display:flex;flex-direction:column;gap:5px}.modal-field label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--gray)}.modal-field input,.modal-field select{padding:10px 14px;border:1.5px solid var(--beige);border-radius:var(--radius-md);background:var(--white);font-size:14px;color:var(--charcoal);transition:border-color .2s,box-shadow .2s}.modal-field input:focus,.modal-field select:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 4px rgba(107,127,94,.12)}
+    .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--beige)}
   </style>
 </head>
 <body>
@@ -91,6 +97,20 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-card">
+      <div class="modal-head"><h3>Edit Customer</h3><button class="modal-close" id="modalClose">&times;</button></div>
+      <div class="modal-body">
+        <div class="modal-field"><label for="mName">Name</label><input type="text" id="mName" /></div>
+        <div class="modal-field"><label for="mEmail">Email</label><input type="email" id="mEmail" /></div>
+        <div class="modal-field"><label for="mPhone">Phone</label><input type="text" id="mPhone" /></div>
+        <div class="modal-field"><label for="mAddress">Address</label><input type="text" id="mAddress" /></div>
+        <div class="modal-field"><label for="mCity">City</label><input type="text" id="mCity" /></div>
+      </div>
+      <div class="modal-foot"><button class="btn-cancel" id="modalCancel" style="padding:9px 18px;border:1.5px solid var(--beige);border-radius:var(--radius-md);background:var(--white);font-size:14px;font-weight:500;cursor:pointer;transition:background .2s">Cancel</button><button class="btn-save" id="modalSave" style="padding:9px 22px;border:1.5px solid var(--charcoal);border-radius:var(--radius-md);background:var(--charcoal);color:var(--warm-white);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s">Save</button></div>
+    </div>
+  </div>
 
   <script src="utils.js"></script>
   <script src="js/admin-topbar.js"></script>
@@ -186,8 +206,52 @@
         if (btn.classList.contains('view')) {
           window.location.href = 'admin-orders.html?search=' + encodeURIComponent(email);
         } else if (btn.classList.contains('edit')) {
-          showToast('Customer: ' + email);
+          openEditModal(email);
         }
+      });
+
+      var editEmail = '';
+      var modal = document.getElementById('editModal');
+      function openEditModal(email) {
+        editEmail = email;
+        var c = CUSTOMERS.find(function (x) { return x.email === email; });
+        if (!c) return;
+        var parts = c.address.split(', ');
+        var city = parts.length > 1 ? parts.pop() : '';
+        var addr = parts.join(', ');
+        document.getElementById('mName').value = c.name;
+        document.getElementById('mEmail').value = c.email;
+        document.getElementById('mPhone').value = c.phone;
+        document.getElementById('mAddress').value = addr;
+        document.getElementById('mCity').value = city;
+        modal.classList.add('open');
+      }
+      function closeModal() { modal.classList.remove('open'); }
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      document.getElementById('modalCancel').addEventListener('click', closeModal);
+      modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+
+      document.getElementById('modalSave').addEventListener('click', function () {
+        var body = {
+          customer_name: document.getElementById('mName').value.trim(),
+          customer_email: document.getElementById('mEmail').value.trim(),
+          customer_phone: document.getElementById('mPhone').value.trim(),
+          customer_address: document.getElementById('mAddress').value.trim(),
+          customer_city: document.getElementById('mCity').value.trim()
+        };
+        if (!body.customer_name || !body.customer_email) { showToast('Name and email are required'); return; }
+        apiFetch('/api/customers/' + encodeURIComponent(editEmail), { method: 'PATCH', body: JSON.stringify(body) }).then(function (res) {
+          if (res.error) { showToast(res.error); return; }
+          showToast('Customer updated (' + res.updated_orders + ' orders)');
+          closeModal();
+          return apiFetch('/api/customers?limit=9999');
+        }).then(function (data) {
+          if (!data) return;
+          CUSTOMERS = (data.customers || data || []).map(function (c) {
+            return { name: c.customer_name || '', email: c.customer_email || '', phone: c.customer_phone || '', address: (c.customer_address || '') + (c.customer_city ? ', ' + c.customer_city : ''), orders: c.order_count || 0, spent: (c.total_spent_cents || 0), last: c.last_order ? c.last_order.split('T')[0] : '' };
+          });
+          render();
+        }).catch(function () { showToast('Failed to update customer'); });
       });
 
       render();

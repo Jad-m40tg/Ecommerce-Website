@@ -34,8 +34,11 @@ router.get('/track', (req, res) => {
   if (!code || code.length < 4) {
     return res.status(400).json({ error: 'Please provide a valid tracking code' });
   }
-  const order = db.prepare('SELECT id, order_status, payment_status, payment_method, tracking_number, carrier, tracking_url, tracking_code, created_at, updated_at, items, total_cents FROM orders WHERE tracking_code = ?').get(code.toUpperCase());
+  const codeU = code.toUpperCase();
+  const order = db.prepare('SELECT id, order_status, payment_status, payment_method, tracking_number, carrier, tracking_url, tracking_code, noest_tracking, noest_status, created_at, updated_at, items, total_cents FROM orders WHERE tracking_code = ? OR noest_tracking = ?').get(codeU, codeU);
   if (!order) return res.status(404).json({ error: 'Order not found. Please check your tracking code.' });
+  // Surface the real carrier tracking code once the order is shipped
+  order.tracking_code = order.noest_tracking || order.tracking_code;
   res.json({ order });
 });
 
@@ -187,6 +190,9 @@ router.get('/:id', (req, res) => {
 router.patch('/:id', (req, res) => {
   const { status, payment_status, tracking_number, carrier, tracking_url, noest_tracking, noest_status } = req.body;
 
+  const order = db.prepare('SELECT order_status, items FROM orders WHERE id = ?').get(req.params.id);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+
   const updates = [];
   const values = [];
 
@@ -220,6 +226,20 @@ router.patch('/:id', (req, res) => {
   values.push(req.params.id);
   const result = db.prepare(`UPDATE orders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
   if (result.changes === 0) return res.status(404).json({ error: 'Order not found' });
+
+  if (status === 'cancelled' && order.order_status !== 'cancelled') {
+    try {
+      const items = JSON.parse(order.items);
+      const stockStmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
+      for (const item of items) {
+        stockStmt.run(item.quantity, item.product_id);
+      }
+      console.log(`[STOCK] Restored ${items.reduce((s, i) => s + i.quantity, 0)} stock for order #${req.params.id}`);
+    } catch (e) {
+      console.error('[STOCK] Failed to restore stock for order #' + req.params.id, e);
+    }
+  }
+
   res.json({ success: true });
 });
 
