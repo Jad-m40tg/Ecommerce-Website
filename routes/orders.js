@@ -45,7 +45,13 @@ router.get('/track', (req, res) => {
 // POST /api/orders — Create a new order (public, rate-limited). Validates items, reserves stock, optionally initiates online payment.
 router.post('/', checkoutLimiter, async (req, res, next) => {
   try {
-    const { customer_name, customer_email, customer_phone, customer_address, customer_city, items, notes, payment_method } = req.body;
+    const { customer_name, customer_email, customer_phone, customer_address, customer_city, items, notes, payment_method, promo_code } = req.body;
+
+    const PROMOS = {
+      BOUL10:   { pct: 0.10 },
+      WELCOME5: { pct: 0.05 }
+    };
+    const appliedPromo = promo_code && PROMOS[promo_code.toUpperCase()] ? { code: promo_code.toUpperCase(), pct: PROMOS[promo_code.toUpperCase()].pct } : null;
 
     if (!items || items.length > MAX_ORDER_ITEMS) {
       return res.status(400).json({ error: `Too many items. Maximum ${MAX_ORDER_ITEMS} items per order` });
@@ -90,7 +96,8 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
         resolvedItems.push({ product_id: product.id, name: product.name, price_cents: product.price_cents, quantity: item.quantity });
       }
 
-      const total_cents = subtotal_cents + delivery_fee;
+      const discount_cents = appliedPromo ? Math.round(subtotal_cents * appliedPromo.pct) : 0;
+      const total_cents = subtotal_cents - discount_cents + delivery_fee;
 
       const stmt = db.prepare(`
         INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, customer_city, items, subtotal_cents, delivery_fee_cents, total_cents, payment_method, payment_status, order_status, notes, tracking_code)
@@ -125,7 +132,8 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
           amount: dzdAmount,
           orderId: id,
           customerEmail: customer_email,
-          customerName: customer_name
+          customerName: customer_name,
+          baseUrl: req.protocol + '://' + req.get('host')
         });
 
         db.prepare("UPDATE orders SET payment_reference = ? WHERE id = ?").run(checkout.id, id);

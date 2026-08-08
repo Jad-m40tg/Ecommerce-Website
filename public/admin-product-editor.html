@@ -362,12 +362,12 @@
           name: name,
           price_cents: price,
           stock: parseInt(document.getElementById('pStock').value, 10) || 0,
-          category: document.getElementById('pCategory').value || null,
+          category: document.getElementById('pCategory').value || '',
           status: document.getElementById('pStatus').value,
           display_section: document.getElementById('pDisplaySection').value || '',
           description: document.getElementById('pDesc').value.trim(),
           brand: document.getElementById('pBrand').value.trim(),
-          sku: document.getElementById('pSku').value.trim(),
+          sku: document.getElementById('pSku').value.trim() || null,
           shipping_info: document.getElementById('pShippingInfo').value.trim(),
           returns_info: document.getElementById('pReturnsInfo').value.trim(),
           specifications: Array.from(document.querySelectorAll('.spec-row')).map(function (row) { var inp = row.querySelectorAll('input'); return { label: inp[0].value.trim(), value: inp[1].value.trim() }; }).filter(function (s) { return s.label || s.value; }),
@@ -382,7 +382,10 @@
         document.getElementById('saveBtn').disabled = true;
 
         apiFetch(url, { method: method, body: JSON.stringify(body) })
-          .then(function () { showToast(editId ? 'Product updated' : 'Product created'); setTimeout(function () { window.location.href = 'admin-products.html'; }, 600); })
+          .then(function (res) {
+            if (res && res.error) { showToast(res.error); document.getElementById('saveBtn').disabled = false; return; }
+            showToast(editId ? 'Product updated' : 'Product created'); setTimeout(function () { window.location.href = 'admin-products.html'; }, 600);
+          })
           .catch(function () { showToast('Save failed'); document.getElementById('saveBtn').disabled = false; });
       });
 

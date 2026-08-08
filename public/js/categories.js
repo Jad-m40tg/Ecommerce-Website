@@ -33,7 +33,7 @@ function renderCategories() {
     var img = cat.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png';
     return (
       '<a href="products.html?category=' + encodeURIComponent(slug) + '" class="category-card reveal">' +
-        '<img class="card-img" src="' + img + '" alt="' + escapeHtml(cat.name) + '" loading="lazy" />' +
+        '<img class="card-img" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(cat.name) + '" loading="lazy" onerror="handleImageError(this)" />' +
         '<div class="card-body">' +
           '<h3>' + escapeHtml(cat.name) + '</h3>' +
           '<span class="count">' + count + ' product' + (count !== 1 ? 's' : '') + '</span>' +
@@ -62,7 +62,7 @@ function productCardHTML(product) {
     '<article class="product-card">' +
       '<a href="product.html?id=' + product.id + '" class="card-media">' +
         badge +
-        '<img src="' + (product.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png') + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+        '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + (product.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png') + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
       '</a>' +
       '<div class="card-body">' +
         '<div class="card-category">' + escapeHtml(product.category_name || '') + '</div>' +
@@ -183,5 +183,6 @@ fetch('/api/products/browse')
     renderCategories();
     var shuffled = PRODUCTS.slice().sort(function () { return Math.random() - 0.5; });
     renderRow('popularRow', shuffled.slice(0, 8));
+    if (typeof initLazyImages === 'function') initLazyImages();
   })
   .catch(function () {});

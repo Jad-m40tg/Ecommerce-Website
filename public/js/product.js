@@ -311,10 +311,10 @@ function renderProduct(p) {
   var thumbs;
   if (galleryImages.length > 0) {
     thumbs = galleryImages.map(function (img, i) {
-      return '<button type="button" class="' + (i === 0 ? 'active' : '') + '" data-thumb="' + i + '" aria-label="View image ' + (i + 1) + '"><img src="' + img + '" alt="" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
+      return '<button type="button" class="' + (i === 0 ? 'active' : '') + '" data-thumb="' + i + '" aria-label="View image ' + (i + 1) + '"><img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
     }).join('');
   } else {
-    thumbs = '<button type="button" class="active" data-thumb="0" aria-label="View image 1"><img src="' + p.image + '" alt="" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
+    thumbs = '<button type="button" class="active" data-thumb="0" aria-label="View image 1"><img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + p.image + '" alt="" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
   }
 
   var swatches;
@@ -444,6 +444,7 @@ function renderProduct(p) {
 
   wireUpDetail(p, colors);
   updateOrderSummary(p);
+  if (typeof initLazyImages === 'function') initLazyImages();
 }
 
 /* ---------- REPOSITION REVIEWS BY SCREEN WIDTH ---------- */
@@ -803,7 +804,7 @@ function relatedProductCard(p) {
   var btnText = inCart ? 'In Cart' : 'Add';
   return '<article class="product-card">' +
     '<a href="product.html?id=' + p.id + '" class="card-media">' + badge +
-    '<img src="' + img + '" alt="' + escapeHtml(p.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></a>' +
+    '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(p.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></a>' +
     '<div class="card-body">' +
       '<div class="card-category">' + escapeHtml(getCategoryLabel(p.category)) + '</div>' +
       '<h3><a href="product.html?id=' + p.id + '">' + escapeHtml(p.name) + '</a></h3>' +
@@ -826,6 +827,7 @@ function renderRelated(cur) {
       if (related.length === 0) return;
       document.getElementById('relatedSection').style.display = 'block';
       document.getElementById('relatedRow').innerHTML = related.map(relatedProductCard).join('');
+      if (typeof initLazyImages === 'function') initLazyImages();
     })
     .catch(function () {});
 }

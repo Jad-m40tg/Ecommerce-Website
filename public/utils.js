@@ -133,3 +133,60 @@ window.getProductImage = getProductImage;
 window.handleImageError = handleImageError;
 window.COLOR_HEX = COLOR_HEX;
 window.colorHex = colorHex;
+
+// ============================================================
+// Lazy-loading images via IntersectionObserver
+// Works on all <img> with data-src set (or auto-detected from src)
+// ============================================================
+
+var LAZY_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1" height="1"%3E%3C/svg%3E';
+
+function initLazyImages() {
+  var images = document.querySelectorAll('img[data-src]');
+  if (!images.length) return;
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      var img = entry.target;
+      var realSrc = img.getAttribute('data-src');
+      if (realSrc) {
+        img.src = realSrc;
+        img.removeAttribute('data-src');
+        img.classList.add('lazy-loaded');
+      }
+      io.unobserve(img);
+    });
+  }, { rootMargin: '300px 0px' });
+
+  images.forEach(function (img) {
+    if (!img.src || img.src === location.href) {
+      img.src = LAZY_PLACEHOLDER;
+    }
+    img.classList.add('lazy-img');
+    io.observe(img);
+  });
+}
+
+// Run on DOMContentLoaded and also re-scan for dynamically inserted images
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initLazyImages);
+} else {
+  initLazyImages();
+}
+
+window.initLazyImages = initLazyImages;
+
+// ============================================================
+// CSS for lazy-loaded images (injected once)
+// ============================================================
+
+(function () {
+  if (document.getElementById('lazy-img-css')) return;
+  var style = document.createElement('style');
+  style.id = 'lazy-img-css';
+  style.textContent =
+    '.lazy-img{opacity:0;transition:opacity .35s ease}' +
+    '.lazy-loaded{opacity:1}';
+  document.head.appendChild(style);
+})();

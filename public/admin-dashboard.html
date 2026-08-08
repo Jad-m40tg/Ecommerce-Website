@@ -336,7 +336,7 @@
       if (ctx) {
         apiFetch('/api/analytics/revenue?period=weekly').then(function (data) {
           var items = data.data || [];
-          var weekLabels = items.map(function (d) { return d.period.split('-').pop(); });
+          var weekLabels = items.map(function (d) { return d.period; });
           var weekValues = items.map(function (d) { return d.revenue_cents / 100; });
           new Chart(ctx, {
             type: 'bar',

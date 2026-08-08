@@ -79,7 +79,7 @@ function productCardHTML(product) {
     '<article class="product-card">' +
       '<a href="product.html?id=' + product.id + '" class="card-media">' +
         badge +
-        '<img src="' + img + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+        '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
       '</a>' +
       '<div class="card-body">' +
         '<div class="card-category">' + escapeHtml(cat) + '</div>' +
@@ -210,6 +210,9 @@ document.getElementById('menuToggle').addEventListener('click', function () {
 document.getElementById('filtersToggle').addEventListener('click', function () {
   document.getElementById('filtersPanel').classList.toggle('open');
 });
+document.getElementById('filtersClose').addEventListener('click', function () {
+  document.getElementById('filtersPanel').classList.remove('open');
+});
 
 /* Reveal-on-scroll (same behavior as homepage) */
 const revealObserver = new IntersectionObserver(function (entries) {
@@ -260,5 +263,6 @@ updateCartCount();
 
     renderCategoryList();
     renderProducts();
+    if (typeof initLazyImages === 'function') initLazyImages();
   }).catch(function () {});
 })();

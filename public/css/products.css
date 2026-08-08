@@ -224,8 +224,32 @@
   .product-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+.filters-close {
+  display: none;
+}
+
 @media (max-width: 820px) {
   .catalog { grid-template-columns: 1fr; gap: 20px; }
+  .filters-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--charcoal);
+    color: var(--warm-white);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 1;
+    transition: background 0.25s ease;
+  }
+  .filters-close:hover { background: var(--sage); }
   .filters {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -234,7 +258,7 @@
     flex-direction: column;
     border: none;
     border-radius: 0;
-    padding: 24px 22px;
+    padding: 52px 22px 24px;
     overflow-y: auto;
     box-shadow: none;
   }

@@ -21,6 +21,9 @@ function updateCartCount() {
 var SHIPPING_FLAT   = 999;    // default, overridden by API
 var FREE_SHIP_OVER  = 9999;   // default, overridden by API
 var TAX_RATE        = 0;
+var PROMO_STORAGE_KEY = 'boularas-promo';
+var appliedPromo = null;
+try { appliedPromo = JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY)) || null; } catch (e) { appliedPromo = null; }
 
 var storeSettings = {};
 fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) {
@@ -43,9 +46,11 @@ fetch('/api/products/browse?limit=1000').then(function (r) { return r.json(); })
 function calcTotals(cart) {
   var subtotal = cart.reduce(function (s, i) { return s + (i.price_cents || 0) * i.qty; }, 0);
   var shipping = cart.length === 0 ? 0 : (subtotal >= FREE_SHIP_OVER ? 0 : SHIPPING_FLAT);
-  var tax      = Math.round(subtotal * TAX_RATE);
-  var total    = subtotal + shipping + tax;
-  return { subtotal: subtotal, shipping: shipping, tax: tax, total: total };
+  var discount = appliedPromo ? Math.round(subtotal * appliedPromo.pct) : 0;
+  var taxable  = Math.max(0, subtotal - discount);
+  var tax      = Math.round(taxable * TAX_RATE);
+  var total    = taxable + shipping + tax;
+  return { subtotal: subtotal, shipping: shipping, discount: discount, tax: tax, total: total };
 }
 
 /* ---------- 3. RENDER SUMMARY ---------- */
@@ -91,6 +96,7 @@ function renderSummary() {
     '<div class="summary-divider"></div>' +
 
     '<div class="summary-line"><span>Subtotal</span><b>' + price(totals.subtotal) + '</b></div>' +
+    (totals.discount > 0 ? '<div class="summary-line"><span>Discount (' + escapeHtml(appliedPromo.code) + ')</span><b style="color: var(--sage)">-' + price(totals.discount) + '</b></div>' : '') +
     '<div class="summary-line"><span>Shipping</span><b>' + shippingLabel + '</b></div>' +
     '<div class="summary-line"><span>Tax (est.)</span><b>' + price(totals.tax) + '</b></div>' +
 
@@ -177,7 +183,8 @@ document.addEventListener('click', function (event) {
     customer_city: document.getElementById('city').value || '',
     items: cart.map(function (item) { return { product_id: Number(item.id), quantity: item.qty }; }),
     notes: '',
-    payment_method: paymentMethod
+    payment_method: paymentMethod,
+    promo_code: appliedPromo ? appliedPromo.code : null
   };
 
   fetch('/api/orders', {
@@ -197,6 +204,7 @@ document.addEventListener('click', function (event) {
 
     if (paymentMethod === 'cash_on_delivery') {
       saveCart([]);
+      localStorage.removeItem(PROMO_STORAGE_KEY);
       renderSummary();
       document.getElementById('orderNumber').textContent = 'Order #' + orderId + (trackingCode ? ' — Tracking: ' + trackingCode : '');
       document.getElementById('confirmOverlay').classList.add('open');

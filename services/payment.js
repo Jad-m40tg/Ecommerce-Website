@@ -11,12 +11,13 @@ const BASE_URL = CHARGILY_ENV === 'test'
   ? 'https://pay.chargily.net/test/api/v2'
   : 'https://pay.chargily.net/api/v2';
 
-async function createCheckout({ amount, orderId, customerEmail, customerName }) {
+async function createCheckout({ amount, orderId, customerEmail, customerName, baseUrl }) {
+  const host = baseUrl || APP_URL;
   const checkout = await client.createCheckout({
     amount: amount,
     currency: 'dzd',
-    success_url: APP_URL + '/payment-success.html?order_id=' + orderId,
-    failure_url: APP_URL + '/payment-failed.html?order_id=' + orderId,
+    success_url: host + '/payment-success.html?order_id=' + orderId,
+    failure_url: host + '/payment-failed.html?order_id=' + orderId,
     metadata: { order_id: String(orderId) },
     description: 'Order #' + orderId
   });

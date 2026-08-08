@@ -93,7 +93,19 @@ var PROMOS = {
   BOUL10:   { label: '10% off subtotal', pct: 0.10 },
   WELCOME5: { label: '5% off subtotal',  pct: 0.05 }
 };
+var PROMO_STORAGE_KEY = 'boularas-promo';
 var appliedPromo = null;
+
+function savePromo(promo) {
+  if (promo) { localStorage.setItem(PROMO_STORAGE_KEY, JSON.stringify(promo)); }
+  else { localStorage.removeItem(PROMO_STORAGE_KEY); }
+}
+function loadPromo() {
+  try { return JSON.parse(localStorage.getItem(PROMO_STORAGE_KEY)) || null; } catch { return null; }
+}
+
+/* Restore promo from previous page */
+appliedPromo = loadPromo();
 
 function calcTotals(cart) {
   var subtotal = cart.reduce(function (s, i) { return s + (i.price_cents || 0) * i.qty; }, 0);
@@ -158,7 +170,7 @@ function renderCart() {
     return (
       '<article class="cart-item" data-index="' + index + '" data-key="' + escapeHtml(item.key || '') + '">' +
         '<a href="product.html?id=' + item.id + '" class="item-media" aria-label="View ' + escapeHtml(item.name) + '">' +
-          '<img src="' + img + '" alt="' + escapeHtml(item.name) + '" loading="lazy" data-category="' + escapeHtml(cat) + '" onerror="handleImageError(this)" />' +
+          '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(item.name) + '" loading="lazy" data-category="' + escapeHtml(cat) + '" onerror="handleImageError(this)" />' +
         '</a>' +
 
         '<div class="item-info">' +
@@ -187,6 +199,7 @@ function renderCart() {
   }).join('');
 
   renderSummary();
+  if (typeof initLazyImages === 'function') initLazyImages();
 }
 
 function renderSummary() {
@@ -303,6 +316,7 @@ document.getElementById('summaryPanel').addEventListener('click', function (even
 
     if (appliedPromo) {
       appliedPromo = null;
+      savePromo(null);
       showToast('Promo code removed');
       renderSummary();
       return;
@@ -316,6 +330,7 @@ document.getElementById('summaryPanel').addEventListener('click', function (even
     }
     if (PROMOS[code]) {
       appliedPromo = Object.assign({ code: code }, PROMOS[code]);
+      savePromo(appliedPromo);
       showToast('Promo code applied');
       renderSummary();
     } else {

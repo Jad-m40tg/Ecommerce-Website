@@ -30,7 +30,7 @@ function productCardHTML(product) {
     '<article class="product-card">' +
       '<a href="product.html?id=' + product.id + '" class="card-media">' +
         badge +
-        '<img src="' + img + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+        '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
       '</a>' +
       '<div class="card-body">' +
         '<div class="card-category">' + escapeHtml(cat) + '</div>' +

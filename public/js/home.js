@@ -73,7 +73,7 @@ function productCardHTML(product) {
     '<article class="product-card">' +
       '<a href="product.html?id=' + product.id + '" class="card-media">' +
         badge +
-        '<img src="' + product._image + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+        '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + product._image + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
       '</a>' +
       '<div class="card-body">' +
         '<div class="card-category">' + escapeHtml(product.category) + '</div>' +
@@ -139,6 +139,7 @@ function loadHomeProducts() {
     renderRow('bestRow', bestSellers);
     renderRow('popularRow', popular);
     renderRow('newArrivalsRow', newArrivals);
+    if (typeof initLazyImages === 'function') initLazyImages();
 
     /* Category counts */
     var cats = { 'living-room': 0, 'dining-room': 0, 'bedroom': 0, 'lighting': 0 };

@@ -159,7 +159,7 @@ router.post('/', (req, res, next) => {
 
 // PUT /api/products/:id — Update an existing product.
 // Only updates fields that are included in the request body (partial update).
-router.put('/:id', (req, res) => {
+router.put('/:id', (req, res, next) => {
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
   if (!product) return res.status(404).json({ error: 'Product not found' });
 
@@ -173,6 +173,9 @@ router.put('/:id', (req, res) => {
       // Array/object fields need to be stringified before saving
       if (['colors', 'sizes', 'tags', 'images', 'specifications'].includes(field)) {
         values.push(JSON.stringify(req.body[field]));
+      } else if (field === 'sku' && !String(req.body[field] || '').trim()) {
+        // Empty SKU must be NULL, not '', so the UNIQUE constraint allows multiple products without one.
+        values.push(null);
       } else {
         values.push(req.body[field]);
       }
@@ -181,7 +184,12 @@ router.put('/:id', (req, res) => {
   if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
 
   values.push(req.params.id);
-  db.prepare(`UPDATE products SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
+  try {
+    db.prepare(`UPDATE products SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
+  } catch (e) {
+    if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') return res.status(409).json({ error: 'SKU already exists' });
+    return next(e);
+  }
   res.json({ success: true });
 });
 
