@@ -52,21 +52,10 @@ window.priceFull = priceFull;
 // Image fallback for products with missing upload images
 // ============================================================
 
-var _FALLBACK_IMAGE_MAP = {
-  'living-room': '/assets/furn-sofa.png',
-  'dining-room': '/assets/furn-table.png',
-  'bedroom': '/assets/furn-bed.png',
-  'office': '/assets/furn-desk.png',
-  'outdoor': '/assets/furn-sofa.png',
-  'storage': '/assets/furn-shelf.png',
-  'lighting': '/assets/furn-lamp.png',
-  'decor': '/assets/furn-decor.png',
-  'seating': '/assets/furn-sofa.png',
-  'tables': '/assets/furn-table.png'
-};
+var DEFAULT_PRODUCT_IMAGE = '/assets/noImageForItem.png';
 
 function getFallbackImage(category) {
-  return _FALLBACK_IMAGE_MAP[category] || '/assets/furn-sofa.png';
+  return DEFAULT_PRODUCT_IMAGE;
 }
 
 function getProductImage(product) {

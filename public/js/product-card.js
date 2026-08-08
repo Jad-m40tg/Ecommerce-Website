@@ -18,7 +18,7 @@ function productCardHTML(product) {
     badge = '<span class="card-badge">New</span>';
   }
 
-  const img = typeof getProductImage === 'function' ? getProductImage(product) : (product.image || '/assets/furn-sofa.png');
+  const img = typeof getProductImage === 'function' ? getProductImage(product) : (window.DEFAULT_PRODUCT_IMAGE || product.image || '/assets/noImageForItem.png');
   const cat = product.category_name || product.category || 'uncategorized';
   const oldPrice = product.compare_at_price_cents || product.old_price_cents;
   const oldPriceHTML = oldPrice ? '<s>' + price(oldPrice) + '</s>' : '';

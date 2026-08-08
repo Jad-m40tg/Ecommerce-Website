@@ -56,6 +56,15 @@ router.get('/:email', (req, res) => {
   res.json({ ...customer, ...stats, orders });
 });
 
+// DELETE /api/customers/:email — Delete a customer (removes all their orders).
+router.delete('/:email', (req, res) => {
+  const email = decodeURIComponent(req.params.email);
+  const existing = db.prepare('SELECT COUNT(*) as count FROM orders WHERE customer_email = ?').get(email);
+  if (!existing || existing.count === 0) return res.status(404).json({ error: 'Customer not found' });
+  const result = db.prepare('DELETE FROM orders WHERE customer_email = ?').run(email);
+  res.json({ success: true, deleted_orders: result.changes });
+});
+
 // PATCH /api/customers/:email — Update customer data across all their orders.
 // Since customers are extracted from orders, we update every order with this email.
 router.patch('/:email', (req, res) => {

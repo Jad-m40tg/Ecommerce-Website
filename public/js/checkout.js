@@ -30,6 +30,16 @@ fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s)
   renderSummary();
 }).catch(function () {});
 
+/* ---------- 2.5. PRODUCT CATALOG (live image resolution) ---------- */
+var PRODUCT_CATALOG = {};
+fetch('/api/products/browse?limit=1000').then(function (r) { return r.json(); }).then(function (data) {
+  var items = data.products || data.data || data;
+  if (Array.isArray(items)) {
+    items.forEach(function (p) { PRODUCT_CATALOG[String(p.id)] = p; });
+  }
+  renderSummary();
+}).catch(function () {});
+
 function calcTotals(cart) {
   var subtotal = cart.reduce(function (s, i) { return s + (i.price_cents || 0) * i.qty; }, 0);
   var shipping = cart.length === 0 ? 0 : (subtotal >= FREE_SHIP_OVER ? 0 : SHIPPING_FLAT);
@@ -59,9 +69,12 @@ function renderSummary() {
   var shippingLabel = totals.shipping === 0 ? 'Free' : price(totals.shipping);
 
   var itemsHtml = cart.map(function (item) {
+    var prod = PRODUCT_CATALOG[String(item.id)];
+    var img = prod ? getProductImage(prod) : (item.image || DEFAULT_PRODUCT_IMAGE);
+    var cat = prod ? (prod.category || '') : (item.category || '');
     return (
       '<div class="summary-item">' +
-        '<div class="thumb"><img src="' + item.image + '" alt="' + escapeHtml(item.name) + '" onerror="handleImageError(this)" /></div>' +
+        '<div class="thumb"><img src="' + img + '" alt="' + escapeHtml(item.name) + '" data-category="' + escapeHtml(cat) + '" onerror="handleImageError(this)" /></div>' +
         '<div class="info">' +
           '<div class="name">' + escapeHtml(item.name) + '</div>' +
           '<div class="qty-label">Qty: ' + item.qty + '</div>' +

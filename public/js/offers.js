@@ -67,7 +67,7 @@ function productCardHTML(product) {
     '<article class="product-card">' +
       '<a href="product.html?id=' + product.id + '" class="card-media">' +
         badge +
-        '<img src="' + (product.image || '/assets/furn-sofa.png') + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+        '<img src="' + (product.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png') + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
       '</a>' +
       '<div class="card-body">' +
         '<div class="card-category">' + escapeHtml(product.category_name || '') + '</div>' +
@@ -197,7 +197,7 @@ fetch('/api/products/browse/on-sale')
     if (!Array.isArray(items) || !items.length) return;
     PRODUCTS = items.map(function (p) {
       var imgs = []; try { imgs = JSON.parse(p.images || '[]'); } catch(e) { imgs = []; }
-      var img = imgs[0] || p.image || '/assets/furn-sofa.png';
+      var img = imgs[0] || p.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png';
       return {
         id: p.id,
         name: p.name || 'Untitled',

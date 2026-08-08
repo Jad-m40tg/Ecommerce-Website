@@ -5,7 +5,7 @@ var PRODUCT = {
   id: 'sofa-marlow',
   name: 'Marlow Linen Sofa',
   price_cents: 129900,
-  image: '/assets/furn-sofa.png'
+  image: window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png'
 };
 
 var selection = {
@@ -387,7 +387,7 @@ function loadProductFromAPI() {
       if (!found) return;
       var imgs = [];
       try { imgs = JSON.parse(found.images || '[]'); } catch (e) { imgs = []; }
-      var img = imgs[0] || found.image || '/assets/furn-sofa.png';
+      var img = imgs[0] || found.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png';
       PRODUCT.id = String(found.id || found.slug);
       PRODUCT.name = found.name || PRODUCT.name;
       PRODUCT.price_cents = found.price_cents || PRODUCT.price_cents;

@@ -4,13 +4,16 @@ var PRODUCTS = [];
 
 /* ---------- HELPERS ---------- */
 function getProductImage(product) {
-  try {
-    var imgs = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
-    if (Array.isArray(imgs) && imgs.length && imgs[0]) {
-      return imgs[0];
-    }
-    return '/assets/furn-sofa.png';
-  } catch (e) { return '/assets/furn-sofa.png'; }
+  var imgs = [];
+  try { imgs = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []); }
+  catch (e) { imgs = []; }
+  if (imgs.length > 0 && imgs[0]) {
+    return imgs[0];
+  }
+  if (typeof window.getFallbackImage === 'function') {
+    return window.getFallbackImage(product.category);
+  }
+  return window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png';
 }
 function getProductCategory(product) {
   return (product.category || product.category_name || 'uncategorized');

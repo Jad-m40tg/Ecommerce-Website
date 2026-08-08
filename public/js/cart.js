@@ -59,6 +59,36 @@ fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s)
   if (getCart().length > 0) renderCart();
 }).catch(function () {});
 
+/* ---------- 2.5. PRODUCT CATALOG (live image + stock) ---------- */
+var PRODUCT_CATALOG = {};
+
+function loadCatalog() {
+  return fetch('/api/products/browse?limit=1000')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var items = data.products || data.data || data;
+      if (Array.isArray(items)) {
+        items.forEach(function (p) { PRODUCT_CATALOG[String(p.id)] = p; });
+      }
+      renderCart();
+    })
+    .catch(function () {});
+}
+
+/* Stock for a cart item: null means unknown (no limit beyond 99) */
+function stockOf(item) {
+  var prod = PRODUCT_CATALOG[String(item.id)];
+  if (prod && typeof prod.stock === 'number' && prod.stock >= 0) return prod.stock;
+  return null;
+}
+
+/* Max purchasable qty for a cart item */
+function maxQtyOf(item) {
+  var stock = stockOf(item);
+  if (stock == null) return 99;
+  return Math.max(0, Math.min(stock, 99));
+}
+
 var PROMOS = {
   BOUL10:   { label: '10% off subtotal', pct: 0.10 },
   WELCOME5: { label: '5% off subtotal',  pct: 0.05 }
@@ -118,10 +148,17 @@ function renderCart() {
     var size  = item.size  || 'Standard';
     var line = (item.price_cents || 0) * item.qty;
 
+    var prod = PRODUCT_CATALOG[String(item.id)];
+    var img = prod ? getProductImage(prod) : (item.image || DEFAULT_PRODUCT_IMAGE);
+    var cat = prod ? (prod.category || '') : (item.category || '');
+    var maxQty = maxQtyOf(item);
+    var plusDisabled = item.qty >= maxQty ? ' disabled' : '';
+    var minusDisabled = item.qty <= 1 ? ' disabled' : '';
+
     return (
       '<article class="cart-item" data-index="' + index + '" data-key="' + escapeHtml(item.key || '') + '">' +
         '<a href="product.html?id=' + item.id + '" class="item-media" aria-label="View ' + escapeHtml(item.name) + '">' +
-          '<img src="' + item.image + '" alt="' + escapeHtml(item.name) + '" loading="lazy" onerror="handleImageError(this)" />' +
+          '<img src="' + img + '" alt="' + escapeHtml(item.name) + '" loading="lazy" data-category="' + escapeHtml(cat) + '" onerror="handleImageError(this)" />' +
         '</a>' +
 
         '<div class="item-info">' +
@@ -132,12 +169,13 @@ function renderCart() {
           '</div>' +
           '<div class="item-controls">' +
             '<div class="qty">' +
-              '<button type="button" data-action="dec" data-index="' + index + '" aria-label="Decrease quantity">&minus;</button>' +
-              '<input type="number" value="' + item.qty + '" min="1" max="99" data-action="set" data-index="' + index + '" aria-label="Quantity" />' +
-              '<button type="button" data-action="inc" data-index="' + index + '" aria-label="Increase quantity">+</button>' +
+              '<button type="button" data-action="dec" data-index="' + index + '" aria-label="Decrease quantity"' + minusDisabled + '>&minus;</button>' +
+              '<input type="number" value="' + item.qty + '" min="1" max="' + maxQty + '" data-action="set" data-index="' + index + '" aria-label="Quantity" />' +
+              '<button type="button" data-action="inc" data-index="' + index + '" aria-label="Increase quantity"' + plusDisabled + '>+</button>' +
             '</div>' +
             '<button type="button" class="remove-btn" data-action="remove" data-index="' + index + '" data-key="' + escapeHtml(item.key || '') + '">&#10005; Remove</button>' +
           '</div>' +
+          (item.qty >= maxQty ? '<div class="stock-note">Only ' + maxQty + ' in stock</div>' : '') +
         '</div>' +
 
         '<div class="item-price">' +
@@ -217,7 +255,13 @@ document.getElementById('cartItems').addEventListener('click', function (event) 
   if (!cart[index]) return;
 
   if (action === 'inc') {
-    cart[index].qty = Math.min(99, cart[index].qty + 1);
+    var maxQty = maxQtyOf(cart[index]);
+    if (cart[index].qty >= maxQty) {
+      if (stockOf(cart[index]) == null) showToast('Maximum 99 per item');
+      else showToast('Only ' + maxQty + ' in stock');
+      return;
+    }
+    cart[index].qty = Math.min(maxQty, cart[index].qty + 1);
     saveCart(cart); renderCart();
   } else if (action === 'dec') {
     cart[index].qty = Math.max(1, cart[index].qty - 1);
@@ -245,7 +289,8 @@ document.getElementById('cartItems').addEventListener('change', function (event)
   var index = Number(input.getAttribute('data-index'));
   var cart  = getCart();
   if (!cart[index]) return;
-  var next = Math.max(1, Math.min(99, Number(input.value) || 1));
+  var maxQty = maxQtyOf(cart[index]);
+  var next = Math.max(1, Math.min(maxQty, Number(input.value) || 1));
   cart[index].qty = next;
   saveCart(cart); renderCart();
 });
@@ -315,3 +360,4 @@ function showToast(message) {
 /* ---------- BOOT ---------- */
 updateCartCount();
 renderCart();
+loadCatalog();

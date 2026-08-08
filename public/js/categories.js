@@ -30,7 +30,7 @@ function renderCategories() {
   grid.innerHTML = CATEGORIES.map(function (cat) {
     var slug = cat.slug || '';
     var count = cat.product_count || 0;
-    var img = cat.image || '/assets/furn-sofa.png';
+    var img = cat.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png';
     return (
       '<a href="products.html?category=' + encodeURIComponent(slug) + '" class="category-card reveal">' +
         '<img class="card-img" src="' + img + '" alt="' + escapeHtml(cat.name) + '" loading="lazy" />' +
@@ -62,7 +62,7 @@ function productCardHTML(product) {
     '<article class="product-card">' +
       '<a href="product.html?id=' + product.id + '" class="card-media">' +
         badge +
-        '<img src="' + (product.image || '/assets/furn-sofa.png') + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+        '<img src="' + (product.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png') + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
       '</a>' +
       '<div class="card-body">' +
         '<div class="card-category">' + escapeHtml(product.category_name || '') + '</div>' +
@@ -156,7 +156,7 @@ fetch('/api/products/browse')
     PRODUCTS = items.map(function (p) {
       var imgs = [];
       try { imgs = typeof p.images === 'string' ? JSON.parse(p.images) : (Array.isArray(p.images) ? p.images : []); } catch (e) { imgs = []; }
-      var img = (imgs[0]) ? imgs[0] : (p.image || '/assets/furn-sofa.png');
+      var img = (imgs[0]) ? imgs[0] : (p.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png');
       return {
         id: p.id,
         name: p.name || 'Untitled',

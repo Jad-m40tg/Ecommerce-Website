@@ -107,7 +107,7 @@ function loadHomeProducts() {
     products = products.filter(function (p) { return p.status === 'active'; }).map(function (p) {
       var imgs = [];
       try { imgs = JSON.parse(p.images || '[]'); } catch { imgs = []; }
-      p._image = (imgs.length > 0 ? imgs[0] : '/assets/furn-sofa.png');
+      p._image = (imgs.length > 0 ? imgs[0] : (window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png'));
       p.badge = p.on_sale ? 'sale' : (p.featured ? 'new' : null);
       return p;
     });

@@ -165,6 +165,7 @@
   transition: background 0.25s ease;
 }
 .qty button:hover { background: var(--beige); }
+.qty button:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
 .qty input {
   width: 44px; height: 48px;
   border: none; background: transparent;

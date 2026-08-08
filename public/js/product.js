@@ -56,19 +56,9 @@ function isInCart(productId) {
 var selection = { color: '', size: '', qty: 1 };
 
 /* ---------- IMAGE HELPERS ---------- */
-var FALLBACK_IMAGES = {
-  'living-room': '/assets/furn-sofa.png',
-  'dining-room': '/assets/furn-table.png',
-  'bedroom': '/assets/furn-bed.png',
-  'office': '/assets/furn-desk.png',
-  'outdoor': '/assets/furn-sofa.png',
-  'storage': '/assets/furn-shelf.png',
-  'lighting': '/assets/furn-lamp.png',
-  'decor': '/assets/furn-decor.png'
-};
-
 function fallbackImage(category) {
-  return FALLBACK_IMAGES[category] || '/assets/furn-sofa.png';
+  if (typeof window.DEFAULT_PRODUCT_IMAGE === 'string') return window.DEFAULT_PRODUCT_IMAGE;
+  return '/assets/noImageForItem.png';
 }
 
 function getProductImage(product) {

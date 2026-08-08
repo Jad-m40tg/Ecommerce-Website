@@ -166,7 +166,7 @@ updateCartCount();
           old_price_cents: p.compare_at_price_cents || p.old_price_cents || null,
           rating: parseFloat(p.rating) || 4.7,
           reviews: parseInt(p.reviews, 10) || Math.floor(Math.random() * 200) + 10,
-          image: (p.images && p.images[0]) ? p.images[0] : (p.image || '/assets/furn-sofa.png'),
+          image: (p.images && p.images[0]) ? p.images[0] : (p.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png'),
           badge: (p.compare_at_price_cents || p.on_sale) ? 'sale' : (p.is_new ? 'new' : null)
         });
       });
