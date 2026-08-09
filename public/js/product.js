@@ -528,7 +528,7 @@ function wireUpDetail(p, colors) {
   document.querySelectorAll('[data-thumb]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var thumbImg = btn.querySelector('img');
-      var src = thumbImg ? thumbImg.getAttribute('src') : btn.getAttribute('data-src');
+      var src = thumbImg ? (thumbImg.getAttribute('data-src') || thumbImg.getAttribute('src')) : '';
       if (src) openLightbox(src);
     });
   });
@@ -606,14 +606,16 @@ function wireUpDetail(p, colors) {
     wished = wishList.some(function (w) { return String(w.id) === String(p.id); });
     if (wished) {
       wishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24">favorite</span>';
-      wishBtn.style.color = 'var(--charcoal)';
+      wishBtn.style.background = 'var(--charcoal)';
+      wishBtn.style.color = 'var(--warm-white)';
       wishBtn.style.borderColor = 'var(--charcoal)';
     }
     wishBtn.addEventListener('click', function () {
       wished = !wished;
       wishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'' + (wished ? 'FILL\' 1' : 'FILL\' 0') + ',\'wght\' 400,\'GRAD\' 0,\'opsz\' 24">' + (wished ? 'favorite' : 'favorite_border') + '</span>';
-      wishBtn.style.color = wished ? 'var(--wood)' : '';
-      wishBtn.style.borderColor = wished ? 'var(--wood)' : '';
+      wishBtn.style.background = wished ? 'var(--charcoal)' : '';
+      wishBtn.style.color = wished ? 'var(--warm-white)' : '';
+      wishBtn.style.borderColor = wished ? 'var(--charcoal)' : '';
       if (wished) {
         wishList.push({ id: p.id, name: p.name, price_cents: p.price_cents, image: p.image || (p.images && p.images[0]) || '' });
       } else {

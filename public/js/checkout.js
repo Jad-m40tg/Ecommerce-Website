@@ -213,7 +213,6 @@ document.addEventListener('click', function (event) {
       if (data.payment_url) {
         window.location.href = data.payment_url;
       } else {
-        saveCart([]);
         throw new Error('Payment URL not received from server');
       }
     }

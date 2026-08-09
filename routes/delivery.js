@@ -32,7 +32,7 @@ router.post('/ship', async (req, res) => {
     const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(order_id);
     if (!order) return res.status(404).json({ error: 'Order not found' });
     if (order.noest_tracking) {
-      return res.status(400).json({ error: 'Order already shipped to NOEST. Tracking: ' + order.noest_tracking });
+      return res.status(400).json({ error: 'Order already shipped to NOEST' });
     }
 
     if (!wilaya_id || isNaN(Number(wilaya_id)) || Number(wilaya_id) < 1 || Number(wilaya_id) > 58) {

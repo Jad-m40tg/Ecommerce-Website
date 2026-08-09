@@ -118,6 +118,7 @@
 
       var allOrders = [], allProducts = [];
       var revenueChart = null;
+      var statusChart = null;
       var currentPeriod = 'daily';
 
       function loadAnalytics(period) {
@@ -163,7 +164,8 @@
         var sColors = sLabels.map(function (s) { return s === 'delivered' ? '#6b7f5e' : s === 'confirmed' ? '#5d9e6e' : s === 'processing' ? '#5b7fa6' : s === 'pending' ? '#c98a3a' : s === 'shipped' ? '#a67c52' : s === 'cancelled' ? '#b3532e' : '#6f6a62'; });
         var ctx2 = document.getElementById('statusChart');
         if (ctx2 && sLabels.length) {
-          new Chart(ctx2, { type: 'doughnut', data: { labels: sLabels, datasets: [{ data: sValues, backgroundColor: sColors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } } });
+          if (statusChart) statusChart.destroy();
+          statusChart = new Chart(ctx2, { type: 'doughnut', data: { labels: sLabels, datasets: [{ data: sValues, backgroundColor: sColors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } } });
         }
       }
 

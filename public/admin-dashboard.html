@@ -298,12 +298,13 @@
 
       apiFetch('/api/analytics/overview').then(function (data) {
         var stats = data || {};
-        totalRevenue = stats.total_revenue_cents || 0;
+        totalRevenue = stats.revenue_30d_cents || 0;
         totalOrders = stats.total_orders || 0;
         document.getElementById('statRevenue').textContent = price(totalRevenue);
         document.getElementById('statOrders').textContent = totalOrders.toLocaleString();
         document.getElementById('statProducts').textContent = (stats.total_products || 0).toLocaleString();
         document.getElementById('statRevenueDelta').textContent = (stats.total_customers || 0) + ' customers';
+        document.getElementById('statRevenueDelta').className = 'stat-delta up';
       }).catch(function () {
         apiFetch('/api/orders?limit=9999').then(function (data) {
           var orders = data.orders || data || [];
@@ -327,7 +328,7 @@
         var tbody = document.getElementById('recentOrdersBody');
         if (!recentOrders.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--gray)">No orders yet</td></tr>'; return; }
         tbody.innerHTML = recentOrders.map(function (o) {
-          var badge = o.order_status === 'pending' ? 'pending' : o.order_status === 'shipped' ? 'shipped' : 'delivered';
+          var badge = o.order_status === 'pending' ? 'pending' : o.order_status === 'shipped' ? 'shipped' : o.order_status === 'cancelled' ? 'pending' : o.order_status === 'delivered' ? 'delivered' : 'shipped';
           return '<tr><td>#' + (o.id || '').toString().slice(0, 8) + '</td><td>' + escapeHtml(o.customer_name || o.email || '—') + '</td><td><span class="badge ' + badge + '">' + escapeHtml(o.order_status || 'pending') + '</span></td><td>' + priceFull(o.total_cents) + '</td></tr>';
         }).join('');
       }

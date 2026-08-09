@@ -14,6 +14,7 @@ router.use(authenticateToken, requireAdmin);
 // and the 5 most recent orders — all in a single query batch.
 router.get('/overview', (req, res) => {
   const revenue = db.prepare("SELECT COALESCE(SUM(total_cents), 0) as total_revenue FROM orders WHERE payment_status = 'paid'").get();
+  const revenue30d = db.prepare("SELECT COALESCE(SUM(total_cents), 0) as revenue_30d FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', '-30 days')").get();
   const orders = db.prepare('SELECT COUNT(*) as total_orders FROM orders').get();
   const products = db.prepare('SELECT COUNT(*) as total_products FROM products').get();
   const customers = db.prepare('SELECT COUNT(DISTINCT customer_email) as total_customers FROM orders').get();
@@ -21,6 +22,7 @@ router.get('/overview', (req, res) => {
 
   res.json({
     total_revenue_cents: revenue.total_revenue,
+    revenue_30d_cents: revenue30d.revenue_30d,
     total_orders: orders.total_orders,
     total_products: products.total_products,
     total_customers: customers.total_customers,

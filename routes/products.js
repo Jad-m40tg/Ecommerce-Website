@@ -20,6 +20,10 @@ const SORT_MAP = {
 
 const PUBLIC_SORT = "created_at DESC"; // default sort for customers
 
+function escapeLike(str) {
+  return String(str).replace(/%/g, '\\%').replace(/_/g, '\\_');
+}
+
 // ============================================================
 // PUBLIC endpoints — no authentication required
 // ============================================================
@@ -64,10 +68,11 @@ router.get('/browse', (req, res) => {
   }
   // Add search filter (matches product name or description)
   if (search) {
-    sql += ' AND (name LIKE ? OR description LIKE ?)';
-    countSql += ' AND (name LIKE ? OR description LIKE ?)';
-    params.push(`%${search}%`, `%${search}%`);
-    countParams.push(`%${search}%`, `%${search}%`);
+    const safeSearch = escapeLike(search);
+    sql += ' AND (name LIKE ? ESCAPE \'\\\' OR description LIKE ? ESCAPE \'\\\')';
+    countSql += ' AND (name LIKE ? ESCAPE \'\\\' OR description LIKE ? ESCAPE \'\\\')';
+    params.push(`%${safeSearch}%`, `%${safeSearch}%`);
+    countParams.push(`%${safeSearch}%`, `%${safeSearch}%`);
   }
   // Add display_section filter if provided
   if (display_section) {
@@ -112,7 +117,7 @@ router.get('/', (req, res) => {
 
   if (category) { sql += ' AND category = ?'; countSql += ' AND category = ?'; params.push(category); countParams.push(category); }
   if (status) { sql += ' AND status = ?'; countSql += ' AND status = ?'; params.push(status); countParams.push(status); }
-  if (search) { sql += ' AND (name LIKE ? OR sku LIKE ?)'; countSql += ' AND (name LIKE ? OR sku LIKE ?)'; params.push(`%${search}%`, `%${search}%`); countParams.push(`%${search}%`, `%${search}%`); }
+  if (search) { const s = escapeLike(search); sql += ' AND (name LIKE ? ESCAPE \'\\\' OR sku LIKE ? ESCAPE \'\\\')'; countSql += ' AND (name LIKE ? ESCAPE \'\\\' OR sku LIKE ? ESCAPE \'\\\')'; params.push(`%${s}%`, `%${s}%`); countParams.push(`%${s}%`, `%${s}%`); }
 
   const orderClause = SORT_MAP[sort] || 'created_at DESC';
   sql += ` ORDER BY ${orderClause} LIMIT ? OFFSET ?`;
@@ -169,6 +174,23 @@ router.put('/:id', (req, res, next) => {
 
   for (const field of fields) {
     if (req.body[field] !== undefined) {
+      // Validate numeric fields on update
+      if (field === 'price_cents') {
+        const v = req.body[field];
+        if (typeof v !== 'number' || v < 0) return res.status(400).json({ error: 'price_cents must be a non-negative number' });
+      }
+      if (field === 'old_price_cents') {
+        const v = req.body[field];
+        if (v !== null && (typeof v !== 'number' || v < 0)) return res.status(400).json({ error: 'old_price_cents must be a non-negative number or null' });
+      }
+      if (field === 'stock') {
+        const v = req.body[field];
+        if (typeof v !== 'number' || v < 0 || !Number.isInteger(v)) return res.status(400).json({ error: 'stock must be a non-negative integer' });
+      }
+      if (field === 'status') {
+        const allowed = ['active', 'draft'];
+        if (!allowed.includes(req.body[field])) return res.status(400).json({ error: 'status must be active or draft' });
+      }
       updates.push(`${field} = ?`);
       // Array/object fields need to be stringified before saving
       if (['colors', 'sizes', 'tags', 'images', 'specifications'].includes(field)) {

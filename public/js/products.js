@@ -20,8 +20,8 @@ function getProductCategory(product) {
 }
 
 /* Format the price-slider max label in DZD */
-function sliderLabel(cents) {
-  return Math.round(cents / 100).toLocaleString('en-US') + ' DA';
+function sliderLabel(dzd) {
+  return Number(dzd).toLocaleString('en-US') + ' DA';
 }
 
 /* ---------- CART HELPERS (unified) ---------- */
@@ -129,6 +129,7 @@ function renderProducts() {
   if (state.sort === 'price-asc')  list.sort(function (a, b) { return (a.price_cents || 0) - (b.price_cents || 0); });
   if (state.sort === 'price-desc') list.sort(function (a, b) { return (b.price_cents || 0) - (a.price_cents || 0); });
   if (state.sort === 'name')       list.sort(function (a, b) { return (a.name || '').localeCompare(b.name || ''); });
+  if (state.sort === 'rating')     list.sort(function (a, b) { return (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0); });
 
   var grid = document.getElementById('productGrid');
 

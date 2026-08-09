@@ -18,6 +18,13 @@ const checkoutLimiter = rateLimit({
 });
 
 const MAX_ORDER_ITEMS = 50;
+const MAX_NAME_LEN = 200;
+const MAX_EMAIL_LEN = 254;
+const MAX_PHONE_LEN = 30;
+const MAX_ADDRESS_LEN = 500;
+const MAX_CITY_LEN = 100;
+const MAX_NOTES_LEN = 1000;
+const VALID_PAYMENT_METHODS = ['cash_on_delivery', 'card'];
 
 function generateTrackingCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -61,6 +68,20 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
       return res.status(400).json({ error: 'customer_name, customer_email, customer_phone, customer_address, customer_city are required' });
     }
 
+    // Enforce length limits
+    if (customer_name.length > MAX_NAME_LEN) return res.status(400).json({ error: `customer_name must be ${MAX_NAME_LEN} characters or fewer` });
+    if (customer_email.length > MAX_EMAIL_LEN) return res.status(400).json({ error: `customer_email must be ${MAX_EMAIL_LEN} characters or fewer` });
+    if (customer_phone.length > MAX_PHONE_LEN) return res.status(400).json({ error: `customer_phone must be ${MAX_PHONE_LEN} characters or fewer` });
+    if (customer_address.length > MAX_ADDRESS_LEN) return res.status(400).json({ error: `customer_address must be ${MAX_ADDRESS_LEN} characters or fewer` });
+    if (customer_city.length > MAX_CITY_LEN) return res.status(400).json({ error: `customer_city must be ${MAX_CITY_LEN} characters or fewer` });
+    if (notes && notes.length > MAX_NOTES_LEN) return res.status(400).json({ error: `notes must be ${MAX_NOTES_LEN} characters or fewer` });
+
+    // Validate payment method
+    const validPayMethod = payment_method && VALID_PAYMENT_METHODS.includes(payment_method);
+    if (payment_method && !validPayMethod) {
+      return res.status(400).json({ error: `Invalid payment method. Must be one of: ${VALID_PAYMENT_METHODS.join(', ')}` });
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(customer_email)) {
       return res.status(400).json({ error: 'Invalid email format' });
@@ -78,6 +99,8 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
 
     const feeRow = db.prepare("SELECT value FROM settings WHERE key = 'delivery_fee_cents'").get();
     const delivery_fee = feeRow ? Number(feeRow.value) : 0;
+    const thresholdRow = db.prepare("SELECT value FROM settings WHERE key = 'free_delivery_threshold_cents'").get();
+    const free_delivery_threshold = thresholdRow ? Number(thresholdRow.value) : 999999;
 
     const isOnlinePayment = payment_method && payment_method !== 'cash_on_delivery';
     const trackingCode = generateTrackingCode();
@@ -97,14 +120,15 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
       }
 
       const discount_cents = appliedPromo ? Math.round(subtotal_cents * appliedPromo.pct) : 0;
-      const total_cents = subtotal_cents - discount_cents + delivery_fee;
+      const actual_shipping = subtotal_cents >= free_delivery_threshold ? 0 : delivery_fee;
+      const total_cents = subtotal_cents - discount_cents + actual_shipping;
 
       const stmt = db.prepare(`
         INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, customer_city, items, subtotal_cents, delivery_fee_cents, total_cents, payment_method, payment_status, order_status, notes, tracking_code)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
       `);
       const result = stmt.run(customer_name, customer_email, customer_phone, customer_address, customer_city,
-        JSON.stringify(resolvedItems), subtotal_cents, delivery_fee, total_cents,
+        JSON.stringify(resolvedItems), subtotal_cents, actual_shipping, total_cents,
         payment_method || 'cash_on_delivery', orderStatus, notes || '', trackingCode);
 
       const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
@@ -119,7 +143,7 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
 
     const orderData = {
       id, customer_name, customer_email, items: resolvedItems,
-      subtotal_cents, delivery_fee_cents: delivery_fee, total_cents,
+      subtotal_cents, delivery_fee_cents: actual_shipping, total_cents,
       payment_method: payment_method || 'cash_on_delivery',
       payment_status: 'pending', order_status: orderStatus,
       tracking_code: trackingCode
@@ -223,29 +247,56 @@ router.patch('/:id', (req, res) => {
     }
   }
 
-  if (tracking_number !== undefined) { updates.push('tracking_number = ?'); values.push(tracking_number); }
-  if (carrier !== undefined) { updates.push('carrier = ?'); values.push(carrier); }
-  if (tracking_url !== undefined) { updates.push('tracking_url = ?'); values.push(tracking_url); }
-  if (noest_tracking !== undefined) { updates.push('noest_tracking = ?'); values.push(noest_tracking); }
-  if (noest_status !== undefined) { updates.push('noest_status = ?'); values.push(noest_status); }
+  if (tracking_number !== undefined) { updates.push('tracking_number = ?'); values.push(String(tracking_number).slice(0, 200)); }
+  if (carrier !== undefined) { updates.push('carrier = ?'); values.push(String(carrier).slice(0, 100)); }
+  if (tracking_url !== undefined) { updates.push('tracking_url = ?'); values.push(String(tracking_url).slice(0, 500)); }
+  if (noest_tracking !== undefined) { updates.push('noest_tracking = ?'); values.push(String(noest_tracking).slice(0, 100)); }
+  if (noest_status !== undefined) { updates.push('noest_status = ?'); values.push(String(noest_status).slice(0, 50)); }
 
   if (!updates.length) return res.status(400).json({ error: 'No valid fields to update' });
 
   values.push(req.params.id);
-  const result = db.prepare(`UPDATE orders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
-  if (result.changes === 0) return res.status(404).json({ error: 'Order not found' });
 
+  // Wrap status change + stock restoration in a transaction for atomicity
   if (status === 'cancelled' && order.order_status !== 'cancelled') {
-    try {
+    const cancelAndUpdate = db.transaction(() => {
+      const result = db.prepare(`UPDATE orders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
+      if (result.changes === 0) throw new Error('NOT_FOUND');
       const items = JSON.parse(order.items);
       const stockStmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
       for (const item of items) {
         stockStmt.run(item.quantity, item.product_id);
       }
       console.log(`[STOCK] Restored ${items.reduce((s, i) => s + i.quantity, 0)} stock for order #${req.params.id}`);
+    });
+    try {
+      cancelAndUpdate();
     } catch (e) {
+      if (e.message === 'NOT_FOUND') return res.status(404).json({ error: 'Order not found' });
       console.error('[STOCK] Failed to restore stock for order #' + req.params.id, e);
+      return res.status(500).json({ error: 'Failed to update order' });
     }
+  } else if (status && status !== 'cancelled' && order.order_status === 'cancelled') {
+    const unCancelAndUpdate = db.transaction(() => {
+      const result = db.prepare(`UPDATE orders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
+      if (result.changes === 0) throw new Error('NOT_FOUND');
+      const items = JSON.parse(order.items);
+      const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
+      for (const item of items) {
+        stockStmt.run(item.quantity, item.product_id);
+      }
+      console.log(`[STOCK] Re-deducted ${items.reduce((s, i) => s + i.quantity, 0)} stock for un-cancelled order #${req.params.id}`);
+    });
+    try {
+      unCancelAndUpdate();
+    } catch (e) {
+      if (e.message === 'NOT_FOUND') return res.status(404).json({ error: 'Order not found' });
+      console.error('[STOCK] Failed to re-deduct stock for order #' + req.params.id, e);
+      return res.status(500).json({ error: 'Failed to update order' });
+    }
+  } else {
+    const result = db.prepare(`UPDATE orders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
+    if (result.changes === 0) return res.status(404).json({ error: 'Order not found' });
   }
 
   res.json({ success: true });

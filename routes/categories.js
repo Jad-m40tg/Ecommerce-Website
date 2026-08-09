@@ -32,12 +32,12 @@ router.use(authenticateToken, requireAdmin);
 
 // POST /api/categories — Admin only. Create a new category (requires name, slug auto-generated if omitted).
 router.post('/', (req, res, next) => {
-  const { name, slug, image, description, sort_order } = req.body;
+  const { name, slug, image, description, sort_order, status } = req.body;
   if (!name) return res.status(400).json({ error: 'name is required' });
   // Auto-generate slug from name if not provided
   const finalSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   try {
-    db.prepare('INSERT INTO categories (name, slug, image, description, sort_order) VALUES (?, ?, ?, ?, ?)').run(name, finalSlug, image || '', description || '', sort_order || 0);
+    db.prepare('INSERT INTO categories (name, slug, image, description, sort_order, status) VALUES (?, ?, ?, ?, ?, ?)').run(name, finalSlug, image || '', description || '', sort_order || 0, status || 'active');
     res.status(201).json({ slug: finalSlug });
   } catch (e) {
     if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') return res.status(409).json({ error: 'Slug already exists' });

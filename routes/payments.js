@@ -1,10 +1,12 @@
 const express = require('express');
 const db = require('../db');
+const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { getCheckout, verifyWebhookSignature } = require('../services/payment');
 
 const router = express.Router();
 
-router.get('/status/:id', async (req, res) => {
+// GET /api/payments/status/:id — Admin only. Check payment status for an order.
+router.get('/status/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const param = req.params.id;
 

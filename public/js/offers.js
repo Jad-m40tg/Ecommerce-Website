@@ -188,6 +188,7 @@ updateCartCount();
 
 /* ---------- RENDER PROMOTIONS ---------- */
 renderPromotions();
+document.querySelectorAll('.promo-card.reveal').forEach(function (el) { revealObserver.observe(el); });
 
 /* ---------- API DATA ---------- */
 fetch('/api/products/browse/on-sale')

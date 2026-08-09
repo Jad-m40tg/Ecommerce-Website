@@ -112,7 +112,9 @@ function performSearch() {
   var results = PRODUCTS.filter(function (p) {
     var name = (p.name || '').toLowerCase();
     var cat = getProductCategory(p).toLowerCase();
-    return name.indexOf(lower) !== -1 || cat.indexOf(lower) !== -1;
+    var desc = (p.description || '').toLowerCase();
+    var tags = (Array.isArray(p.tags) ? p.tags.join(' ') : '').toLowerCase();
+    return name.indexOf(lower) !== -1 || cat.indexOf(lower) !== -1 || desc.indexOf(lower) !== -1 || tags.indexOf(lower) !== -1;
   });
 
   if (countEl) {

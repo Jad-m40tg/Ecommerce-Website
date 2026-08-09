@@ -56,4 +56,11 @@ for (const [name, sql] of Object.entries(orderMigrations)) {
   }
 }
 
+// Create hidden_customers table if it doesn't exist
+// Used to soft-hide customers from the admin UI without deleting their orders
+db.exec(`CREATE TABLE IF NOT EXISTS hidden_customers (
+  email TEXT PRIMARY KEY,
+  hidden_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
 module.exports = db;

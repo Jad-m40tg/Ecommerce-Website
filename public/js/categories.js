@@ -177,7 +177,7 @@ fetch('/api/products/browse')
       counts[key] = (counts[key] || 0) + 1;
     });
     CATEGORIES.forEach(function (cat) {
-      var key = (cat.name || '').toLowerCase();
+      var key = (cat.slug || cat.name || '').toLowerCase();
       cat.product_count = counts[key] || 0;
     });
     renderCategories();
