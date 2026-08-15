@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Products — Boularas Admin</title>
-  <meta name="description" content="Manage Boularas product catalog: browse, add, edit and remove products." />
+  <title>Sales — Boularas Admin</title>
+  <meta name="description" content="Manage Boularas sales and deals: create, edit and remove product sales." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -40,10 +40,6 @@
 
     .main-col{min-width:0}
     .topbar{position:sticky;top:0;z-index:40;height:var(--topbar-h);background:rgba(250,247,242,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--beige);display:flex;align-items:center;gap:20px;padding:0 32px}
-    .search{position:relative;flex:1;max-width:460px}
-    .search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray)}
-    .search input{width:100%;padding:10px 14px 10px 40px;border:1.5px solid var(--beige);border-radius:var(--radius-pill);background:var(--white);font-size:14px;color:var(--charcoal);transition:border-color .2s ease,box-shadow .2s ease}
-    .search input:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 4px rgba(107,127,94,.12)}
     .top-actions{margin-left:auto;display:flex;align-items:center;gap:12px}
     .icon-btn{position:relative;width:40px;height:40px;border-radius:var(--radius-pill);border:1.5px solid var(--beige);background:var(--white);color:var(--charcoal);display:grid;place-items:center;cursor:pointer;transition:background .2s ease,border-color .2s ease}
     .icon-btn:hover{background:var(--cream);border-color:var(--charcoal)}
@@ -60,17 +56,8 @@
     .page-head p{color:var(--gray);font-size:14.5px;margin-top:4px}
 
     .panel{background:var(--white);border:1px solid var(--beige);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-soft)}
-    .filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;margin-bottom:20px}
-    .filter-field{display:flex;flex-direction:column;gap:6px}
-    .filter-field label{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--gray)}
-    .filter-field select{appearance:none;min-width:170px;padding:10px 36px 10px 14px;border:1.5px solid var(--beige);border-radius:var(--radius-md);background:var(--white);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236f6a62' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;font-size:14px;color:var(--charcoal);cursor:pointer;transition:border-color .2s ease,box-shadow .2s ease}
-    .filter-field select:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 4px rgba(107,127,94,.12)}
-    .filter-spacer{flex:1}
-    .result-count{font-size:13.5px;color:var(--gray)}
-    .result-count strong{color:var(--charcoal)}
-
     .table-wrap{overflow-x:auto}
-    table{width:100%;border-collapse:collapse;font-size:14px;min-width:700px}
+    table{width:100%;border-collapse:collapse;font-size:14px;min-width:860px}
     thead th{text-align:left;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);padding:12px;border-bottom:1.5px solid var(--beige);white-space:nowrap}
     tbody td{padding:14px 12px;border-bottom:1px solid var(--beige);color:var(--charcoal);vertical-align:middle}
     tbody tr{transition:background .2s ease}
@@ -78,29 +65,25 @@
     tbody tr:last-child td{border-bottom:none}
 
     .prod-cell{display:flex;align-items:center;gap:10px}
-    .prod-thumb{width:42px;height:42px;border-radius:var(--radius-sm);background:var(--cream);overflow:hidden;flex-shrink:0}
-    .prod-thumb img{width:100%;height:100%;object-fit:cover}
     .prod-name{font-weight:600}
-    .price{font-weight:600;color:var(--charcoal)}
-    .muted{color:var(--gray);font-size:13px}
+    .muted{color:var(--gray);font-size:12.5px}
+    .sale-price{font-weight:700;color:var(--sage-dark)}
+    .orig-price{color:var(--gray)}
+    .discount{display:inline-flex;align-items:center;padding:3px 9px;border-radius:var(--radius-pill);background:rgba(179,83,46,.1);color:var(--danger);font-size:12px;font-weight:700}
 
     .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--radius-pill);font-size:12px;font-weight:600}
     .badge.active{background:rgba(107,127,94,.12);color:var(--sage-dark)}
-    .badge.draft{background:rgba(201,138,58,.12);color:var(--warning)}
-    .badge.hidden{background:rgba(232,224,211,.6);color:var(--gray)}
+    .badge.upcoming{background:rgba(201,138,58,.12);color:var(--warning)}
+    .badge.ended{background:rgba(232,224,211,.6);color:var(--gray)}
+
+    .banner-thumb{width:52px;height:36px;border-radius:var(--radius-sm);background:var(--cream);overflow:hidden}
+    .banner-thumb img{width:100%;height:100%;object-fit:cover}
 
     .row-actions{display:flex;gap:6px}
     .row-actions button{width:32px;height:32px;border-radius:var(--radius-sm);border:1.5px solid var(--beige);background:var(--white);color:var(--charcoal);display:grid;place-items:center;cursor:pointer;transition:background .2s ease,border-color .2s ease,color .2s ease}
     .row-actions button:hover{background:var(--cream);border-color:var(--charcoal)}
     .row-actions button.edit:hover{background:rgba(166,124,82,.1);border-color:var(--wood);color:var(--wood)}
     .row-actions button.danger:hover{background:rgba(179,83,46,.1);border-color:var(--danger);color:var(--danger)}
-
-    .table-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:18px}
-    .pager{display:flex;align-items:center;gap:6px}
-    .pager button{min-width:36px;height:36px;padding:0 10px;border-radius:var(--radius-sm);border:1.5px solid var(--beige);background:var(--white);color:var(--charcoal);font-size:13.5px;font-weight:600;cursor:pointer;transition:background .2s ease,border-color .2s ease,color .2s ease}
-    .pager button:hover{background:var(--cream);border-color:var(--charcoal)}
-    .pager button.active{background:var(--charcoal);border-color:var(--charcoal);color:var(--warm-white)}
-    .pager button:disabled{opacity:.45;cursor:not-allowed}
 
     .qa-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:var(--radius-pill);border:1.5px solid var(--charcoal);background:transparent;color:var(--charcoal);font-size:13.5px;font-weight:600;cursor:pointer;transition:background .25s ease,color .25s ease}
     .qa-btn:hover{background:var(--charcoal);color:var(--warm-white)}
@@ -110,8 +93,7 @@
     .toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);background:var(--charcoal);color:var(--warm-white);padding:13px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:500;box-shadow:var(--shadow-lift);opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s ease;z-index:90}
     .toast.show{opacity:1;transform:translate(-50%,0)}
 
-    /* --- Add to Sale modal --- */
-    .row-actions button.sale:hover{background:rgba(107,127,94,.1);border-color:var(--sage);color:var(--sage-dark)}
+    /* --- Add / Edit Sale modal --- */
     .modal-overlay{position:fixed;inset:0;background:rgba(43,41,38,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:120;padding:20px}
     .modal{background:var(--white);border-radius:var(--radius-lg);box-shadow:var(--shadow-lift);width:min(580px,100%);max-height:92vh;overflow-y:auto;padding:26px}
     .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px}
@@ -131,8 +113,6 @@
     .pill{display:inline-flex;align-items:center;padding:4px 10px;border-radius:var(--radius-pill);background:rgba(107,127,94,.12);color:var(--sage-dark);font-size:12px;font-weight:600}
     .pill.pct{background:rgba(179,83,46,.1);color:var(--danger)}
     .modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
-
-    /* --- Sale mode toggle + multi-select --- */
     .mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--cream);padding:5px;border-radius:var(--radius-pill);margin-bottom:16px}
     .mode-btn{border:none;background:transparent;padding:8px 12px;border-radius:var(--radius-pill);font-size:13.5px;font-weight:600;color:var(--gray);cursor:pointer;transition:background .2s ease,color .2s ease}
     .mode-btn:hover{color:var(--charcoal)}
@@ -146,8 +126,6 @@
     .percent-line{display:flex;align-items:center;gap:10px;width:100%;font-size:13px;padding:2px 0}
     .percent-line .pl-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
     .percent-line .pl-new{font-weight:700;color:var(--sage-dark)}
-
-    /* --- Banner image upload --- */
     .banner-drop{position:relative;border:1.5px dashed var(--beige);border-radius:var(--radius-md);background:var(--warm-white);padding:14px;text-align:center;cursor:pointer;overflow:hidden;transition:border-color .2s ease,background .2s ease}
     .banner-drop:hover{border-color:var(--sage);background:var(--cream)}
     .banner-drop span{display:block;font-size:12.5px;color:var(--gray)}
@@ -178,8 +156,8 @@
       <span class="nav-label">Main</span>
       <ul class="side-nav">
         <li><a href="admin-dashboard.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a></li>
-        <li><a class="active" href="admin-products.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Products</a></li>
-        <li><a href="admin-sales.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><path d="M7 7h.01"/></svg>Sales</a></li>
+        <li><a href="admin-products.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Products</a></li>
+        <li><a class="active" href="admin-sales.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><path d="M7 7h.01"/></svg>Sales</a></li>
         <li><a href="admin-orders.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Orders</a></li>
         <li><a href="admin-customers.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Customers</a></li>
         <li><a href="admin-categories.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Categories</a></li>
@@ -187,7 +165,7 @@
       </ul>
       <span class="nav-label" style="margin-top:16px">System</span>
       <ul class="side-nav">
-        <li><a href="admin-settings.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a></li>
+        <li><a href="admin-settings.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8V9a1.7 1.7 0 0 0-1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a></li>
       </ul>
       <div class="sidebar-foot">
         <ul class="side-nav">
@@ -211,43 +189,27 @@
 
       <main class="content">
         <section class="page-head">
-          <div><h1>Products</h1><p>Manage your product catalog.</p></div>
-          <div><a href="admin-product-editor.html" class="qa-btn primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Add Product</a></div>
+          <div><h1>Sales</h1><p>Create and manage product sales and deals.</p></div>
+          <div><button class="qa-btn primary" id="newSaleBtn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Add Sale</button></div>
         </section>
 
         <section class="panel">
-          <div class="filters">
-            <div class="filter-field">
-              <label for="fStatus">Status</label>
-              <select id="fStatus"><option value="all">All statuses</option><option value="active">Active</option><option value="draft">Draft</option></select>
-            </div>
-            <div class="filter-field">
-              <label for="fSort">Sort by</label>
-              <select id="fSort"><option value="newest">Newest</option><option value="price-high">Price: high → low</option><option value="price-low">Price: low → high</option><option value="name">Name A → Z</option></select>
-            </div>
-            <div class="filter-spacer"></div>
-            <div class="result-count" id="resultCount"></div>
-          </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody id="prodRows"><tr><td colspan="6" style="text-align:center;padding:36px;color:var(--gray)">Loading products…</td></tr></tbody>
+              <thead><tr><th>Product</th><th>Sale Price</th><th>Original</th><th>Discount</th><th>Period</th><th>Status</th><th>Banner</th><th>Actions</th></tr></thead>
+              <tbody id="saleRows"><tr><td colspan="8" style="text-align:center;padding:36px;color:var(--gray)">Loading sales…</td></tr></tbody>
             </table>
-          </div>
-          <div class="table-foot">
-            <span class="result-count" id="rangeLabel"></span>
-            <div class="pager" id="pager"></div>
           </div>
         </section>
       </main>
     </div>
   </div>
 
-  <!-- Add to Sale modal -->
+  <!-- Add / Edit Sale modal -->
   <div class="modal-overlay" id="saleModal" style="display:none" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="saleModalTitle">
       <div class="modal-head">
-        <h2 id="saleModalTitle">Add Product to Sale</h2>
+        <h2 id="saleModalTitle">Add Products to Sale</h2>
         <button class="modal-close" id="saleClose" aria-label="Close" type="button">&times;</button>
       </div>
       <p class="helper">Only active products not already on sale are listed.</p>
@@ -257,7 +219,6 @@
           <button type="button" class="mode-btn" data-mode="percent">Percentage Discount</button>
         </div>
 
-        <!-- Manual Price mode -->
         <div class="sale-mode-pane" id="paneManual">
           <div class="sale-field">
             <label for="saleProduct">Product</label>
@@ -281,7 +242,6 @@
           </div>
         </div>
 
-        <!-- Percentage Discount mode -->
         <div class="sale-mode-pane" id="panePercent" style="display:none">
           <div class="sale-field">
             <label>Products</label>
@@ -335,139 +295,70 @@
 
       document.getElementById('logoutBtn').addEventListener('click', function (e) { e.preventDefault(); apiFetch('/api/auth/logout', { method: 'POST' }).catch(function (err) { console.error(err); }); localStorage.removeItem('admin_token'); window.location.href = 'admin-login.html'; });
 
-      var allProducts = [];
-      var PER_PAGE = 10;
-      var state = { search: '', status: 'all', sort: 'newest', page: 1 };
-
-      function svg(paths) { return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>'; }
-
-        apiFetch('/api/products?limit=9999').then(function (data) {
-        allProducts = data.products || data || [];
-        render();
-      }).catch(function () {
-        document.getElementById('prodRows').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--gray)">Unable to load products</td></tr>';
-      });
-
-      function getFiltered() {
-        var q = state.search.trim().toLowerCase();
-        return allProducts.filter(function (p) {
-          if (q && !(p.name || '').toLowerCase().includes(q)) return false;
-          if (state.status !== 'all' && (p.status || 'active') !== state.status) return false;
-          return true;
-        }).sort(function (a, b) {
-          if (state.sort === 'price-high') return (b.price_cents || 0) - (a.price_cents || 0);
-          if (state.sort === 'price-low') return (a.price_cents || 0) - (b.price_cents || 0);
-          if (state.sort === 'name') return (a.name || '').localeCompare(b.name || '');
-          return 0;
-        });
-      }
-
-      function render() {
-        var data = getFiltered();
-        var total = data.length;
-        var pages = Math.max(1, Math.ceil(total / PER_PAGE));
-        if (state.page > pages) state.page = pages;
-        var start = (state.page - 1) * PER_PAGE;
-        var rows = data.slice(start, start + PER_PAGE);
-        var tbody = document.getElementById('prodRows');
-
-        if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--gray)">No products found</td></tr>'; }
-        else {
-          tbody.innerHTML = rows.map(function (p) {
-            var imgs = []; try { imgs = p.images ? (typeof p.images === 'string' ? JSON.parse(p.images) : p.images) : []; } catch (e) { imgs = []; }
-            var img = imgs[0] || '';
-            var status = p.status || 'active';
-            return '<tr>' +
-              '<td><div class="prod-cell"><div class="prod-thumb"><img src="' + escapeHtml(img || '') + '" alt="" onerror="this.style.display=\'none\'" /></div><div class="prod-name">' + escapeHtml(p.name || '') + '</div></div></td>' +
-              '<td class="price">' + priceFull(p.price_cents) + '</td>' +
-              '<td>' + (p.stock != null ? p.stock : '—') + '</td>' +
-              '<td class="muted">' + escapeHtml(p.category_name || p.category || '—') + '</td>' +
-              '<td><span class="badge ' + escapeHtml(status) + '">' + escapeHtml(status) + '</span></td>' +
-              '<td><div class="row-actions">' +
-                '<button class="sale" title="Add to Sale" data-sale="' + p.id + '">' + svg('<path d="M12 5v14"/><path d="M5 12h14"/>') + '</button>' +
-                '<button class="edit" title="Edit" data-edit="' + p.id + '">' + svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>') + '</button>' +
-                '<button class="danger" title="Delete" data-id="' + p.id + '">' + svg('<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>') + '</button>' +
-              '</div></td></tr>';
-          }).join('');
-        }
-
-        document.getElementById('resultCount').innerHTML = '<strong>' + total + '</strong> product' + (total === 1 ? '' : 's');
-        document.getElementById('rangeLabel').textContent = total === 0 ? '' : 'Showing ' + (start + 1) + '–' + (start + rows.length) + ' of ' + total;
-        renderPager(pages);
-      }
-
-      function renderPager(pages) {
-        var pager = document.getElementById('pager');
-        var html = '<button data-page="' + (state.page - 1) + '"' + (state.page === 1 ? ' disabled' : '') + '>‹</button>';
-        for (var i = 1; i <= pages; i++) {
-          html += '<button class="' + (i === state.page ? 'active' : '') + '" data-page="' + i + '">' + i + '</button>';
-        }
-        html += '<button data-page="' + (state.page + 1) + '"' + (state.page === pages ? ' disabled' : '') + '>›</button>';
-        pager.innerHTML = html;
-      }
-
-      var toastTimer = null;
-      function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200); }
-
-      document.getElementById('fStatus').addEventListener('change', function (e) { state.status = e.target.value; state.page = 1; render(); });
-      document.getElementById('fSort').addEventListener('change', function (e) { state.sort = e.target.value; state.page = 1; render(); });
-      document.getElementById('pager').addEventListener('click', function (e) { var btn = e.target.closest('[data-page]'); if (!btn || btn.disabled) return; var p = parseInt(btn.getAttribute('data-page'), 10); if (!isNaN(p)) { state.page = p; render(); } });
-      document.getElementById('prodRows').addEventListener('click', function (e) {
-        var saleBtn = e.target.closest('button[data-sale]');
-        if (saleBtn) {
-          openSaleModal();
-          return;
-        }
-        var editBtn = e.target.closest('button[data-edit]');
-        if (editBtn) {
-          window.location.href = 'admin-product-editor.html?id=' + editBtn.getAttribute('data-edit');
-          return;
-        }
-        var btn = e.target.closest('button[data-id]');
-        if (!btn) return;
-        var id = btn.getAttribute('data-id');
-        if (!confirm('Delete this product?')) return;
-        apiFetch('/api/products/' + id, { method: 'DELETE' }).then(function () {
-          allProducts = allProducts.filter(function (p) { return p.id != id; });
-          render();
-          showToast('Product deleted');
-        }).catch(function () { showToast('Failed to delete product'); });
-      });
-
-      /* ---------- Add to Sale modal ---------- */
+      var sales = [];
       var saleCandidates = [];
       var currentSaleProduct = null;
       var saleMode = 'manual';
       var bannerUrl = '';
+      var editingSaleId = null;
 
-      function resetBanner() {
-        bannerUrl = '';
-        document.getElementById('bannerInput').value = '';
-        document.getElementById('bannerPreview').style.display = 'none';
-        document.getElementById('bannerPlaceholder').style.display = 'block';
-        document.getElementById('bannerDrop').classList.remove('has-img');
+      var toastTimer = null;
+      function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200); }
+
+      function svg(paths) { return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg>'; }
+
+      function fmtDate(value) {
+        var d = new Date(value);
+        if (isNaN(d.getTime())) return '—';
+        return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
       }
 
-      function uploadBanner(file) {
-        var fd = new FormData();
-        fd.append('image', file);
-        fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (data.url) {
-              bannerUrl = data.url;
-              var img = document.getElementById('bannerPreview');
-              img.src = data.url;
-              img.style.display = 'block';
-              document.getElementById('bannerPlaceholder').style.display = 'none';
-              document.getElementById('bannerDrop').classList.add('has-img');
-              showToast('Banner image uploaded');
-            } else {
-              showToast(data.error || 'Upload failed');
-            }
-          })
-          .catch(function () { showToast('Upload failed'); });
+      function statusOf(sale) {
+        var now = Date.now();
+        var s = new Date(sale.start_at).getTime();
+        var e = new Date(sale.end_at).getTime();
+        if (now >= s && now <= e) return 'active';
+        if (now < s) return 'upcoming';
+        return 'ended';
       }
+
+      function loadSales() {
+        apiFetch('/api/sales').then(function (data) {
+          sales = data.sales || [];
+          render();
+        }).catch(function () {
+          document.getElementById('saleRows').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:36px;color:var(--gray)">Unable to load sales</td></tr>';
+        });
+      }
+
+      function render() {
+        var tbody = document.getElementById('saleRows');
+        if (sales.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:36px;color:var(--gray)">No sales yet. Use “Add Sale” to create one.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = sales.map(function (s) {
+          var orig = s.original_price_cents || 0;
+          var sale = s.sale_price_cents || 0;
+          var pct = orig > 0 ? Math.round((1 - sale / orig) * 100) : 0;
+          var st = statusOf(s);
+          var banner = s.banner_image_url ? '<div class="banner-thumb"><img src="' + escapeHtml(s.banner_image_url) + '" alt="" onerror="this.style.display=\'none\'" /></div>' : '<span class="muted">—</span>';
+          return '<tr>' +
+            '<td><div class="prod-cell"><div class="prod-name">' + escapeHtml(s.product_name || 'Product #' + s.product_id) + '</div></div></td>' +
+            '<td><span class="sale-price">' + priceFull(sale) + '</span></td>' +
+            '<td><s class="orig-price">' + priceFull(orig) + '</s></td>' +
+            '<td><span class="discount">' + pct + '% off</span></td>' +
+            '<td><div>' + fmtDate(s.start_at) + '</div><div class="muted">to ' + fmtDate(s.end_at) + '</div></td>' +
+            '<td><span class="badge ' + st + '">' + st.charAt(0).toUpperCase() + st.slice(1) + '</span></td>' +
+            '<td>' + banner + '</td>' +
+            '<td><div class="row-actions">' +
+              '<button class="edit" title="Edit" data-edit="' + s.id + '">' + svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>') + '</button>' +
+              '<button class="danger" title="Delete" data-id="' + s.id + '">' + svg('<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>') + '</button>' +
+            '</div></td></tr>';
+        }).join('');
+      }
+
+      /* ---------- Modal logic (create + edit) ---------- */
 
       function toLocalInput(d) {
         function pad(n) { return String(n).padStart(2, '0'); }
@@ -483,51 +374,28 @@
         });
         document.getElementById('paneManual').style.display = mode === 'manual' ? 'block' : 'none';
         document.getElementById('panePercent').style.display = mode === 'percent' ? 'block' : 'none';
-        document.getElementById('saleModalTitle').textContent = mode === 'manual' ? 'Add Product to Sale' : 'Add Products to Sale';
       }
 
-      function renderMultiList() {
-        var list = document.getElementById('saleMultiList');
-        if (saleCandidates.length === 0) {
-          list.innerHTML = '<div style="padding:12px;color:var(--gray);font-size:13px">No products available</div>';
-          return;
+      function resetBanner() {
+        bannerUrl = '';
+        document.getElementById('bannerInput').value = '';
+        document.getElementById('bannerPreview').style.display = 'none';
+        document.getElementById('bannerPlaceholder').style.display = 'block';
+        document.getElementById('bannerDrop').classList.remove('has-img');
+      }
+
+      function setBanner(url) {
+        bannerUrl = url || '';
+        var img = document.getElementById('bannerPreview');
+        var ph = document.getElementById('bannerPlaceholder');
+        if (bannerUrl) {
+          img.src = bannerUrl;
+          img.style.display = 'block';
+          ph.style.display = 'none';
+          document.getElementById('bannerDrop').classList.add('has-img');
+        } else {
+          resetBanner();
         }
-        list.innerHTML = saleCandidates.map(function (p) {
-          return '<label class="multi-item">' +
-            '<input type="checkbox" value="' + p.id + '" />' +
-            '<span class="mi-name">' + escapeHtml(p.name) + '</span>' +
-            '<span class="mi-price">' + priceFull(p.price_cents) + '</span>' +
-          '</label>';
-        }).join('');
-      }
-
-      function openSaleModal() {
-        document.getElementById('saleForm').reset();
-        currentSaleProduct = null;
-        resetBanner();
-        setSaleMode('manual');
-        document.getElementById('saleOrig').value = '';
-        resetPreview();
-        document.getElementById('percentPreview').innerHTML = '<span class="preview-new">&mdash;</span>';
-        var start = new Date();
-        var end = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-        document.getElementById('saleStart').value = toLocalInput(start);
-        document.getElementById('saleEnd').value = toLocalInput(end);
-        document.getElementById('saleModal').style.display = 'flex';
-        apiFetch('/api/sales/candidates').then(function (data) {
-          saleCandidates = data.products || [];
-          renderMultiList();
-          var sel = document.getElementById('saleProduct');
-          if (saleCandidates.length === 0) {
-            sel.innerHTML = '<option value="">No products available</option>';
-            document.getElementById('saleSubmit').disabled = true;
-            return;
-          }
-          document.getElementById('saleSubmit').disabled = false;
-          sel.innerHTML = '<option value="">Select a product…</option>' + saleCandidates.map(function (p) {
-            return '<option value="' + p.id + '">' + escapeHtml(p.name) + ' — ' + priceFull(p.price_cents) + '</option>';
-          }).join('');
-        }).catch(function () { showToast('Failed to load products'); });
       }
 
       function resetPreview() {
@@ -535,26 +403,64 @@
         document.getElementById('pvOld').textContent = '';
         document.getElementById('pvSave').textContent = '';
         document.getElementById('pvPct').textContent = '';
+        document.getElementById('percentPreview').innerHTML = '<span class="preview-new">&mdash;</span>';
+      }
+
+      function renderMultiList(checkedId) {
+        var list = document.getElementById('saleMultiList');
+        if (saleCandidates.length === 0) {
+          list.innerHTML = '<div style="padding:12px;color:var(--gray);font-size:13px">No products available</div>';
+          return;
+        }
+        list.innerHTML = saleCandidates.map(function (p) {
+          var checked = String(p.id) === String(checkedId) ? ' checked' : '';
+          return '<label class="multi-item">' +
+            '<input type="checkbox" value="' + p.id + '"' + checked + ' />' +
+            '<span class="mi-name">' + escapeHtml(p.name) + '</span>' +
+            '<span class="mi-price">' + priceFull(p.price_cents) + '</span>' +
+          '</label>';
+        }).join('');
+      }
+
+      function loadCandidates(cb) {
+        apiFetch('/api/sales/candidates').then(function (data) {
+          saleCandidates = data.products || [];
+          // Ensure the product being edited is selectable even though it's on sale.
+          if (editingSaleId && currentSaleProduct &&
+              !saleCandidates.some(function (c) { return String(c.id) === String(currentSaleProduct.id); })) {
+            saleCandidates.unshift(currentSaleProduct);
+          }
+          if (cb) cb();
+        }).catch(function () { showToast('Failed to load products'); if (cb) cb(); });
+      }
+
+      function populateProductSelect() {
+        var sel = document.getElementById('saleProduct');
+        if (saleCandidates.length === 0) {
+          sel.innerHTML = '<option value="">No products available</option>';
+          return;
+        }
+        sel.innerHTML = '<option value="">Select a product…</option>' + saleCandidates.map(function (p) {
+          return '<option value="' + p.id + '">' + escapeHtml(p.name) + ' — ' + priceFull(p.price_cents) + '</option>';
+        }).join('');
+        if (currentSaleProduct) {
+          sel.value = String(currentSaleProduct.id);
+        }
       }
 
       function updatePreview() {
         var orig = currentSaleProduct ? (currentSaleProduct.price_cents || 0) : 0;
         var typed = parseInt(document.getElementById('salePrice').value, 10);
-        var sale = isNaN(typed) ? 0 : typed; // typed value is already in DA — do NOT divide by 100
-        var pvNew = document.getElementById('pvNew');
-        var pvOld = document.getElementById('pvOld');
-        var pvSave = document.getElementById('pvSave');
-        var pvPct = document.getElementById('pvPct');
+        var sale = isNaN(typed) ? 0 : typed;
         if (!orig || sale <= 0) { resetPreview(); return; }
-        pvOld.textContent = priceFull(orig);
-        pvNew.textContent = sale.toLocaleString('en-US') + ' DA';
+        document.getElementById('pvOld').textContent = priceFull(orig);
+        document.getElementById('pvNew').textContent = sale.toLocaleString('en-US') + ' DA';
         var save = orig - sale * 100;
-        if (save <= 0) { pvSave.textContent = ''; pvPct.textContent = ''; return; }
-        pvSave.textContent = 'Save ' + priceFull(save);
-        pvPct.textContent = Math.round((save / orig) * 100) + '% discount';
+        if (save <= 0) { document.getElementById('pvSave').textContent = ''; document.getElementById('pvPct').textContent = ''; return; }
+        document.getElementById('pvSave').textContent = 'Save ' + priceFull(save);
+        document.getElementById('pvPct').textContent = Math.round((save / orig) * 100) + '% discount';
       }
 
-      // Shared with the server: round to nearest 10 DA, fall back to nearest whole DA.
       function computeSaleCents(priceCents, pct) {
         var raw = Math.round(priceCents * (1 - pct / 100));
         var sale = Math.round(raw / 1000) * 1000;
@@ -591,6 +497,89 @@
         }).join('');
       }
 
+      function openCreateModal() {
+        editingSaleId = null;
+        document.getElementById('saleForm').reset();
+        currentSaleProduct = null;
+        resetBanner();
+        resetPreview();
+        setSaleMode('manual');
+        document.getElementById('saleModalTitle').textContent = 'Add Products to Sale';
+        document.getElementById('saleSubmit').textContent = 'Add to Sale';
+        var start = new Date();
+        var end = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        document.getElementById('saleStart').value = toLocalInput(start);
+        document.getElementById('saleEnd').value = toLocalInput(end);
+        document.getElementById('saleModal').style.display = 'flex';
+        loadCandidates(function () {
+          populateProductSelect();
+          renderMultiList();
+        });
+      }
+
+      function openEditModal(sale) {
+        editingSaleId = sale.id;
+        currentSaleProduct = {
+          id: sale.product_id,
+          name: sale.product_name || 'Product #' + sale.product_id,
+          price_cents: sale.original_price_cents || 0
+        };
+        document.getElementById('saleForm').reset();
+        resetPreview();
+        setSaleMode('manual');
+        document.getElementById('saleModalTitle').textContent = 'Edit Sale';
+        document.getElementById('saleSubmit').textContent = 'Save Changes';
+        document.getElementById('saleOrig').value = priceFull(sale.original_price_cents);
+        document.getElementById('salePrice').value = Math.round(sale.sale_price_cents / 100);
+        document.getElementById('saleStart').value = sale.start_at || '';
+        document.getElementById('saleEnd').value = sale.end_at || '';
+        var d = (sale.original_price_cents > 0) ? Math.round((1 - sale.sale_price_cents / sale.original_price_cents) * 100) : 15;
+        document.getElementById('saleDiscount').value = d;
+        setBanner(sale.banner_image_url);
+        document.getElementById('saleModal').style.display = 'flex';
+        loadCandidates(function () {
+          populateProductSelect();
+          renderMultiList(currentSaleProduct.id);
+        });
+        updatePreview();
+      }
+
+      function uploadBanner(file) {
+        var fd = new FormData();
+        fd.append('image', file);
+        fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.url) { setBanner(data.url); showToast('Banner image uploaded'); }
+            else { showToast(data.error || 'Upload failed'); }
+          })
+          .catch(function () { showToast('Upload failed'); });
+      }
+
+      /* ---------- Events ---------- */
+
+      document.getElementById('newSaleBtn').addEventListener('click', openCreateModal);
+
+      document.getElementById('saleRows').addEventListener('click', function (e) {
+        var editBtn = e.target.closest('button[data-edit]');
+        if (editBtn) {
+          var id = parseInt(editBtn.getAttribute('data-edit'), 10);
+          var sale = null;
+          for (var i = 0; i < sales.length; i++) { if (sales[i].id === id) { sale = sales[i]; break; } }
+          if (sale) openEditModal(sale);
+          return;
+        }
+        var delBtn = e.target.closest('button[data-id]');
+        if (!delBtn) return;
+        var did = delBtn.getAttribute('data-id');
+        if (!confirm('Delete this sale?')) return;
+        apiFetch('/api/sales/' + did, { method: 'DELETE' }).then(function () {
+          sales = sales.filter(function (s) { return String(s.id) !== String(did); });
+          render();
+          showToast('Sale deleted');
+        }).catch(function () { showToast('Failed to delete sale'); });
+      });
+
       document.getElementById('saleProduct').addEventListener('change', function (e) {
         var id = e.target.value;
         currentSaleProduct = null;
@@ -626,38 +615,69 @@
         var endVal = document.getElementById('saleEnd').value;
         if (!startVal || !endVal) { showToast('Choose start and end dates'); return; }
 
-        if (saleMode === 'manual') {
+        if (editingSaleId) {
           if (!currentSaleProduct) { showToast('Select a product'); return; }
-          var sale = parseInt(document.getElementById('salePrice').value, 10);
-          if (!sale || sale <= 0) { showToast('Enter a sale price'); return; }
-          if (sale * 100 >= currentSaleProduct.price_cents) { showToast('Sale price must be lower than the original'); return; }
+          var salePriceCents;
+          if (saleMode === 'manual') {
+            var manual = parseInt(document.getElementById('salePrice').value, 10);
+            if (!manual || manual <= 0) { showToast('Enter a sale price'); return; }
+            salePriceCents = manual * 100;
+          } else {
+            var d = parseFloat(document.getElementById('saleDiscount').value);
+            if (!d || d <= 0 || d >= 100) { showToast('Enter a discount between 1 and 99%'); return; }
+            salePriceCents = computeSaleCents(currentSaleProduct.price_cents, d);
+          }
+          if (salePriceCents >= currentSaleProduct.price_cents) { showToast('Sale price must be lower than the original'); return; }
           var body = {
             product_id: currentSaleProduct.id,
             original_price_cents: currentSaleProduct.price_cents,
-            sale_price_cents: sale * 100,
+            sale_price_cents: salePriceCents,
             start_at: startVal,
             end_at: endVal,
             banner_image_url: bannerUrl
           };
-          apiFetch('/api/sales', { method: 'POST', body: JSON.stringify(body) }).then(function (data) {
+          apiFetch('/api/sales/' + editingSaleId, { method: 'PUT', body: JSON.stringify(body) }).then(function (data) {
             if (data.error) throw new Error(data.error);
             closeSaleModal();
+            loadSales();
+            showToast('Sale updated');
+          }).catch(function (err) { showToast(err.message || 'Failed to update sale'); });
+        } else if (saleMode === 'manual') {
+          if (!currentSaleProduct) { showToast('Select a product'); return; }
+          var sale2 = parseInt(document.getElementById('salePrice').value, 10);
+          if (!sale2 || sale2 <= 0) { showToast('Enter a sale price'); return; }
+          if (sale2 * 100 >= currentSaleProduct.price_cents) { showToast('Sale price must be lower than the original'); return; }
+          var body2 = {
+            product_id: currentSaleProduct.id,
+            original_price_cents: currentSaleProduct.price_cents,
+            sale_price_cents: sale2 * 100,
+            start_at: startVal,
+            end_at: endVal,
+            banner_image_url: bannerUrl
+          };
+          apiFetch('/api/sales', { method: 'POST', body: JSON.stringify(body2) }).then(function (data) {
+            if (data.error) throw new Error(data.error);
+            closeSaleModal();
+            loadSales();
             showToast('Product added to sale');
           }).catch(function (err) { showToast(err.message || 'Failed to add to sale'); });
         } else {
-          var d = parseFloat(document.getElementById('saleDiscount').value);
-          if (!d || d <= 0 || d >= 100) { showToast('Enter a discount between 1 and 99%'); return; }
+          var d2 = parseFloat(document.getElementById('saleDiscount').value);
+          if (!d2 || d2 <= 0 || d2 >= 100) { showToast('Enter a discount between 1 and 99%'); return; }
           var ids = [];
           document.querySelectorAll('#saleMultiList input:checked').forEach(function (cb) { ids.push(parseInt(cb.value, 10)); });
           if (ids.length === 0) { showToast('Select at least one product'); return; }
-          var body2 = { product_ids: ids, discount_pct: d, start_at: startVal, end_at: endVal, banner_image_url: bannerUrl };
-          apiFetch('/api/sales/bulk', { method: 'POST', body: JSON.stringify(body2) }).then(function (data) {
+          var body3 = { product_ids: ids, discount_pct: d2, start_at: startVal, end_at: endVal, banner_image_url: bannerUrl };
+          apiFetch('/api/sales/bulk', { method: 'POST', body: JSON.stringify(body3) }).then(function (data) {
             if (data.error) throw new Error(data.error);
             closeSaleModal();
+            loadSales();
             showToast(ids.length + ' product' + (ids.length === 1 ? '' : 's') + ' added to sale');
           }).catch(function (err) { showToast(err.message || 'Failed to add products to sale'); });
         }
       });
+
+      loadSales();
     })();
   </script>
 </body>

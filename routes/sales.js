@@ -28,6 +28,14 @@ function parseDate(value) {
   return isNaN(d.getTime()) ? null : d;
 }
 
+// Format a Date as the local YYYY-MM-DDTHH:mm string used by
+// <input type="datetime-local"> so edit pre-fill round-trips cleanly.
+function toLocalInput(d) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+    'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
 // ============================================================
 // PUBLIC endpoint — no authentication required
 // ============================================================
@@ -232,7 +240,7 @@ router.put('/:id', (req, res) => {
     SET product_id = ?, original_price_cents = ?, sale_price_cents = ?,
         start_at = ?, end_at = ?, banner_image_url = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
-  `).run(nextProductId, nextOrig, nextSale, nextStart.toISOString(), nextEnd.toISOString(), nextBanner || '', existing.id);
+  `).run(nextProductId, nextOrig, nextSale, toLocalInput(nextStart), toLocalInput(nextEnd), nextBanner || '', existing.id);
 
   res.json({ success: true });
 });
