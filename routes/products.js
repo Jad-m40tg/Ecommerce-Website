@@ -25,6 +25,41 @@ function escapeLike(str) {
 }
 
 // ============================================================
+// Sales-aware pricing (STEP 4)
+// Products with a currently-active sale record (now within
+// [start_at, end_at]) are returned to customers with:
+//   price_cents        -> sale price (what customers pay)
+//   old_price_cents / compare_at_price_cents -> original price
+//   on_sale            -> 1 (drives the "Sale" badge)
+// Admin listings (GET /api/products) still show stored prices.
+// ============================================================
+
+function activeSalesMap() {
+  const now = Date.now();
+  const rows = db.prepare('SELECT product_id, original_price_cents, sale_price_cents, start_at, end_at FROM sales').all();
+  const map = {};
+  for (const s of rows) {
+    const start = new Date(s.start_at).getTime();
+    const end = new Date(s.end_at).getTime();
+    if (!isNaN(start) && !isNaN(end) && now >= start && now <= end) {
+      map[s.product_id] = s;
+    }
+  }
+  return map;
+}
+
+function withSalePrice(product, saleMap) {
+  const sale = saleMap && saleMap[product.id];
+  if (!sale) return product;
+  return Object.assign({}, product, {
+    price_cents: sale.sale_price_cents,
+    old_price_cents: sale.original_price_cents,
+    compare_at_price_cents: sale.original_price_cents,
+    on_sale: 1
+  });
+}
+
+// ============================================================
 // PUBLIC endpoints — no authentication required
 // ============================================================
 
@@ -33,18 +68,31 @@ router.get('/browse/featured', (req, res) => {
   const { page = 1, limit = 20 } = req.query;
   const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   const offset = (Number(page) - 1) * safeLimit;
-  const products = db.prepare("SELECT * FROM products WHERE status = 'active' AND featured = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?").all(safeLimit, offset);
+  const saleMap = activeSalesMap();
+  const products = db.prepare("SELECT * FROM products WHERE status = 'active' AND featured = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?").all(safeLimit, offset)
+    .map((p) => withSalePrice(p, saleMap));
   const { count } = db.prepare("SELECT COUNT(*) as count FROM products WHERE status = 'active' AND featured = 1").get();
   res.json({ products, total: count, page: Number(page), limit: safeLimit });
 });
 
 // GET /api/products/browse/on-sale — Returns on-sale active products with pagination.
+// Includes both the legacy on_sale column and products with an active sales record.
 router.get('/browse/on-sale', (req, res) => {
   const { page = 1, limit = 20 } = req.query;
   const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   const offset = (Number(page) - 1) * safeLimit;
-  const products = db.prepare("SELECT * FROM products WHERE status = 'active' AND on_sale = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?").all(safeLimit, offset);
-  const { count } = db.prepare("SELECT COUNT(*) as count FROM products WHERE status = 'active' AND on_sale = 1").get();
+  const saleMap = activeSalesMap();
+  const saleIds = Object.keys(saleMap).map(Number);
+  let where = "status = 'active' AND (on_sale = 1";
+  const params = [];
+  if (saleIds.length) {
+    where += ' OR id IN (' + saleIds.map(() => '?').join(',') + ')';
+    params.push(...saleIds);
+  }
+  where += ')';
+  const products = db.prepare(`SELECT * FROM products WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`).all(...params, safeLimit, offset)
+    .map((p) => withSalePrice(p, saleMap));
+  const { count } = db.prepare(`SELECT COUNT(*) as count FROM products WHERE ${where}`).get(...params);
   res.json({ products, total: count, page: Number(page), limit: safeLimit });
 });
 
@@ -87,7 +135,8 @@ router.get('/browse', (req, res) => {
   sql += ` ORDER BY ${orderClause} LIMIT ? OFFSET ?`;
   params.push(safeLimit, (Number(page) - 1) * safeLimit);
 
-  const products = db.prepare(sql).all(...params);
+  const saleMap = activeSalesMap();
+  const products = db.prepare(sql).all(...params).map((p) => withSalePrice(p, saleMap));
   const { count } = db.prepare(countSql).get(...countParams);
 
   res.json({ products, total: count, page: Number(page), limit: safeLimit });
@@ -97,7 +146,7 @@ router.get('/browse', (req, res) => {
 router.get('/browse/:id', (req, res) => {
   const product = db.prepare("SELECT * FROM products WHERE id = ? AND status = 'active'").get(req.params.id);
   if (!product) return res.status(404).json({ error: 'Product not found' });
-  res.json(product);
+  res.json(withSalePrice(product, activeSalesMap()));
 });
 
 // ============================================================
