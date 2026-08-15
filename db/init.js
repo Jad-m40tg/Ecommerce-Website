@@ -13,6 +13,7 @@ try {
   // This ensures a clean slate every time the command runs.
   db.exec(`
     DROP TABLE IF EXISTS reviews;
+    DROP TABLE IF EXISTS sales;
     DROP TABLE IF EXISTS settings;
     DROP TABLE IF EXISTS orders;
     DROP TABLE IF EXISTS products;
@@ -115,6 +116,18 @@ try {
       rating INTEGER NOT NULL DEFAULT 5,
       comment TEXT DEFAULT '',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE sales (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+      original_price_cents INTEGER NOT NULL,
+      sale_price_cents INTEGER NOT NULL,
+      start_at TEXT NOT NULL,
+      end_at TEXT NOT NULL,
+      banner_image_url TEXT DEFAULT '',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
 

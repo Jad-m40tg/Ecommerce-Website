@@ -96,6 +96,7 @@ app.use('/api/analytics', require('./routes/analytics')); // Admin analytics das
 app.use('/api/settings', require('./routes/settings'));   // Store settings (public + admin)
 app.use('/api/categories', require('./routes/categories')); // Category browsing + CRUD
 app.use('/api/reviews', require('./routes/reviews'));     // Product reviews (public + admin)
+app.use('/api/sales', require('./routes/sales'));         // Sales / deals management (admin + public active)
 app.use('/api/upload', require('./routes/upload'));       // Admin image upload
 app.use('/api/delivery', require('./routes/delivery'));   // NOEST delivery integration
 

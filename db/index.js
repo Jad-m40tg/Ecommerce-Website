@@ -63,4 +63,33 @@ db.exec(`CREATE TABLE IF NOT EXISTS hidden_customers (
   hidden_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )`);
 
+// Create sales table if it doesn't exist (added in STEP 2 of the sales feature).
+// One record per product per date range; active = now within [start_at, end_at].
+db.exec(`CREATE TABLE IF NOT EXISTS sales (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  original_price_cents INTEGER NOT NULL,
+  sale_price_cents INTEGER NOT NULL,
+  start_at TEXT NOT NULL,
+  end_at TEXT NOT NULL,
+  banner_image_url TEXT DEFAULT '',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
+// Idempotent migration — adds columns to sales tables that predate later steps.
+const salesColumns = db.pragma('table_info(sales)').map((col) => col.name);
+const salesMigrations = {
+  banner_image_url: "ALTER TABLE sales ADD COLUMN banner_image_url TEXT DEFAULT ''"
+};
+for (const [name, sql] of Object.entries(salesMigrations)) {
+  if (!salesColumns.includes(name)) {
+    try {
+      db.exec(sql);
+    } catch (err) {
+      console.error('Migration failed for sales.' + name + ':', err.message);
+    }
+  }
+}
+
 module.exports = db;
