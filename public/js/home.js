@@ -207,7 +207,7 @@ document.getElementById('newsletterForm').addEventListener('submit', function (e
   this.reset();
 });
 
-/* Countdown timer (3 days from load) */
+/* Countdown timer (defaults to 3 days from load, driven by the active sale when one exists) */
 var saleEnd = Date.now() + 3 * 24 * 60 * 60 * 1000;
 function updateCountdown() {
   var remaining = Math.max(0, saleEnd - Date.now());
@@ -222,6 +222,29 @@ function updateCountdown() {
 }
 updateCountdown();
 setInterval(updateCountdown, 1000);
+
+/* Load the active sale into the LIMITED OFFER banner (soonest end date wins). */
+function loadActiveSale() {
+  fetch('/api/sales/active').then(function (r) { return r.json(); }).then(function (data) {
+    var sales = data.sales || [];
+    if (sales.length === 0) return;
+    var sale = sales[0]; // server sorts by end_at ascending
+    var end = new Date(sale.end_at).getTime();
+    if (isNaN(end)) return;
+    saleEnd = end;
+    updateCountdown();
+    var titleEl = document.getElementById('offerTitle');
+    var descEl  = document.getElementById('offerDesc');
+    var shopEl  = document.getElementById('offerShop');
+    var imgEl   = document.getElementById('offerImg');
+    var name = sale.product_name || 'selected furniture';
+    if (titleEl) titleEl.textContent = 'On Sale Now \u2014 ' + name;
+    if (descEl) descEl.textContent = 'Save on ' + name + ' while stock lasts. The deal ends when the timer runs out.';
+    if (shopEl && sale.product_id) shopEl.href = 'product.html?id=' + sale.product_id;
+    if (imgEl && sale.banner_image_url) imgEl.src = sale.banner_image_url;
+  }).catch(function () {});
+}
+loadActiveSale();
 
 /* Init cart badge */
 updateCartCount();

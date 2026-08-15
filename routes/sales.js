@@ -84,7 +84,7 @@ router.get('/candidates', (req, res) => {
 
 // POST /api/sales — Create a sale for a single product (Manual Price mode).
 router.post('/', (req, res) => {
-  const { product_id, original_price_cents, sale_price_cents, start_at, end_at } = req.body;
+  const { product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url } = req.body;
 
   if (!product_id) return res.status(400).json({ error: 'product_id is required' });
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(product_id);
@@ -116,9 +116,9 @@ router.post('/', (req, res) => {
   if (overlaps) return res.status(409).json({ error: 'Product already has a sale in this date range' });
 
   const result = db.prepare(`
-    INSERT INTO sales (product_id, original_price_cents, sale_price_cents, start_at, end_at)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(product_id, original_price_cents, sale_price_cents, start_at, end_at);
+    INSERT INTO sales (product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url || '');
 
   res.status(201).json({ id: result.lastInsertRowid, success: true });
 });
@@ -128,7 +128,7 @@ router.post('/', (req, res) => {
 // 10 DA (1000 cents). If that rounding makes the price invalid (>= original or
 // <= 0), falls back to the nearest whole DA (100 cents).
 router.post('/bulk', (req, res) => {
-  const { product_ids, discount_pct, start_at, end_at } = req.body;
+  const { product_ids, discount_pct, start_at, end_at, banner_image_url } = req.body;
 
   if (!Array.isArray(product_ids) || product_ids.length === 0) {
     return res.status(400).json({ error: 'product_ids must be a non-empty array' });
@@ -175,15 +175,15 @@ router.post('/bulk', (req, res) => {
   }
 
   const insert = db.prepare(`
-    INSERT INTO sales (product_id, original_price_cents, sale_price_cents, start_at, end_at)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO sales (product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url)
+    VALUES (?, ?, ?, ?, ?, ?)
   `);
   const created = [];
   const tx = db.transaction(() => {
     for (const p of products) {
       const sale = computeSaleCents(p.price_cents, discount_pct);
       if (sale <= 0 || sale >= p.price_cents) continue;
-      const r = insert.run(p.id, p.price_cents, sale, start_at, end_at);
+      const r = insert.run(p.id, p.price_cents, sale, start_at, end_at, banner_image_url || '');
       created.push({ id: r.lastInsertRowid, product_id: p.id, sale_price_cents: sale });
     }
   });

@@ -147,6 +147,13 @@
     .percent-line .pl-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
     .percent-line .pl-new{font-weight:700;color:var(--sage-dark)}
 
+    /* --- Banner image upload --- */
+    .banner-drop{position:relative;border:1.5px dashed var(--beige);border-radius:var(--radius-md);background:var(--warm-white);padding:14px;text-align:center;cursor:pointer;overflow:hidden;transition:border-color .2s ease,background .2s ease}
+    .banner-drop:hover{border-color:var(--sage);background:var(--cream)}
+    .banner-drop span{display:block;font-size:12.5px;color:var(--gray)}
+    .banner-drop img{max-height:140px;width:auto;max-width:100%;margin:0 auto;border-radius:var(--radius-sm)}
+    .banner-drop.has-img{border-style:solid;border-color:var(--sage)}
+
     @media(max-width:860px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.side-nav{flex-direction:row;overflow-x:auto;gap:6px}.side-nav a{white-space:nowrap}.nav-label,.sidebar-foot{display:none}.sidebar .brand{border-bottom:none;padding-bottom:12px;margin-bottom:8px}.topbar{padding:0 20px;gap:10px}.admin-chip .who{display:none}.content{padding:20px}}
     .notif-panel{position:absolute;top:52px;right:0;width:320px;max-height:400px;background:var(--white);border:1.5px solid var(--beige);border-radius:var(--radius-lg);box-shadow:var(--shadow-lift);z-index:200;display:flex;flex-direction:column;overflow:hidden}
     .notif-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--beige)}
@@ -298,6 +305,14 @@
             <input type="datetime-local" id="saleEnd" required />
           </div>
         </div>
+        <div class="sale-field">
+          <label for="bannerInput">Banner Image <small style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--gray)">(optional — used on the homepage sale banner)</small></label>
+          <div class="banner-drop" id="bannerDrop">
+            <input type="file" id="bannerInput" accept="image/*" hidden />
+            <span id="bannerPlaceholder">Click to upload an image (JPEG, PNG, GIF, WebP)</span>
+            <img id="bannerPreview" alt="Banner preview" style="display:none" />
+          </div>
+        </div>
         <div class="modal-foot">
           <button type="button" class="qa-btn" id="saleCancel">Cancel</button>
           <button type="submit" class="qa-btn primary" id="saleSubmit">Add to Sale</button>
@@ -422,6 +437,36 @@
       var saleCandidates = [];
       var currentSaleProduct = null;
       var saleMode = 'manual';
+      var bannerUrl = '';
+
+      function resetBanner() {
+        bannerUrl = '';
+        document.getElementById('bannerInput').value = '';
+        document.getElementById('bannerPreview').style.display = 'none';
+        document.getElementById('bannerPlaceholder').style.display = 'block';
+        document.getElementById('bannerDrop').classList.remove('has-img');
+      }
+
+      function uploadBanner(file) {
+        var fd = new FormData();
+        fd.append('image', file);
+        fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.url) {
+              bannerUrl = data.url;
+              var img = document.getElementById('bannerPreview');
+              img.src = data.url;
+              img.style.display = 'block';
+              document.getElementById('bannerPlaceholder').style.display = 'none';
+              document.getElementById('bannerDrop').classList.add('has-img');
+              showToast('Banner image uploaded');
+            } else {
+              showToast(data.error || 'Upload failed');
+            }
+          })
+          .catch(function () { showToast('Upload failed'); });
+      }
 
       function toLocalInput(d) {
         function pad(n) { return String(n).padStart(2, '0'); }
@@ -458,6 +503,7 @@
       function openSaleModal() {
         document.getElementById('saleForm').reset();
         currentSaleProduct = null;
+        resetBanner();
         setSaleMode('manual');
         document.getElementById('saleOrig').value = '';
         resetPreview();
@@ -562,6 +608,13 @@
         b.addEventListener('click', function () { setSaleMode(b.getAttribute('data-mode')); });
       });
 
+      var bannerDrop = document.getElementById('bannerDrop');
+      var bannerInput = document.getElementById('bannerInput');
+      bannerDrop.addEventListener('click', function () { bannerInput.click(); });
+      bannerInput.addEventListener('change', function () {
+        if (bannerInput.files && bannerInput.files[0]) uploadBanner(bannerInput.files[0]);
+      });
+
       document.getElementById('saleClose').addEventListener('click', closeSaleModal);
       document.getElementById('saleCancel').addEventListener('click', closeSaleModal);
       document.getElementById('saleModal').addEventListener('click', function (e) { if (e.target === this) closeSaleModal(); });
@@ -582,7 +635,8 @@
             original_price_cents: currentSaleProduct.price_cents,
             sale_price_cents: sale * 100,
             start_at: startVal,
-            end_at: endVal
+            end_at: endVal,
+            banner_image_url: bannerUrl
           };
           apiFetch('/api/sales', { method: 'POST', body: JSON.stringify(body) }).then(function (data) {
             if (data.error) throw new Error(data.error);
@@ -595,7 +649,7 @@
           var ids = [];
           document.querySelectorAll('#saleMultiList input:checked').forEach(function (cb) { ids.push(parseInt(cb.value, 10)); });
           if (ids.length === 0) { showToast('Select at least one product'); return; }
-          var body2 = { product_ids: ids, discount_pct: d, start_at: startVal, end_at: endVal };
+          var body2 = { product_ids: ids, discount_pct: d, start_at: startVal, end_at: endVal, banner_image_url: bannerUrl };
           apiFetch('/api/sales/bulk', { method: 'POST', body: JSON.stringify(body2) }).then(function (data) {
             if (data.error) throw new Error(data.error);
             closeSaleModal();
