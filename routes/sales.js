@@ -123,6 +123,76 @@ router.post('/', (req, res) => {
   res.status(201).json({ id: result.lastInsertRowid, success: true });
 });
 
+// POST /api/sales/bulk — Percentage Discount mode: create one sale per product.
+// new_price = round(original × (1 − discount_pct/100)), rounded to the nearest
+// 10 DA (1000 cents). If that rounding makes the price invalid (>= original or
+// <= 0), falls back to the nearest whole DA (100 cents).
+router.post('/bulk', (req, res) => {
+  const { product_ids, discount_pct, start_at, end_at } = req.body;
+
+  if (!Array.isArray(product_ids) || product_ids.length === 0) {
+    return res.status(400).json({ error: 'product_ids must be a non-empty array' });
+  }
+  if (!Number.isFinite(discount_pct) || discount_pct <= 0 || discount_pct >= 100) {
+    return res.status(400).json({ error: 'discount_pct must be between 0 and 100' });
+  }
+
+  const start = parseDate(start_at);
+  const end = parseDate(end_at);
+  if (!start || !end) return res.status(400).json({ error: 'Valid start_at and end_at are required' });
+  if (end.getTime() <= start.getTime()) return res.status(400).json({ error: 'End date must be after start date' });
+
+  const ids = [...new Set(product_ids)];
+  const products = [];
+  for (const id of ids) {
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'Invalid product id' });
+    const p = db.prepare('SELECT id, name, price_cents, status FROM products WHERE id = ?').get(id);
+    if (!p) return res.status(404).json({ error: 'Product not found: ' + id });
+    if (p.status !== 'active') return res.status(400).json({ error: 'Product is not active: ' + p.name });
+    products.push(p);
+  }
+
+  // Reject if any product already has a sale overlapping this range.
+  const conflicts = [];
+  for (const p of products) {
+    const existing = db.prepare('SELECT start_at, end_at FROM sales WHERE product_id = ?').all(p.id);
+    const overlaps = existing.some((s) => {
+      const sStart = new Date(s.start_at).getTime();
+      const sEnd = new Date(s.end_at).getTime();
+      return start.getTime() <= sEnd && end.getTime() >= sStart;
+    });
+    if (overlaps) conflicts.push(p.name);
+  }
+  if (conflicts.length) {
+    return res.status(409).json({ error: 'Already on sale in this range: ' + conflicts.join(', ') });
+  }
+
+  function computeSaleCents(priceCents, pct) {
+    const raw = Math.round(priceCents * (1 - pct / 100));
+    let sale = Math.round(raw / 1000) * 1000; // nearest 10 DA
+    if (sale >= priceCents || sale <= 0) sale = Math.round(raw / 100) * 100; // fallback: nearest whole DA
+    return sale;
+  }
+
+  const insert = db.prepare(`
+    INSERT INTO sales (product_id, original_price_cents, sale_price_cents, start_at, end_at)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  const created = [];
+  const tx = db.transaction(() => {
+    for (const p of products) {
+      const sale = computeSaleCents(p.price_cents, discount_pct);
+      if (sale <= 0 || sale >= p.price_cents) continue;
+      const r = insert.run(p.id, p.price_cents, sale, start_at, end_at);
+      created.push({ id: r.lastInsertRowid, product_id: p.id, sale_price_cents: sale });
+    }
+  });
+  tx();
+
+  if (created.length === 0) return res.status(400).json({ error: 'No valid sale prices could be computed' });
+  res.status(201).json({ success: true, created });
+});
+
 // PUT /api/sales/:id — Update a sale (editing flow). Allows changing product too.
 router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM sales WHERE id = ?').get(req.params.id);

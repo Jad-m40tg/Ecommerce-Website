@@ -132,6 +132,21 @@
     .pill.pct{background:rgba(179,83,46,.1);color:var(--danger)}
     .modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
 
+    /* --- Sale mode toggle + multi-select --- */
+    .mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--cream);padding:5px;border-radius:var(--radius-pill);margin-bottom:16px}
+    .mode-btn{border:none;background:transparent;padding:8px 12px;border-radius:var(--radius-pill);font-size:13.5px;font-weight:600;color:var(--gray);cursor:pointer;transition:background .2s ease,color .2s ease}
+    .mode-btn:hover{color:var(--charcoal)}
+    .mode-btn.active{background:var(--white);color:var(--charcoal);box-shadow:0 2px 8px rgba(43,41,38,.1)}
+    .multi-list{max-height:180px;overflow-y:auto;border:1.5px solid var(--beige);border-radius:var(--radius-md);padding:6px}
+    .multi-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:13.5px}
+    .multi-item:hover{background:var(--warm-white)}
+    .multi-item input{width:16px;height:16px;accent-color:var(--sage);flex-shrink:0}
+    .multi-item .mi-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .multi-item .mi-price{color:var(--gray);font-size:12.5px;white-space:nowrap}
+    .percent-line{display:flex;align-items:center;gap:10px;width:100%;font-size:13px;padding:2px 0}
+    .percent-line .pl-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+    .percent-line .pl-new{font-weight:700;color:var(--sage-dark)}
+
     @media(max-width:860px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.side-nav{flex-direction:row;overflow-x:auto;gap:6px}.side-nav a{white-space:nowrap}.nav-label,.sidebar-foot{display:none}.sidebar .brand{border-bottom:none;padding-bottom:12px;margin-bottom:8px}.topbar{padding:0 20px;gap:10px}.admin-chip .who{display:none}.content{padding:20px}}
     .notif-panel{position:absolute;top:52px;right:0;width:320px;max-height:400px;background:var(--white);border:1.5px solid var(--beige);border-radius:var(--radius-lg);box-shadow:var(--shadow-lift);z-index:200;display:flex;flex-direction:column;overflow:hidden}
     .notif-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--beige)}
@@ -229,26 +244,50 @@
       </div>
       <p class="helper">Only active products not already on sale are listed.</p>
       <form id="saleForm" novalidate>
-        <div class="sale-field">
-          <label for="saleProduct">Product</label>
-          <select id="saleProduct" required></select>
+        <div class="mode-toggle" id="saleModeToggle">
+          <button type="button" class="mode-btn active" data-mode="manual">Manual Price</button>
+          <button type="button" class="mode-btn" data-mode="percent">Percentage Discount</button>
         </div>
-        <div class="sale-grid">
+
+        <!-- Manual Price mode -->
+        <div class="sale-mode-pane" id="paneManual">
           <div class="sale-field">
-            <label for="saleOrig">Original Price</label>
-            <input type="text" id="saleOrig" readonly placeholder="Select a product" />
+            <label for="saleProduct">Product</label>
+            <select id="saleProduct" required></select>
+          </div>
+          <div class="sale-grid">
+            <div class="sale-field">
+              <label for="saleOrig">Original Price</label>
+              <input type="text" id="saleOrig" readonly placeholder="Select a product" />
+            </div>
+            <div class="sale-field">
+              <label for="salePrice">Sale Price (DA)</label>
+              <input type="number" id="salePrice" min="1" step="1" placeholder="e.g. 1200" />
+            </div>
+          </div>
+          <div class="preview">
+            <span class="preview-new" id="pvNew">&mdash;</span>
+            <s class="preview-old" id="pvOld"></s>
+            <span class="pill" id="pvSave"></span>
+            <span class="pill pct" id="pvPct"></span>
+          </div>
+        </div>
+
+        <!-- Percentage Discount mode -->
+        <div class="sale-mode-pane" id="panePercent" style="display:none">
+          <div class="sale-field">
+            <label>Products</label>
+            <div class="multi-list" id="saleMultiList"></div>
           </div>
           <div class="sale-field">
-            <label for="salePrice">Sale Price (DA)</label>
-            <input type="number" id="salePrice" min="1" step="1" placeholder="e.g. 1200" />
+            <label for="saleDiscount">Discount (%)</label>
+            <input type="number" id="saleDiscount" min="1" max="99" step="1" placeholder="e.g. 15" />
+          </div>
+          <div class="preview" id="percentPreview">
+            <span class="preview-new">&mdash;</span>
           </div>
         </div>
-        <div class="preview">
-          <span class="preview-new" id="pvNew">&mdash;</span>
-          <s class="preview-old" id="pvOld"></s>
-          <span class="pill" id="pvSave"></span>
-          <span class="pill pct" id="pvPct"></span>
-        </div>
+
         <div class="sale-grid">
           <div class="sale-field">
             <label for="saleStart">Start Date</label>
@@ -382,6 +421,7 @@
       /* ---------- Add to Sale modal ---------- */
       var saleCandidates = [];
       var currentSaleProduct = null;
+      var saleMode = 'manual';
 
       function toLocalInput(d) {
         function pad(n) { return String(n).padStart(2, '0'); }
@@ -390,11 +430,38 @@
 
       function closeSaleModal() { document.getElementById('saleModal').style.display = 'none'; }
 
+      function setSaleMode(mode) {
+        saleMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(function (b) {
+          b.classList.toggle('active', b.getAttribute('data-mode') === mode);
+        });
+        document.getElementById('paneManual').style.display = mode === 'manual' ? 'block' : 'none';
+        document.getElementById('panePercent').style.display = mode === 'percent' ? 'block' : 'none';
+        document.getElementById('saleModalTitle').textContent = mode === 'manual' ? 'Add Product to Sale' : 'Add Products to Sale';
+      }
+
+      function renderMultiList() {
+        var list = document.getElementById('saleMultiList');
+        if (saleCandidates.length === 0) {
+          list.innerHTML = '<div style="padding:12px;color:var(--gray);font-size:13px">No products available</div>';
+          return;
+        }
+        list.innerHTML = saleCandidates.map(function (p) {
+          return '<label class="multi-item">' +
+            '<input type="checkbox" value="' + p.id + '" />' +
+            '<span class="mi-name">' + escapeHtml(p.name) + '</span>' +
+            '<span class="mi-price">' + priceFull(p.price_cents) + '</span>' +
+          '</label>';
+        }).join('');
+      }
+
       function openSaleModal() {
         document.getElementById('saleForm').reset();
         currentSaleProduct = null;
+        setSaleMode('manual');
         document.getElementById('saleOrig').value = '';
         resetPreview();
+        document.getElementById('percentPreview').innerHTML = '<span class="preview-new">&mdash;</span>';
         var start = new Date();
         var end = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         document.getElementById('saleStart').value = toLocalInput(start);
@@ -402,6 +469,7 @@
         document.getElementById('saleModal').style.display = 'flex';
         apiFetch('/api/sales/candidates').then(function (data) {
           saleCandidates = data.products || [];
+          renderMultiList();
           var sel = document.getElementById('saleProduct');
           if (saleCandidates.length === 0) {
             sel.innerHTML = '<option value="">No products available</option>';
@@ -439,6 +507,43 @@
         pvPct.textContent = Math.round((save / orig) * 100) + '% discount';
       }
 
+      // Shared with the server: round to nearest 10 DA, fall back to nearest whole DA.
+      function computeSaleCents(priceCents, pct) {
+        var raw = Math.round(priceCents * (1 - pct / 100));
+        var sale = Math.round(raw / 1000) * 1000;
+        if (sale >= priceCents || sale <= 0) sale = Math.round(raw / 100) * 100;
+        return sale;
+      }
+
+      function updatePercentPreview() {
+        var box = document.getElementById('percentPreview');
+        var d = parseFloat(document.getElementById('saleDiscount').value);
+        var checked = [];
+        document.querySelectorAll('#saleMultiList input:checked').forEach(function (cb) {
+          for (var i = 0; i < saleCandidates.length; i++) {
+            if (String(saleCandidates[i].id) === cb.value) { checked.push(saleCandidates[i]); break; }
+          }
+        });
+        if (checked.length === 0 || !d || d <= 0 || d >= 100) {
+          box.innerHTML = '<span class="preview-new">&mdash;</span>';
+          return;
+        }
+        box.innerHTML = checked.map(function (p) {
+          var sale = computeSaleCents(p.price_cents, d);
+          if (sale <= 0 || sale >= p.price_cents) {
+            return '<span class="percent-line"><span class="pl-name">' + escapeHtml(p.name) + '</span><span class="muted" style="font-size:12px">price unchanged by rounding</span></span>';
+          }
+          var save = p.price_cents - sale;
+          return '<span class="percent-line">' +
+            '<span class="pl-name">' + escapeHtml(p.name) + '</span>' +
+            '<span class="pl-new">' + price(sale) + '</span>' +
+            '<s>' + price(p.price_cents) + '</s>' +
+            '<span class="pill">Save ' + price(save) + '</span>' +
+            '<span class="pill pct">' + Math.round((save / p.price_cents) * 100) + '%</span>' +
+          '</span>';
+        }).join('');
+      }
+
       document.getElementById('saleProduct').addEventListener('change', function (e) {
         var id = e.target.value;
         currentSaleProduct = null;
@@ -450,6 +555,12 @@
       });
 
       document.getElementById('salePrice').addEventListener('input', updatePreview);
+      document.getElementById('saleDiscount').addEventListener('input', updatePercentPreview);
+      document.getElementById('saleMultiList').addEventListener('change', updatePercentPreview);
+
+      document.querySelectorAll('.mode-btn').forEach(function (b) {
+        b.addEventListener('click', function () { setSaleMode(b.getAttribute('data-mode')); });
+      });
 
       document.getElementById('saleClose').addEventListener('click', closeSaleModal);
       document.getElementById('saleCancel').addEventListener('click', closeSaleModal);
@@ -457,25 +568,40 @@
 
       document.getElementById('saleForm').addEventListener('submit', function (e) {
         e.preventDefault();
-        if (!currentSaleProduct) { showToast('Select a product'); return; }
-        var sale = parseInt(document.getElementById('salePrice').value, 10);
         var startVal = document.getElementById('saleStart').value;
         var endVal = document.getElementById('saleEnd').value;
-        if (!sale || sale <= 0) { showToast('Enter a sale price'); return; }
-        if (sale * 100 >= currentSaleProduct.price_cents) { showToast('Sale price must be lower than the original'); return; }
         if (!startVal || !endVal) { showToast('Choose start and end dates'); return; }
-        var body = {
-          product_id: currentSaleProduct.id,
-          original_price_cents: currentSaleProduct.price_cents,
-          sale_price_cents: sale * 100,
-          start_at: startVal,
-          end_at: endVal
-        };
-        apiFetch('/api/sales', { method: 'POST', body: JSON.stringify(body) }).then(function (data) {
-          if (data.error) throw new Error(data.error);
-          closeSaleModal();
-          showToast('Product added to sale');
-        }).catch(function (err) { showToast(err.message || 'Failed to add to sale'); });
+
+        if (saleMode === 'manual') {
+          if (!currentSaleProduct) { showToast('Select a product'); return; }
+          var sale = parseInt(document.getElementById('salePrice').value, 10);
+          if (!sale || sale <= 0) { showToast('Enter a sale price'); return; }
+          if (sale * 100 >= currentSaleProduct.price_cents) { showToast('Sale price must be lower than the original'); return; }
+          var body = {
+            product_id: currentSaleProduct.id,
+            original_price_cents: currentSaleProduct.price_cents,
+            sale_price_cents: sale * 100,
+            start_at: startVal,
+            end_at: endVal
+          };
+          apiFetch('/api/sales', { method: 'POST', body: JSON.stringify(body) }).then(function (data) {
+            if (data.error) throw new Error(data.error);
+            closeSaleModal();
+            showToast('Product added to sale');
+          }).catch(function (err) { showToast(err.message || 'Failed to add to sale'); });
+        } else {
+          var d = parseFloat(document.getElementById('saleDiscount').value);
+          if (!d || d <= 0 || d >= 100) { showToast('Enter a discount between 1 and 99%'); return; }
+          var ids = [];
+          document.querySelectorAll('#saleMultiList input:checked').forEach(function (cb) { ids.push(parseInt(cb.value, 10)); });
+          if (ids.length === 0) { showToast('Select at least one product'); return; }
+          var body2 = { product_ids: ids, discount_pct: d, start_at: startVal, end_at: endVal };
+          apiFetch('/api/sales/bulk', { method: 'POST', body: JSON.stringify(body2) }).then(function (data) {
+            if (data.error) throw new Error(data.error);
+            closeSaleModal();
+            showToast(ids.length + ' product' + (ids.length === 1 ? '' : 's') + ' added to sale');
+          }).catch(function (err) { showToast(err.message || 'Failed to add products to sale'); });
+        }
       });
     })();
   </script>
