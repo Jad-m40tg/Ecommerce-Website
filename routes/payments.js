@@ -15,12 +15,12 @@ router.get('/status/:id', authenticateToken, requireAdmin, async (req, res) => {
     let checkout = null;
 
     if (order && order.payment_reference) {
-      try { checkout = await getCheckout(order.payment_reference); } catch (e) { /* ignore */ }
+      try { checkout = await getCheckout(order.payment_reference); } catch (e) { console.error('Chargily getCheckout failed:', e.message); }
     }
 
     // If not found as order, try as Chargily checkout ID
     if (!checkout) {
-      try { checkout = await getCheckout(param); } catch (e) { /* ignore */ }
+      try { checkout = await getCheckout(param); } catch (e) { console.error('Chargily getCheckout failed:', e.message); }
     }
 
     if (checkout && !order) {
@@ -36,10 +36,14 @@ router.get('/status/:id', authenticateToken, requireAdmin, async (req, res) => {
 
     // Sync payment status from Chargily if checkout exists and payment was completed
     // Do NOT overwrite refunded status — admin may have intentionally refunded
-    if (checkout && checkout.status === 'paid' && order.payment_status !== 'paid' && order.payment_status !== 'refunded') {
-      db.prepare("UPDATE orders SET payment_status = 'paid', payment_reference = ?, paid_at = CURRENT_TIMESTAMP, payment_payload = ? WHERE id = ?")
-        .run(checkout.id, JSON.stringify(checkout), order.id);
-      order.payment_status = 'paid';
+    // Uses conditional UPDATE for atomicity — only one concurrent call can transition the order
+    if (checkout && checkout.status === 'paid') {
+      const result = db.prepare(
+        "UPDATE orders SET payment_status = 'paid', payment_reference = ?, paid_at = CURRENT_TIMESTAMP, payment_payload = ? WHERE id = ? AND payment_status NOT IN ('paid', 'refunded')"
+      ).run(checkout.id, JSON.stringify(checkout), order.id);
+      if (result.changes > 0) {
+        order.payment_status = 'paid';
+      }
     }
 
     res.json({
@@ -75,10 +79,12 @@ router.post('/webhook', (req, res) => {
       const orderId = checkout.metadata && checkout.metadata.order_id;
 
       if (orderId) {
-        const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
-        if (order && order.payment_status !== 'paid' && order.payment_status !== 'refunded') {
-          db.prepare("UPDATE orders SET payment_status = 'paid', payment_reference = ?, paid_at = CURRENT_TIMESTAMP, payment_payload = ? WHERE id = ?")
-            .run(checkout.id || checkout.checkout_id || '', JSON.stringify(checkout), orderId);
+        // Atomic conditional UPDATE — only transitions if not already paid/refunded
+        const result = db.prepare(
+          "UPDATE orders SET payment_status = 'paid', payment_reference = ?, paid_at = CURRENT_TIMESTAMP, payment_payload = ? WHERE id = ? AND payment_status NOT IN ('paid', 'refunded')"
+        ).run(checkout.id || checkout.checkout_id || '', JSON.stringify(checkout), orderId);
+        if (result.changes > 0) {
+          console.log('[WEBHOOK] Order #' + orderId + ' transitioned to paid');
         }
       }
     }

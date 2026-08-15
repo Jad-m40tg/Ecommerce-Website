@@ -49,6 +49,29 @@ router.get('/track', (req, res) => {
   res.json({ order });
 });
 
+// Shared transaction: cancel an order and restore its stock.
+// Used by both the PATCH /:id admin route and the abandoned-order cleanup job.
+// extraUpdates/extraValues allow additional SET clauses (e.g. carrier) alongside the cancel.
+function cancelAndRestoreStock(orderId, order, extraUpdates, extraValues) {
+  db.transaction(() => {
+    let sql = "UPDATE orders SET order_status = 'cancelled', updated_at = CURRENT_TIMESTAMP";
+    const params = [];
+    if (extraUpdates && extraUpdates.length) {
+      sql += ', ' + extraUpdates.join(', ');
+      params.push(...extraValues);
+    }
+    sql += ' WHERE id = ?';
+    params.push(orderId);
+    db.prepare(sql).run(...params);
+    const items = JSON.parse(order.items);
+    const stockStmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
+    for (const item of items) {
+      stockStmt.run(item.quantity, item.product_id);
+    }
+    console.log('[STOCK] Restored ' + items.reduce((s, i) => s + i.quantity, 0) + ' stock for order #' + orderId);
+  })();
+}
+
 // POST /api/orders — Create a new order (public, rate-limited). Validates items, reserves stock, optionally initiates online payment.
 router.post('/', checkoutLimiter, async (req, res, next) => {
   try {
@@ -136,10 +159,10 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
         stockStmt.run(item.quantity, item.product_id);
       }
 
-      return { id: result.lastInsertRowid, resolvedItems, subtotal_cents, total_cents };
+      return { id: result.lastInsertRowid, resolvedItems, subtotal_cents, actual_shipping, total_cents };
     });
 
-    const { id, resolvedItems, subtotal_cents, total_cents } = createOrder();
+    const { id, resolvedItems, subtotal_cents, actual_shipping, total_cents } = createOrder();
 
     const orderData = {
       id, customer_name, customer_email, items: resolvedItems,
@@ -194,6 +217,7 @@ router.use(authenticateToken, requireAdmin);
 // GET /api/orders — List all orders (admin only). Supports status filter and pagination.
 router.get('/', (req, res) => {
   const { status, page = 1, limit = 20 } = req.query;
+  const safePage = Math.max(1, parseInt(page) || 1);
   const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   let sql = 'SELECT * FROM orders WHERE 1=1';
   let countSql = 'SELECT COUNT(*) as count FROM orders WHERE 1=1';
@@ -203,12 +227,12 @@ router.get('/', (req, res) => {
   if (status) { sql += ' AND order_status = ?'; countSql += ' AND order_status = ?'; params.push(status); countParams.push(status); }
 
   sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-  params.push(safeLimit, (Number(page) - 1) * safeLimit);
+  params.push(safeLimit, (safePage - 1) * safeLimit);
 
   const orders = db.prepare(sql).all(...params);
   const { count } = db.prepare(countSql).get(...countParams);
 
-  res.json({ orders, total: count, page: Number(page), limit: safeLimit });
+  res.json({ orders, total: count, page: safePage, limit: safeLimit });
 });
 
 // GET /api/orders/:id — Get a single order by ID (admin only).
@@ -259,20 +283,22 @@ router.patch('/:id', (req, res) => {
 
   // Wrap status change + stock restoration in a transaction for atomicity
   if (status === 'cancelled' && order.order_status !== 'cancelled') {
-    const cancelAndUpdate = db.transaction(() => {
-      const result = db.prepare(`UPDATE orders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
-      if (result.changes === 0) throw new Error('NOT_FOUND');
-      const items = JSON.parse(order.items);
-      const stockStmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
-      for (const item of items) {
-        stockStmt.run(item.quantity, item.product_id);
-      }
-      console.log(`[STOCK] Restored ${items.reduce((s, i) => s + i.quantity, 0)} stock for order #${req.params.id}`);
-    });
+    // Build extra updates (everything except order_status) for the cancel transaction
+    const extraUpdates = [];
+    const extraValues = [];
+    if (payment_status) {
+      extraUpdates.push('payment_status = ?');
+      extraValues.push(payment_status);
+      if (payment_status === 'paid') extraUpdates.push('paid_at = CURRENT_TIMESTAMP');
+    }
+    if (tracking_number !== undefined) { extraUpdates.push('tracking_number = ?'); extraValues.push(String(tracking_number).slice(0, 200)); }
+    if (carrier !== undefined) { extraUpdates.push('carrier = ?'); extraValues.push(String(carrier).slice(0, 100)); }
+    if (tracking_url !== undefined) { extraUpdates.push('tracking_url = ?'); extraValues.push(String(tracking_url).slice(0, 500)); }
+    if (noest_tracking !== undefined) { extraUpdates.push('noest_tracking = ?'); extraValues.push(String(noest_tracking).slice(0, 100)); }
+    if (noest_status !== undefined) { extraUpdates.push('noest_status = ?'); extraValues.push(String(noest_status).slice(0, 50)); }
     try {
-      cancelAndUpdate();
+      cancelAndRestoreStock(req.params.id, order, extraUpdates, extraValues);
     } catch (e) {
-      if (e.message === 'NOT_FOUND') return res.status(404).json({ error: 'Order not found' });
       console.error('[STOCK] Failed to restore stock for order #' + req.params.id, e);
       return res.status(500).json({ error: 'Failed to update order' });
     }
@@ -302,4 +328,5 @@ router.patch('/:id', (req, res) => {
   res.json({ success: true });
 });
 
+router.cancelAndRestoreStock = cancelAndRestoreStock;
 module.exports = router;
