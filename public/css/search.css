@@ -46,6 +46,7 @@
   overflow: hidden;
   box-shadow: var(--shadow-soft);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex; flex-direction: column;
 }
 .results-grid .product-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
 .results-grid .product-card .card-media { position: relative; display: block; background: var(--cream); }
@@ -60,7 +61,7 @@
 }
 .card-badge.sale { background: var(--wood); }
 
-.results-grid .product-card .card-body { padding: 16px 18px 20px; }
+.results-grid .product-card .card-body { padding: 16px 18px 20px; display: flex; flex-direction: column; flex: 1; }
 .results-grid .product-card .card-category {
   font-size: 12px; font-weight: 600;
   letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray);
@@ -77,6 +78,7 @@
 
 .card-price-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-top: auto;
 }
 .card-price { font-size: 17px; font-weight: 700; color: var(--charcoal); }
 .card-price s { font-size: 13px; font-weight: 500; color: var(--gray); margin-left: 6px; }

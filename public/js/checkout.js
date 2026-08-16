@@ -205,10 +205,7 @@ document.addEventListener('click', function (event) {
     if (paymentMethod === 'cash_on_delivery') {
       saveCart([]);
       localStorage.removeItem(PROMO_STORAGE_KEY);
-      renderSummary();
-      document.getElementById('orderNumber').textContent = 'Order #' + orderId + (trackingCode ? ' — Tracking: ' + trackingCode : '');
-      document.getElementById('confirmOverlay').classList.add('open');
-      showToast('Order placed!');
+      window.location.href = 'order-placed.html?order_id=' + encodeURIComponent(orderId) + '&code=' + encodeURIComponent(trackingCode);
     } else {
       if (data.payment_url) {
         window.location.href = data.payment_url;
@@ -221,13 +218,6 @@ document.addEventListener('click', function (event) {
     btn.disabled = false;
     showToast(err.message || 'Failed to place order. Please try again.');
   });
-});
-
-/* Close confirmation on overlay click */
-document.getElementById('confirmOverlay').addEventListener('click', function (event) {
-  if (event.target === this) {
-    this.classList.remove('open');
-  }
 });
 
 /* ---------- 6. UI HELPERS ---------- */
