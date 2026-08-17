@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Product â€” Boularas Modern Furniture &amp; Home DÃ©cor</title>
-  <meta name="description" content="Product details, specs and reviews on Boularas premium furniture â€” natural materials, timeless design, and free delivery over 66,700 DA." />
+  <title>Product | Boularas Modern Furniture &amp; Home</title>
+  <meta name="description" content="Product details, specs and reviews on Boularas premium furniture: natural materials, timeless design, and free delivery over 66,700 DA." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -79,26 +79,31 @@
               <div class="field">
                 <label for="fName">Full Name <span class="req">*</span></label>
                 <input type="text" id="fName" name="fName" placeholder="Jane Doe" autocomplete="name" />
+                <i class="fa-solid fa-circle-check validation-icon"></i>
                 <div class="msg" data-msg-for="fName"></div>
               </div>
               <div class="field">
                 <label for="fPhone">Phone Number <span class="req">*</span></label>
                 <input type="tel" id="fPhone" name="fPhone" placeholder="+1 (555) 123-4567" autocomplete="tel" />
+                <i class="fa-solid fa-circle-check validation-icon"></i>
                 <div class="msg" data-msg-for="fPhone"></div>
               </div>
               <div class="field">
                 <label for="fEmail">Email <span class="req">*</span></label>
                 <input type="email" id="fEmail" name="fEmail" placeholder="you@example.com" autocomplete="email" />
+                <i class="fa-solid fa-circle-check validation-icon"></i>
                 <div class="msg" data-msg-for="fEmail"></div>
               </div>
               <div class="field">
                 <label for="fCity">City (Wilaya) <span class="req">*</span></label>
                 <input type="text" id="fCity" name="fCity" placeholder="Copenhagen" autocomplete="address-level2" />
+                <i class="fa-solid fa-circle-check validation-icon"></i>
                 <div class="msg" data-msg-for="fCity"></div>
               </div>
               <div class="field full">
                 <label for="fAddress">Delivery Address <span class="req">*</span></label>
                 <input type="text" id="fAddress" name="fAddress" placeholder="Street, apartment, ZIP code" autocomplete="street-address" />
+                <i class="fa-solid fa-circle-check validation-icon"></i>
                 <div class="msg" data-msg-for="fAddress"></div>
               </div>
               <div class="field full">
@@ -125,7 +130,7 @@
     </section>
 
     <!-- ==========================================================
-         REVIEWS SECTION â€” below order form, above related/footer
+         REVIEWS SECTION - below order form, above related/footer
          ========================================================== -->
     <section class="reviews-section" id="reviewsSection">
       <div class="container">
@@ -236,6 +241,7 @@
   </div>
 
   <script src="utils.js"></script>
+  <script src="js/cart-utils.js"></script>
   <script src="js/footer.js"></script>
   <script src="js/product.js"></script>
 </body>

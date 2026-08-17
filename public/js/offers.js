@@ -2,34 +2,13 @@
 
 var PRODUCTS = [];
 
-/* ---------- CART HELPERS (unified) ---------- */
-var CART_KEY = 'boularas-cart';
-
-function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
-function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }
-function addToCart(product) {
-  var cart = getCart();
-  var existing = cart.find(function (item) { return item.id === product.id; });
-  if (existing) { existing.qty += 1; }
-  else { cart.push({ id: product.id, name: product.name, price_cents: product.price_cents, image: product.image, key: String(product.id), qty: 1 }); }
-  saveCart(cart);
-  showToast(product.name + ' added to cart');
-}
-function updateCartCount() {
-  var total = getCart().reduce(function (sum, item) { return sum + item.qty; }, 0);
-  document.getElementById('cartCount').textContent = total;
-}
-function isInCart(productId) {
-  return getCart().some(function (item) { return item.id === productId; });
-}
-
 /* ---------- PROMOTIONS DATA ---------- */
 var PROMOTIONS = [
-  { icon: 'local_shipping', title: 'Free Delivery', desc: 'On all orders over 66,700 DA. White-glove delivery included \u2014 we set everything up and remove packaging.', code: 'FREESHIP' },
+  { icon: 'local_shipping', title: 'Free Delivery', desc: 'On all orders over 66,700 DA. White-glove delivery included, we set everything up and remove packaging.', code: 'FREESHIP' },
   { icon: 'card_giftcard', title: 'New Customer', desc: 'Welcome to Boularas! Get 15% off your first order of 26,680 DA or more when you sign up for our list.', code: 'WELCOME15' },
   { icon: 'layers', title: 'Bundle & Save', desc: 'Buy 3 or more items from the same collection and save 20% automatically at checkout. No code needed.', code: null },
   { icon: 'school', title: 'Student Discount', desc: 'Full-time students get 10% off site-wide year-round. Verify your .edu email and enjoy a better study space.', code: 'STUDENT10' },
-  { icon: 'event', title: 'Seasonal Flash Sale', desc: 'New deals drop every Friday at 10 AM. A different category goes on sale each week \u2014 check back often.', code: null },
+  { icon: 'event', title: 'Seasonal Flash Sale', desc: 'New deals drop every Friday at 10 AM. A different category goes on sale each week, check back often.', code: null },
   { icon: 'group_add', title: 'Refer a Friend', desc: 'Give 6,670 DA, get 6,670 DA. When a friend places their first order over 40,020 DA using your referral link, you both earn credit.', code: 'GIFT50' }
 ];
 
@@ -96,10 +75,25 @@ document.addEventListener('click', function (event) {
   }
   var pid = Number(addButton.getAttribute('data-add'));
   var product = PRODUCTS.find(function (p) { return p.id === pid; });
-  if (product) addToCart(product);
+  if (product) {
+    addToCart(product);
+    showToast(product.name + ' added to cart');
+  }
   addButton.textContent = 'In Cart';
   addButton.className = 'card-added';
 });
+
+/* ---------- CART STATE ---------- */
+function renderCartState() {
+  document.querySelectorAll('[data-add]').forEach(function (addButton) {
+    var inCart = isInCart(addButton.getAttribute('data-add'));
+    addButton.textContent = inCart ? 'In Cart' : 'Add';
+    addButton.className = inCart ? 'card-added' : 'card-add';
+  });
+}
+window.addEventListener('cart:updated', renderCartState);
+window.addEventListener('pageshow', function (e) { if (e.persisted) { updateCartCount(); renderCartState(); } });
+window.addEventListener('storage', function (e) { if (e.key === window.CART_KEY) { updateCartCount(); renderCartState(); } });
 
 /* Copy promo code to clipboard */
 document.addEventListener('click', function (event) {
@@ -210,7 +204,9 @@ fetch('/api/products/browse/on-sale')
         rating: parseFloat(p.rating) || 0,
         reviews: parseInt(p.reviews, 10) || 0,
         image: img,
-        badge: 'sale'
+        badge: 'sale',
+        colors: p.colors || [],
+        sizes: p.sizes || []
       };
     });
     renderRow('saleRow', PRODUCTS);

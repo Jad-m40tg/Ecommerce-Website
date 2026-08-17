@@ -67,7 +67,7 @@
         else if (o.order_status === 'shipped') icon = TRUCK_SVG;
         else if (o.order_status === 'delivered') icon = '&#10003;';
         else icon = '&#9679;';
-        notifs.push({ key: key, icon: icon, text: '<strong>#' + (o.id || '').toString().slice(0, 8) + '</strong> ' + escapeHtml(o.customer_name || 'Customer') + ' — ' + (o.order_status || 'pending'), time: o.created_at });
+        notifs.push({ key: key, icon: icon, text: '<strong>#' + (o.id || '').toString().slice(0, 8) + '</strong> ' + escapeHtml(o.customer_name || 'Customer') + ' - ' + (o.order_status || 'pending'), time: o.created_at });
       });
       var unseen = notifs.filter(function (n) { return seenNotifs.indexOf(n.key) === -1; });
       if (notifDot) notifDot.style.display = unseen.length > 0 ? 'block' : 'none';

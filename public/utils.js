@@ -118,7 +118,10 @@ var COLOR_HEX = {
   'yellow': '#d9a441',
   'purple': '#6f4e7c',
   'brown': '#6b4a2b',
-  'wood': '#8b5e34'
+  'wood': '#8b5e34',
+  'white oak': '#e7ddc9',
+  'black oak': '#332c25',
+  'charcoal linen': '#33363a'
 };
 
 function colorHex(name) {

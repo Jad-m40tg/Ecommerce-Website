@@ -24,36 +24,6 @@ function sliderLabel(dzd) {
   return Number(dzd).toLocaleString('en-US') + ' DA';
 }
 
-/* ---------- CART HELPERS (unified) ---------- */
-var CART_KEY = 'boularas-cart';
-
-function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
-function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }
-function addToCart(productId, options) {
-  options = options || {};
-  var product = PRODUCTS.find(function (p) { return String(p.id) === String(productId); });
-  if (!product) return;
-  var qty = Math.max(1, options.qty || 1);
-  var color = options.color || '';
-  var size = options.size || '';
-  var cart = getCart();
-  var key = String(productId) + '|' + color + '|' + size;
-  var existing = cart.find(function (item) { return item.key === key; });
-  if (existing) { existing.qty += qty; }
-  else {
-    cart.push({ id: product.id, name: product.name, price_cents: product.price_cents, image: getProductImage(product), key: key, color: color, size: size, qty: qty });
-  }
-  saveCart(cart);
-  showToast(product.name + ' added to cart');
-}
-function updateCartCount() {
-  var total = getCart().reduce(function (sum, item) { return sum + item.qty; }, 0);
-  document.getElementById('cartCount').textContent = total;
-}
-function isInCart(productId) {
-  return getCart().some(function (item) { return String(item.id) === String(productId); });
-}
-
 /* ---------- CATALOG STATE ---------- */
 const params = new URLSearchParams(window.location.search);
 const state = {
@@ -191,10 +161,25 @@ document.addEventListener('click', function (event) {
     window.location.href = 'cart.html';
     return;
   }
-  addToCart(addButton.getAttribute('data-add'));
+  const product = PRODUCTS.find(function (p) { return String(p.id) === String(addButton.getAttribute('data-add')); });
+  if (!product) return;
+  addToCart(product);
+  showToast(product.name + ' added to cart');
   addButton.textContent = 'In Cart';
   addButton.className = 'card-added';
 });
+
+/* Keep add buttons in sync with cart state */
+function renderCartState() {
+  document.querySelectorAll('[data-add]').forEach(function (btn) {
+    const inCart = isInCart(btn.getAttribute('data-add'));
+    btn.textContent = inCart ? 'In Cart' : 'Add';
+    btn.className = inCart ? 'card-added' : 'card-add';
+  });
+}
+window.addEventListener('cart:updated', renderCartState);
+window.addEventListener('pageshow', function (e) { if (e.persisted) { updateCartCount(); renderCartState(); } });
+window.addEventListener('storage', function (e) { if (e.key === window.CART_KEY) { updateCartCount(); renderCartState(); } });
 
 /* Initial paint */
 renderCategoryList();

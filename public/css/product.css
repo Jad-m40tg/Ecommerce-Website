@@ -387,6 +387,12 @@
 }
 .field input.error, .field textarea.error { border-color: var(--wood); background: #fbf3ea; }
 .field .msg { font-size: 12.5px; color: var(--wood); min-height: 16px; }
+.field { position: relative; }
+.field input.valid { border: 2px solid var(--sage) !important; }
+.field input.invalid { border: 2px solid #e41a1a !important; box-shadow: 0 0 8px rgba(218,29,29,.31); }
+.validation-icon { position: absolute; right: 14px; top: 40px; color: var(--sage); font-size: 18px; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+.field input.valid + .validation-icon { opacity: 1; }
+.field .msg { color: #e41a1a; }
 
 /* Order summary inside form */
 .order-summary {

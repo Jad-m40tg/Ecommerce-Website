@@ -2,46 +2,6 @@
 
 var _allProducts = [];
 
-/* ---------- CART HELPERS (unified) ---------- */
-var CART_KEY = 'boularas-cart';
-
-function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
-function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }
-function updateCartCount() {
-  var total = getCart().reduce(function (s, i) { return s + i.qty; }, 0);
-  var el = document.getElementById('cartCount');
-  if (el) el.textContent = total;
-}
-function isInCart(productId) { return getCart().some(function (i) { return String(i.id) === String(productId); }); }
-
-/* ---------- UNIFIED ADD TO CART ---------- */
-function addToCart(productId, options) {
-  options = options || {};
-  var product = _allProducts.find(function (p) { return String(p.id) === String(productId); });
-  if (!product) return;
-
-  var qty = Math.max(1, options.qty || 1);
-  var color = options.color || '';
-  var size  = options.size  || '';
-
-  var cart = getCart();
-  var key = String(productId) + '|' + color + '|' + size;
-  var existing = cart.find(function (i) { return i.key === key; });
-
-  if (existing) {
-    existing.qty += qty;
-  } else {
-    cart.push({
-      key: key, id: product.id, name: product.name,
-      price_cents: product.price_cents,
-      image: product._image,
-      color: color, size: size, qty: qty
-    });
-  }
-  saveCart(cart);
-  showToast(product.name + ' added to cart');
-}
-
 /* ---------- TOAST ---------- */
 var toastTimer = null;
 function showToast(msg) {
@@ -169,10 +129,25 @@ document.addEventListener('click', function (event) {
     window.location.href = 'cart.html';
     return;
   }
-  addToCart(addBtn.getAttribute('data-add'));
+  var product = _allProducts.find(function (p) { return String(p.id) === String(addBtn.getAttribute('data-add')); });
+  if (!product) return;
+  addToCart(product);
+  showToast(product.name + ' added to cart');
   addBtn.textContent = 'In Cart';
   addBtn.className = 'card-added';
 });
+
+/* Keep add buttons in sync with cart state */
+function renderCartState() {
+  document.querySelectorAll('[data-add]').forEach(function (btn) {
+    var inCart = isInCart(btn.getAttribute('data-add'));
+    btn.textContent = inCart ? 'In Cart' : 'Add';
+    btn.className = inCart ? 'card-added' : 'card-add';
+  });
+}
+window.addEventListener('cart:updated', renderCartState);
+window.addEventListener('pageshow', function (e) { if (e.persisted) { updateCartCount(); renderCartState(); } });
+window.addEventListener('storage', function (e) { if (e.key === window.CART_KEY) { updateCartCount(); renderCartState(); } });
 
 /* Arrow buttons scroll */
 document.querySelectorAll('[data-scroll]').forEach(function (btn) {
@@ -238,7 +213,7 @@ function loadActiveSale() {
     var shopEl  = document.getElementById('offerShop');
     var imgEl   = document.getElementById('offerImg');
     var name = sale.product_name || 'selected furniture';
-    if (titleEl) titleEl.textContent = 'On Sale Now \u2014 ' + name;
+    if (titleEl) titleEl.textContent = 'On Sale Now: ' + name;
     if (descEl) descEl.textContent = 'Save on ' + name + ' while stock lasts. The deal ends when the timer runs out.';
     if (shopEl && sale.product_id) shopEl.href = 'product.html?id=' + sale.product_id;
     if (imgEl && sale.banner_image_url) imgEl.src = sale.banner_image_url;

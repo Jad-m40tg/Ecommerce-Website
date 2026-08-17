@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Track Order — Boularas</title>
+  <title>Track Order | Boularas</title>
   <meta name="description" content="Track your Boularas order status using your tracking code." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <link rel="stylesheet" href="css/global.css" />
   <link rel="stylesheet" href="css/base.css" />
@@ -21,9 +22,14 @@
     .track-page h1{font-size:clamp(24px,3vw,32px);margin-bottom:8px}
     .track-page .subtitle{color:var(--gray);font-size:15px;margin-bottom:28px}
     .track-input-group{display:flex;gap:12px;margin-bottom:32px}
-    .track-input-group input{flex:1;padding:14px 18px;border:1.5px solid var(--beige);border-radius:var(--radius-md);font-size:16px;letter-spacing:2px;text-transform:uppercase;background:var(--white);transition:border-color .2s}
-    .track-input-group input:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 4px rgba(107,127,94,.12)}
-    .track-input-group input::placeholder{text-transform:none;letter-spacing:normal}
+    .track-input-wrap{flex:1;min-width:0;position:relative}
+    .track-input-wrap input{width:100%;padding:14px 18px;border:1.5px solid var(--beige);border-radius:var(--radius-md);font-size:16px;letter-spacing:2px;text-transform:uppercase;background:var(--white);transition:border-color .2s,box-shadow .2s}
+    .track-input-wrap input:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 4px rgba(107,127,94,.12)}
+    .track-input-wrap input::placeholder{text-transform:none;letter-spacing:normal}
+    .track-input-wrap input.valid{border:2px solid var(--sage) !important}
+    .track-input-wrap input.invalid{border:2px solid #e41a1a !important;box-shadow:0 0 8px rgba(218,29,29,.31)}
+    .validation-icon{position:absolute;right:14px;top:16px;color:var(--sage);font-size:18px;opacity:0;pointer-events:none;transition:opacity .3s ease}
+    .track-input-wrap input.valid + .validation-icon{opacity:1}
     .track-result{display:none}
     .track-result.visible{display:block}
     .order-info{background:var(--white);border:1px solid var(--beige);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px;box-shadow:var(--shadow-soft)}
@@ -58,7 +64,7 @@
     .tracking-info .info-row:last-child{border-bottom:none}
     .tracking-info .info-row .label{color:var(--gray)}
     .tracking-info .info-row a{color:var(--sage);text-decoration:underline}
-    .error-msg{color:var(--danger);font-size:14px;margin-top:8px;display:none}
+    .error-msg{color:#e41a1a;font-size:14px;margin-top:8px;display:none}
     .error-msg.visible{display:block}
     @media(max-width:600px){.track-input-group{flex-direction:column}}
     @media(max-width:500px){.track-page{padding:24px 14px}.order-info,.tracking-info{padding:18px}}
@@ -91,7 +97,10 @@
     <p class="subtitle">Enter your tracking code to see your order status and delivery timeline.</p>
 
     <div class="track-input-group">
-      <input type="text" id="trackInput" placeholder="e.g. ABCD1234 or NOEST code" maxlength="30" autocomplete="off" />
+      <div class="track-input-wrap">
+        <input type="text" id="trackInput" placeholder="e.g. ABCD1234 or NOEST code" maxlength="30" autocomplete="off" />
+        <i class="fa-solid fa-circle-check validation-icon"></i>
+      </div>
       <button type="button" class="btn btn-primary" id="trackBtn">Track</button>
     </div>
     <div class="error-msg" id="trackError"></div>
@@ -122,14 +131,33 @@
         doTrack(prefill);
       }
 
-      document.getElementById('trackBtn').addEventListener('click', function () {
-        var code = document.getElementById('trackInput').value.trim();
-        if (!code || code.length < 4) {
-          showError('Please enter a valid tracking code (at least 4 characters).');
-          return;
+      function validateTrackInput() {
+        var input = document.getElementById('trackInput');
+        var code = input.value.trim();
+        var message = '';
+        if (!code) {
+          message = 'Please enter your tracking code.';
+        } else if (code.length < 6) {
+          message = 'Please enter a valid tracking code.';
         }
-        doTrack(code);
+        if (message) {
+          input.classList.add('invalid');
+          input.classList.remove('valid');
+          showError(message);
+          return false;
+        }
+        input.classList.remove('invalid');
+        input.classList.add('valid');
+        document.getElementById('trackError').classList.remove('visible');
+        return true;
+      }
+
+      document.getElementById('trackBtn').addEventListener('click', function () {
+        if (!validateTrackInput()) return;
+        doTrack(document.getElementById('trackInput').value.trim());
       });
+
+      document.getElementById('trackInput').addEventListener('input', validateTrackInput);
 
       document.getElementById('trackInput').addEventListener('keydown', function (e) {
         if (e.key === 'Enter') document.getElementById('trackBtn').click();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Payment Successful — Havenwood</title>
+  <title>Payment Successful | Boularas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -37,7 +37,7 @@
 <body style="overflow-x:hidden">
   <header class="navbar">
     <div class="container navbar-inner">
-      <a href="althome.html" class="brand"><img src="/assets/Boularas_Logo.png" alt="Havenwood logo" class="brand-logo" /></a>
+      <a href="althome.html" class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" class="brand-logo" /></a>
       <nav aria-label="Main navigation">
         <ul class="nav-links" id="navLinks">
           <li><a href="althome.html">Home</a></li>
@@ -113,16 +113,16 @@
             var cancelled = orderCancelled || noestCancelled;
 
             if (orderCancelled) {
-              content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Payment Successful — Order Cancelled</h1><p>Thank you! Your payment was confirmed but your order has been cancelled by our team.</p>' +
+              content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Payment Successful - Order Cancelled</h1><p>Thank you! Your payment was confirmed but your order has been cancelled by our team.</p>' +
                 '<div class="cancelled-badge">Order cancelled</div>' +
                 (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
                 '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
             } else if (tc) {
               content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed and your order is being processed.</p>' +
-                '<div class="tracking-code">' + tc + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code — use it to follow your order.</p>' +
+                '<div class="tracking-code">' + tc + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code: use it to follow your order.</p>' +
                 '<div class="success-actions"><a href="track.html' + (tc ? '?code=' + tc : '') + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
             } else if (noestCancelled) {
-              content.innerHTML = '<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Payment Successful — Shipment Cancelled</h1><p>Your payment has been confirmed but the shipment was cancelled.</p>' +
+              content.innerHTML = '<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Payment Successful - Shipment Cancelled</h1><p>Your payment has been confirmed but the shipment was cancelled.</p>' +
                 '<div class="cancelled-badge">Shipment cancelled</div>' +
                 (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
                 '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';

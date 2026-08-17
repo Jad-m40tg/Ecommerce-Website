@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Products — Boularas Admin</title>
+  <title>Products | Boularas Admin</title>
   <meta name="description" content="Manage Boularas product catalog: browse, add, edit and remove products." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -307,7 +307,7 @@
           </div>
         </div>
         <div class="sale-field">
-          <label for="bannerInput">Banner Image <small style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--gray)">(optional — used on the homepage sale banner)</small></label>
+          <label for="bannerInput">Banner Image <small style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--gray)">(optional, used on the homepage sale banner)</small></label>
           <div class="banner-drop" id="bannerDrop">
             <input type="file" id="bannerInput" accept="image/*" hidden />
             <span id="bannerPlaceholder">Click to upload an image (JPEG, PNG, GIF, WebP)</span>
@@ -525,7 +525,7 @@
           }
           document.getElementById('saleSubmit').disabled = false;
           sel.innerHTML = '<option value="">Select a product…</option>' + saleCandidates.map(function (p) {
-            return '<option value="' + p.id + '">' + escapeHtml(p.name) + ' — ' + priceFull(p.price_cents) + '</option>';
+            return '<option value="' + p.id + '">' + escapeHtml(p.name) + ' - ' + priceFull(p.price_cents) + '</option>';
           }).join('');
         }).catch(function () { showToast('Failed to load products'); });
       }
@@ -540,7 +540,7 @@
       function updatePreview() {
         var orig = currentSaleProduct ? (currentSaleProduct.price_cents || 0) : 0;
         var typed = parseInt(document.getElementById('salePrice').value, 10);
-        var sale = isNaN(typed) ? 0 : typed; // typed value is already in DA — do NOT divide by 100
+        var sale = isNaN(typed) ? 0 : typed; // typed value is already in DA - do NOT divide by 100
         var pvNew = document.getElementById('pvNew');
         var pvOld = document.getElementById('pvOld');
         var pvSave = document.getElementById('pvSave');

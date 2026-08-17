@@ -1,52 +1,6 @@
 /* cart.js — cart.html specific logic */
 
-/* ---------- 1. CART STORAGE ---------- */
-var CART_KEY = 'boularas-cart';
-
-function getCart() {
-  var cart;
-  try { cart = JSON.parse(localStorage.getItem(CART_KEY)) || []; }
-  catch { cart = []; }
-
-  var seen = {};
-  var changed = false;
-  cart.forEach(function (item) {
-    if (!item.key || seen[item.key]) {
-      item.key = (item.id || 'item') + '|' + (item.color || '') + '|' + (item.size || '') + '|' + Math.random().toString(36).slice(2, 8);
-      changed = true;
-    }
-    seen[item.key] = true;
-  });
-
-  if (changed) localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  return cart;
-}
-function saveCart(cart) {
-  localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  updateCartCount();
-}
-function updateCartCount() {
-  var total = getCart().reduce(function (sum, item) { return sum + item.qty; }, 0);
-  document.getElementById('cartCount').textContent = total;
-}
-
-/* ---------- 2. SAMPLE SEED ---------- */
-function seedSampleCart() {
-  var sample = [
-    { key: '1|Emerald Green|3-Seater', id: 1,
-      name: 'Oslo Velvet Sofa', price_cents: 129999, image: '/uploads/oslo-sofa-1.jpg',
-      color: 'Emerald Green', size: '3-Seater', qty: 1 },
-    { key: '2|Natural Oak|6-Seater', id: 2,
-      name: 'Bergen Oak Dining Table', price_cents: 89999, image: '/uploads/bergen-table-1.jpg',
-      color: 'Natural Oak', size: '6-Seater', qty: 1 },
-    { key: '7|Brushed Brass|Standard', id: 7,
-      name: 'Luna Arc Floor Lamp', price_cents: 19999, image: '/uploads/luna-lamp-1.jpg',
-      color: 'Brushed Brass', size: 'Standard', qty: 2 }
-  ];
-  saveCart(sample);
-}
-
-/* ---------- 3. TOTALS MATH ---------- */
+/* ---------- 2. TOTALS MATH ---------- */
 var SHIPPING_FLAT   = 999;    // default, overridden by API
 var FREE_SHIP_OVER  = 9999;   // default, overridden by API
 var TAX_RATE        = 0;
@@ -117,20 +71,7 @@ function calcTotals(cart) {
   return { subtotal: subtotal, shipping: shipping, discount: discount, tax: tax, total: total };
 }
 
-/* Small palette used to hint the color chip in each row */
-var COLOR_HEX = {
-  'natural linen': '#e8e0d3',
-  'sage green':    '#6b7f5e',
-  'charcoal':      '#2b2926',
-  'wood tan':      '#a67c52',
-  'natural oak':   '#c9a97a',
-  'warm walnut':   '#7a5539',
-  'cream':         '#f3eee6',
-  'terracotta':    '#a67c52'
-};
-function colorHex(name) {
-  return COLOR_HEX[(name || '').toLowerCase()] || '#e8e0d3';
-}
+/* Color dot rendering uses window.colorHex from utils.js (loaded first) */
 
 /* ---------- 4. RENDER ---------- */
 
@@ -156,9 +97,12 @@ function renderCart() {
   subtitle.textContent = itemCount + (itemCount === 1 ? ' item' : ' items') + ' ready for checkout.';
 
   list.innerHTML = cart.map(function (item, index) {
-    var color = item.color || 'Natural';
-    var size  = item.size  || 'Standard';
+    var color = item.color || '';
+    var size  = item.size  || '';
     var line = (item.price_cents || 0) * item.qty;
+    var metaTags = '';
+    if (color) metaTags += '<span class="tag"><span class="dot" style="background:' + colorHex(color) + '"></span>' + escapeHtml(color) + '</span>';
+    if (size) metaTags += '<span class="tag">Size: ' + escapeHtml(size) + '</span>';
 
     var prod = PRODUCT_CATALOG[String(item.id)];
     var img = prod ? getProductImage(prod) : (item.image || DEFAULT_PRODUCT_IMAGE);
@@ -175,10 +119,7 @@ function renderCart() {
 
         '<div class="item-info">' +
           '<h3>' + escapeHtml(item.name) + '</h3>' +
-          '<div class="item-meta">' +
-            '<span class="tag"><span class="dot" style="background:' + colorHex(color) + '"></span>' + escapeHtml(color) + '</span>' +
-            '<span class="tag">Size: ' + escapeHtml(size) + '</span>' +
-          '</div>' +
+          (metaTags ? '<div class="item-meta">' + metaTags + '</div>' : '') +
           '<div class="item-controls">' +
             '<div class="qty">' +
               '<button type="button" data-action="dec" data-index="' + index + '" aria-label="Decrease quantity"' + minusDisabled + '>&minus;</button>' +
@@ -274,11 +215,11 @@ document.getElementById('cartItems').addEventListener('click', function (event) 
       else showToast('Only ' + maxQty + ' in stock');
       return;
     }
-    cart[index].qty = Math.min(maxQty, cart[index].qty + 1);
-    saveCart(cart); renderCart();
+    updateQty(cart[index].key, cart[index].qty + 1);
+    renderCart();
   } else if (action === 'dec') {
-    cart[index].qty = Math.max(1, cart[index].qty - 1);
-    saveCart(cart); renderCart();
+    updateQty(cart[index].key, cart[index].qty - 1);
+    renderCart();
   } else if (action === 'remove') {
     var itemKey = btn.getAttribute('data-key');
     if (!itemKey || removeTimers[itemKey]) return;
@@ -286,10 +227,7 @@ document.getElementById('cartItems').addEventListener('click', function (event) 
     if (row) row.classList.add('removing');
     removeTimers[itemKey] = setTimeout(function () {
       delete removeTimers[itemKey];
-      var fresh = getCart();
-      var idx = fresh.findIndex(function (c) { return c.key === itemKey; });
-      if (idx !== -1) fresh.splice(idx, 1);
-      saveCart(fresh);
+      removeFromCart(itemKey);
       renderCart();
       showToast('Item removed from cart');
     }, 280);
@@ -304,8 +242,8 @@ document.getElementById('cartItems').addEventListener('change', function (event)
   if (!cart[index]) return;
   var maxQty = maxQtyOf(cart[index]);
   var next = Math.max(1, Math.min(maxQty, Number(input.value) || 1));
-  cart[index].qty = next;
-  saveCart(cart); renderCart();
+  updateQty(cart[index].key, next);
+  renderCart();
 });
 
 /* Delegated clicks inside the summary panel (promo, checkout) */
@@ -376,3 +314,8 @@ function showToast(message) {
 updateCartCount();
 renderCart();
 loadCatalog();
+
+/* Stale-state sync: cross-tab, bfcache back-navigation, and in-page cart:updated */
+window.addEventListener('cart:updated', function () { renderCart(); });
+window.addEventListener('storage', function (e) { if (e.key === window.CART_KEY) { updateCartCount(); renderCart(); } });
+window.addEventListener('pageshow', function (e) { if (e.persisted) { updateCartCount(); renderCart(); } });

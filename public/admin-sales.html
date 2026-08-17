@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sales — Boularas Admin</title>
+  <title>Sales | Boularas Admin</title>
   <meta name="description" content="Manage Boularas sales and deals: create, edit and remove product sales." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -165,7 +165,7 @@
       </ul>
       <span class="nav-label" style="margin-top:16px">System</span>
       <ul class="side-nav">
-        <li><a href="admin-settings.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8V9a1.7 1.7 0 0 0-1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a></li>
+        <li><a href="admin-settings.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a></li>
       </ul>
       <div class="sidebar-foot">
         <ul class="side-nav">
@@ -267,7 +267,7 @@
           </div>
         </div>
         <div class="sale-field">
-          <label for="bannerInput">Banner Image <small style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--gray)">(optional — used on the homepage sale banner)</small></label>
+          <label for="bannerInput">Banner Image <small style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--gray)">(optional, used on the homepage sale banner)</small></label>
           <div class="banner-drop" id="bannerDrop">
             <input type="file" id="bannerInput" accept="image/*" hidden />
             <span id="bannerPlaceholder">Click to upload an image (JPEG, PNG, GIF, WebP)</span>
@@ -441,7 +441,7 @@
           return;
         }
         sel.innerHTML = '<option value="">Select a product…</option>' + saleCandidates.map(function (p) {
-          return '<option value="' + p.id + '">' + escapeHtml(p.name) + ' — ' + priceFull(p.price_cents) + '</option>';
+          return '<option value="' + p.id + '">' + escapeHtml(p.name) + ' - ' + priceFull(p.price_cents) + '</option>';
         }).join('');
         if (currentSaleProduct) {
           sel.value = String(currentSaleProduct.id);

@@ -3,27 +3,6 @@
 var CATEGORIES = [];
 var PRODUCTS = [];
 
-/* ---------- CART HELPERS (unified) ---------- */
-var CART_KEY = 'boularas-cart';
-
-function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
-function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }
-function addToCart(product) {
-  var cart = getCart();
-  var existing = cart.find(function (item) { return item.id === product.id; });
-  if (existing) { existing.qty += 1; }
-  else { cart.push({ id: product.id, name: product.name, price_cents: product.price_cents, image: product.image, key: String(product.id), qty: 1 }); }
-  saveCart(cart);
-  showToast(product.name + ' added to cart');
-}
-function updateCartCount() {
-  var total = getCart().reduce(function (sum, item) { return sum + item.qty; }, 0);
-  document.getElementById('cartCount').textContent = total;
-}
-function isInCart(productId) {
-  return getCart().some(function (item) { return item.id === productId; });
-}
-
 /* ---------- RENDER CATEGORIES ---------- */
 function renderCategories() {
   var grid = document.getElementById('categoriesGrid');
@@ -91,10 +70,25 @@ document.addEventListener('click', function (event) {
   }
   var pid = Number(addButton.getAttribute('data-add'));
   var product = PRODUCTS.find(function (p) { return p.id === pid; });
-  if (product) addToCart(product);
+  if (product) {
+    addToCart(product);
+    showToast(product.name + ' added to cart');
+  }
   addButton.textContent = 'In Cart';
   addButton.className = 'card-added';
 });
+
+/* ---------- CART STATE ---------- */
+function renderCartState() {
+  document.querySelectorAll('[data-add]').forEach(function (addButton) {
+    var inCart = isInCart(addButton.getAttribute('data-add'));
+    addButton.textContent = inCart ? 'In Cart' : 'Add';
+    addButton.className = inCart ? 'card-added' : 'card-add';
+  });
+}
+window.addEventListener('cart:updated', renderCartState);
+window.addEventListener('pageshow', function (e) { if (e.persisted) { updateCartCount(); renderCartState(); } });
+window.addEventListener('storage', function (e) { if (e.key === window.CART_KEY) { updateCartCount(); renderCartState(); } });
 
 /* Arrow buttons for the product row */
 document.querySelectorAll('[data-scroll]').forEach(function (button) {
@@ -168,7 +162,9 @@ fetch('/api/products/browse')
         rating: parseFloat(p.rating) || 0,
         reviews: parseInt(p.reviews, 10) || 0,
         image: img,
-        badge: p.on_sale ? 'sale' : null
+        badge: p.on_sale ? 'sale' : null,
+        colors: p.colors || [],
+        sizes: p.sizes || []
       };
     });
     var counts = {};

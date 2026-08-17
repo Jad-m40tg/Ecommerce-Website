@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { PORT, CORS_ORIGIN } = require('./config');
+const ordersRouter = require('./routes/orders');
 
 const app = express();
 
@@ -134,3 +135,33 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Server is active at http://localhost:${PORT}`);
 });
+
+// ============================================================
+// ABANDONED ORDER CLEANUP — auto-cancel unpaid card orders after 1 hour.
+// Runs every 5 minutes and once on startup to catch stale orders.
+// ============================================================
+const db = require('./db');
+
+function cleanupAbandonedOrders() {
+  try {
+    const staleOrders = db.prepare(
+      "SELECT id, items FROM orders WHERE payment_method = 'card' AND payment_status = 'pending' AND order_status NOT IN ('cancelled', 'delivered') AND created_at < datetime('now', '-1 hour')"
+    ).all();
+    for (const order of staleOrders) {
+      try {
+        ordersRouter.cancelAndRestoreStock(order.id, order);
+        console.log(`[CLEANUP] Auto-cancelled abandoned order #${order.id}`);
+      } catch (err) {
+        console.error(`[CLEANUP] Failed to cancel abandoned order #${order.id}:`, err);
+      }
+    }
+  } catch (err) {
+    console.error('[CLEANUP] Error fetching abandoned orders:', err);
+  }
+}
+
+// Initial run on startup
+cleanupAbandonedOrders();
+
+// Then every 5 minutes
+setInterval(cleanupAbandonedOrders, 300000);

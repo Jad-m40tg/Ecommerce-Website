@@ -304,9 +304,17 @@ router.patch('/:id', (req, res) => {
     }
   } else if (status && status !== 'cancelled' && order.order_status === 'cancelled') {
     const unCancelAndUpdate = db.transaction(() => {
+      const items = JSON.parse(order.items);
+      const stockCheckStmt = db.prepare('SELECT id, name, stock FROM products WHERE id = ?');
+      for (const item of items) {
+        const product = stockCheckStmt.get(item.product_id);
+        if (!product || product.stock < item.quantity) {
+          const productName = product ? product.name : `#${item.product_id}`;
+          throw new Error(`INSUFFICIENT_STOCK:${productName}`);
+        }
+      }
       const result = db.prepare(`UPDATE orders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
       if (result.changes === 0) throw new Error('NOT_FOUND');
-      const items = JSON.parse(order.items);
       const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
       for (const item of items) {
         stockStmt.run(item.quantity, item.product_id);
@@ -317,6 +325,10 @@ router.patch('/:id', (req, res) => {
       unCancelAndUpdate();
     } catch (e) {
       if (e.message === 'NOT_FOUND') return res.status(404).json({ error: 'Order not found' });
+      if (e.message && e.message.startsWith('INSUFFICIENT_STOCK:')) {
+        const productName = e.message.split(':')[1];
+        return res.status(400).json({ error: `Cannot un-cancel: insufficient stock for ${productName}` });
+      }
       console.error('[STOCK] Failed to re-deduct stock for order #' + req.params.id, e);
       return res.status(500).json({ error: 'Failed to update order' });
     }

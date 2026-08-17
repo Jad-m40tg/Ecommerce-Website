@@ -1,22 +1,5 @@
 /* checkout.js — checkout.html specific logic */
 
-/* ---------- 1. CART STORAGE ---------- */
-var CART_KEY = 'boularas-cart';
-
-function getCart() {
-  try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
-  catch { return []; }
-}
-function saveCart(cart) {
-  localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  updateCartCount();
-}
-function updateCartCount() {
-  var total = getCart().reduce(function (sum, item) { return sum + item.qty; }, 0);
-  var el = document.getElementById('cartCount');
-  if (el) el.textContent = total;
-}
-
 /* ---------- 2. TOTALS MATH ---------- */
 var SHIPPING_FLAT   = 999;    // default, overridden by API
 var FREE_SHIP_OVER  = 9999;   // default, overridden by API
@@ -122,28 +105,77 @@ function validateField(id, errorId, test) {
   var input = document.getElementById(id);
   var error = document.getElementById(errorId);
   if (!input) return true;
-  var valid = test ? test(input.value) : input.value.trim().length > 0;
+  var result = test ? test(input.value) : input.value.trim().length > 0;
+  var valid = result === true || result === null || result === undefined;
+  var message = typeof result === 'string' ? result : '';
   if (!valid) {
-    input.classList.add('error');
-    if (error) error.classList.add('show');
+    input.classList.add('error', 'invalid');
+    input.classList.remove('valid');
+    if (error) {
+      if (message) error.textContent = message;
+      error.classList.add('show');
+    }
   } else {
-    input.classList.remove('error');
+    input.classList.remove('error', 'invalid');
+    input.classList.add('valid');
     if (error) error.classList.remove('show');
   }
   return valid;
 }
 
+function emailTest(v) {
+  v = v.trim();
+  if (!v) return 'Email is required.';
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? true : 'Please enter a valid email.';
+}
+function phoneTest(v) {
+  var digits = v.replace(/\D/g, '');
+  if (digits.length === 0) return true;
+  return digits.length >= 7 ? true : 'Please enter a valid phone number.';
+}
+function firstNameTest(v) {
+  v = v.trim();
+  if (!v) return 'First name is required.';
+  return v.length >= 3 ? true : 'Name must be at least 3 characters.';
+}
+function lastNameTest(v) {
+  v = v.trim();
+  if (!v) return 'Last name is required.';
+  return v.length >= 3 ? true : 'Name must be at least 3 characters.';
+}
+function addressTest(v) {
+  v = v.trim();
+  if (!v) return 'Address is required.';
+  return v.length >= 5 ? true : 'Please enter your delivery address.';
+}
+function cityTest(v) {
+  v = v.trim();
+  if (!v) return 'City is required.';
+  return v.length >= 2 ? true : 'Please enter your city.';
+}
+
+var LIVE_FIELDS = [
+  ['email', 'emailError', emailTest],
+  ['phone', 'phoneError', phoneTest],
+  ['firstName', 'firstNameError', firstNameTest],
+  ['lastName', 'lastNameError', lastNameTest],
+  ['address', 'addressError', addressTest],
+  ['city', 'cityError', cityTest]
+];
+LIVE_FIELDS.forEach(function (f) {
+  var input = document.getElementById(f[0]);
+  if (input) input.addEventListener('input', function () { validateField(f[0], f[1], f[2]); });
+});
+
 function validateForm() {
   var valid = true;
 
-  valid = validateField('email', 'emailError', function (v) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
-  }) && valid;
-
-  valid = validateField('firstName', 'firstNameError') && valid;
-  valid = validateField('lastName', 'lastNameError') && valid;
-  valid = validateField('address', 'addressError') && valid;
-  valid = validateField('city', 'cityError') && valid;
+  valid = validateField('email', 'emailError', emailTest) && valid;
+  valid = validateField('phone', 'phoneError', phoneTest) && valid;
+  valid = validateField('firstName', 'firstNameError', firstNameTest) && valid;
+  valid = validateField('lastName', 'lastNameError', lastNameTest) && valid;
+  valid = validateField('address', 'addressError', addressTest) && valid;
+  valid = validateField('city', 'cityError', cityTest) && valid;
 
   return valid;
 }
@@ -152,7 +184,7 @@ function validateForm() {
 document.addEventListener('focusin', function (event) {
   var input = event.target.closest('.field input, .field select');
   if (!input) return;
-  input.classList.remove('error');
+  input.classList.remove('error', 'invalid');
   var error = input.parentNode.querySelector('.error-msg');
   if (error) error.classList.remove('show');
 });
@@ -251,3 +283,7 @@ function showToast(message) {
 /* Init */
 updateCartCount();
 renderSummary();
+
+window.addEventListener('cart:updated', renderSummary);
+window.addEventListener('storage', function (e) { if (e.key === window.CART_KEY) { renderSummary(); } });
+window.addEventListener('pageshow', function (e) { if (e.persisted) { updateCartCount(); renderSummary(); } });

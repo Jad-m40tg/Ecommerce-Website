@@ -19,38 +19,6 @@ function getProductCategory(product) {
   return (product.category || product.category_name || 'uncategorized');
 }
 
-/* ---------- CART HELPERS (unified) ---------- */
-var CART_KEY = 'boularas-cart';
-
-function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } }
-function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCartCount(); }
-function addToCart(productId) {
-  var product = PRODUCTS.find(function (p) { return String(p.id) === String(productId); });
-  if (!product) return;
-  var cart = getCart();
-  var existing = cart.find(function (item) { return String(item.id) === String(productId); });
-  if (existing) { existing.qty += 1; }
-  else {
-    cart.push({
-      id: product.id,
-      name: product.name,
-      price_cents: product.price_cents,
-      image: getProductImage(product),
-      key: String(product.id),
-      qty: 1
-    });
-  }
-  saveCart(cart);
-  showToast(product.name + ' added to cart');
-}
-function updateCartCount() {
-  var total = getCart().reduce(function (sum, item) { return sum + item.qty; }, 0);
-  document.getElementById('cartCount').textContent = total;
-}
-function isInCart(productId) {
-  return getCart().some(function (item) { return String(item.id) === String(productId); });
-}
-
 /* ---------- PRODUCT CARD HTML ---------- */
 function productCardHTML(product) {
   var img = getProductImage(product);
@@ -103,7 +71,7 @@ function performSearch() {
       '<div class="no-results" style="grid-column: 1 / -1;">' +
         '<div class="icon" aria-hidden="true"><span class="material-symbols-outlined">search</span></div>' +
         '<h2>Search Boularas</h2>' +
-        '<p>Find your perfect piece \u2014 try searching for "sofa", "desk", or "lamp".</p>' +
+        '<p>Find your perfect piece, try searching for "sofa", "desk", or "lamp".</p>' +
       '</div>';
     return;
   }
@@ -150,10 +118,25 @@ document.addEventListener('click', function (event) {
     window.location.href = 'cart.html';
     return;
   }
-  addToCart(addButton.getAttribute('data-add'));
+  var product = PRODUCTS.find(function (p) { return String(p.id) === String(addButton.getAttribute('data-add')); });
+  if (!product) return;
+  addToCart(product);
+  showToast(product.name + ' added to cart');
   addButton.textContent = 'In Cart';
   addButton.className = 'card-added';
 });
+
+/* ---------- CART STATE ---------- */
+function renderCartState() {
+  document.querySelectorAll('[data-add]').forEach(function (addButton) {
+    var inCart = isInCart(addButton.getAttribute('data-add'));
+    addButton.textContent = inCart ? 'In Cart' : 'Add';
+    addButton.className = inCart ? 'card-added' : 'card-add';
+  });
+}
+window.addEventListener('cart:updated', renderCartState);
+window.addEventListener('pageshow', function (e) { if (e.persisted) { updateCartCount(); renderCartState(); } });
+window.addEventListener('storage', function (e) { if (e.key === window.CART_KEY) { updateCartCount(); renderCartState(); } });
 
 /* ---------- UI HELPERS ---------- */
 
