@@ -1,4 +1,4 @@
-# W.E-Backend
+# Ecommerce Web (Boularas storefront + admin)
 
 ## Quick start
 
@@ -51,13 +51,13 @@ Public browse endpoints: `/products/browse`, `/products/browse/featured`, `/prod
 - **Order status** field is `order_status` (not `status`) in the database
 - **No customer accounts** — customers fill a form at checkout, info stored directly in orders
 - **Cash on delivery** — payment_status tracks pending/paid/refunded, no payment gateway
-- **SPA fallback**: serves `althome.html` for non-API, non-uploads routes
+- **SPA fallback**: serves `index.html` for non-API, non-uploads routes
 - **Static security**: `/db`, `/routes`, `/middleware`, `/node_modules` blocked from static serving
 - **Express 5**: named wildcards required (`*path` not `*`), `req.query` returns `undefined` for missing keys
 
 ## Frontend pages
 
-Customer: althome, products, product, cart, checkout, categories, offers, search-results, fable, alt-prod
+Customer: index (home), products, product, cart, checkout, categories, offers, search-results, fable, alt-prod
 Admin: admin-login, admin-dashboard, admin-products, admin-product-editor, admin-orders, admin-customers, admin-categories, admin-analytics, admin-settings, admin-profile
 
 Admin auth flow: token stored in `localStorage` as `admin_token`, all admin `fetch()` calls include Bearer header.

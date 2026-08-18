@@ -9,7 +9,7 @@ function renderCategories() {
   grid.innerHTML = CATEGORIES.map(function (cat) {
     var slug = cat.slug || '';
     var count = cat.product_count || 0;
-    var img = cat.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png';
+    var img = cat.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg';
     return (
       '<a href="products.html?category=' + encodeURIComponent(slug) + '" class="category-card reveal">' +
         '<img class="card-img" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(cat.name) + '" loading="lazy" onerror="handleImageError(this)" />' +
@@ -41,7 +41,7 @@ function productCardHTML(product) {
     '<article class="product-card">' +
       '<a href="product.html?id=' + product.id + '" class="card-media">' +
         badge +
-        '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + (product.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png') + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+        '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + (product.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg') + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
       '</a>' +
       '<div class="card-body">' +
         '<div class="card-category">' + escapeHtml(product.category_name || '') + '</div>' +
@@ -103,7 +103,21 @@ document.querySelectorAll('[data-scroll]').forEach(function (button) {
 
 /* Mobile hamburger menu toggle */
 document.getElementById('menuToggle').addEventListener('click', function () {
-  document.getElementById('navLinks').classList.toggle('open');
+  var navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+  var btn = document.getElementById('menuToggle');
+  if (btn) btn.setAttribute('aria-expanded', navLinks.classList.contains('open') ? 'true' : 'false');
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    var nl = document.getElementById('navLinks');
+    if (nl && nl.classList.contains('open')) {
+      nl.classList.remove('open');
+      var b = document.getElementById('menuToggle');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    }
+  }
 });
 
 /* Reveal-on-scroll */
@@ -150,7 +164,7 @@ fetch('/api/products/browse')
     PRODUCTS = items.map(function (p) {
       var imgs = [];
       try { imgs = typeof p.images === 'string' ? JSON.parse(p.images) : (Array.isArray(p.images) ? p.images : []); } catch (e) { imgs = []; }
-      var img = (imgs[0]) ? imgs[0] : (p.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png');
+      var img = (imgs[0]) ? imgs[0] : (p.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg');
       return {
         id: p.id,
         name: p.name || 'Untitled',

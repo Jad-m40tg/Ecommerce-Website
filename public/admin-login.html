@@ -83,6 +83,7 @@
     @media (max-width:480px){
       .login-card{padding:28px 22px}
     }
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   </style>
 </head>
 <body>
@@ -91,7 +92,7 @@
     <div class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" style="height:44px;width:auto;max-width:200px;object-fit:contain" /></div>
     <p class="subtitle">Sign in to your admin account</p>
 
-    <div class="error" id="error"></div>
+    <div class="error" id="error" role="alert"></div>
 
     <form id="loginForm" novalidate>
       <div class="field">
@@ -105,7 +106,7 @@
       <button type="submit" class="login-btn" id="loginBtn">Sign In</button>
     </form>
 
-    <p class="hint"><a href="althome.html">← Back to store</a></p>
+    <p class="hint"><a href="index.html">← Back to store</a></p>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>

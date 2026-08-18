@@ -36,7 +36,7 @@ router.get('/', (req, res) => {
 // POST /api/reviews — Public. Submit a review for a product (rating 1-5, optional comment).
 router.post('/', reviewLimiter, (req, res) => {
 
-  const { product_id, customer_name, rating, comment } = req.body;
+  const { product_id, customer_name, customer_email, rating, comment } = req.body;
 
   // Validate product_id
   if (!product_id || isNaN(parseInt(product_id, 10))) {
@@ -57,6 +57,19 @@ router.post('/', reviewLimiter, (req, res) => {
     return res.status(400).json({ error: 'Customer name must be 200 characters or fewer' });
   }
 
+  // Validate customer_email (used to enforce one review per customer per product)
+  const customerEmail = typeof customer_email === 'string' ? customer_email.trim() : '';
+  if (!customerEmail) {
+    return res.status(400).json({ error: 'Customer email is required' });
+  }
+  if (customerEmail.length > 254) {
+    return res.status(400).json({ error: 'Customer email must be 254 characters or fewer' });
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(customerEmail)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+
   // Validate rating (1-5)
   const r = parseInt(rating, 10);
   if (isNaN(r) || r < 1 || r > 5) {
@@ -69,9 +82,18 @@ router.post('/', reviewLimiter, (req, res) => {
     return res.status(400).json({ error: 'Comment must be 2000 characters or fewer' });
   }
 
-  const result = db.prepare(
-    'INSERT INTO reviews (product_id, customer_name, rating, comment) VALUES (?, ?, ?, ?)'
-  ).run(parseInt(product_id, 10), customer_name.trim(), r, trimmedComment);
+  let result;
+  try {
+    result = db.prepare(
+      'INSERT INTO reviews (product_id, customer_name, rating, comment, customer_email) VALUES (?, ?, ?, ?, ?)'
+    ).run(parseInt(product_id, 10), customer_name.trim(), r, trimmedComment, customerEmail);
+  } catch (err) {
+    // Unique index on (product_id, customer_email) — one review per customer per product
+    if (err.code === 'SQLITE_CONSTRAINT_UNIQUE' || (err.message && err.message.includes('UNIQUE'))) {
+      return res.status(400).json({ error: 'You have already reviewed this product' });
+    }
+    throw err;
+  }
 
   res.status(201).json({
     id: result.lastInsertRowid,

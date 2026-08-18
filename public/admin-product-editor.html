@@ -28,7 +28,7 @@
     .main-col{min-width:0}.topbar{position:sticky;top:0;z-index:40;height:var(--topbar-h);background:rgba(250,247,242,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--beige);display:flex;align-items:center;gap:20px;padding:0 32px}
     .search{position:relative;flex:1;max-width:460px}.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gray)}
     .search input{width:100%;padding:10px 14px 10px 40px;border:1.5px solid var(--beige);border-radius:var(--radius-pill);background:var(--white);font-size:14px;color:var(--charcoal);transition:border-color .2s ease,box-shadow .2s ease}
-    .search input:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 4px rgba(107,127,94,.12)}.top-actions{margin-left:auto;display:flex;align-items:center;gap:12px}
+    .search input:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 4px rgba(107,127,94,.12)}.top-actions{margin-left:auto;display:flex;align-items:center;gap:12px;position:relative}
     .icon-btn{position:relative;width:40px;height:40px;border-radius:var(--radius-pill);border:1.5px solid var(--beige);background:var(--white);color:var(--charcoal);display:grid;place-items:center;cursor:pointer;transition:background .2s ease,border-color .2s ease}
     .icon-btn:hover{background:var(--cream);border-color:var(--charcoal)}.icon-btn .dot{position:absolute;top:8px;right:9px;width:8px;height:8px;background:var(--wood);border-radius:50%;border:2px solid var(--white)}
     .admin-chip{display:flex;align-items:center;gap:10px;padding:5px 14px 5px 5px;border-radius:var(--radius-pill);background:var(--white);border:1.5px solid var(--beige);cursor:pointer;transition:background .2s ease,border-color .2s ease}
@@ -99,7 +99,9 @@
     .notif-item .notif-text strong{font-weight:600}
     .notif-item .notif-time{font-size:11px;color:var(--gray);margin-top:2px}
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   </style>
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=5" />
 </head>
 <body>
 
@@ -120,9 +122,11 @@
       <ul class="side-nav"><li><a href="admin-settings.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a></li></ul>
       <div class="sidebar-foot"><ul class="side-nav"><li><a href="#" class="logout" id="logoutBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>Logout</a></li><li><a href="admin-profile.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>Profile</a></li></ul></div>
     </aside>
+    <div class="admin-drawer-backdrop"></div>
 
     <div class="main-col">
       <header class="topbar">
+        <button class="admin-drawer-toggle" type="button" aria-label="Open menu" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg></button>
         <div class="top-actions">
           <button class="icon-btn" id="notifBtn" aria-label="Notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot" id="notifDot"></span></button>
           <div id="notifPanel" class="notif-panel" style="display:none;">
@@ -207,6 +211,7 @@
 
   <script src="utils.js"></script>
   <script src="js/admin-topbar.js"></script>
+  <script src="js/admin-mobile-nav.js"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');
@@ -264,8 +269,8 @@
       function renderImages() {
         var grid = document.getElementById('imgGrid');
         if (imageUrls.length === 0) { grid.innerHTML = ''; return; }
-        var main = '<div class="img-main"><img src="' + escapeHtml(imageUrls[0]) + '" alt="Main product image" /><button type="button" class="rm" data-idx="0" title="Remove main image">&times;</button><div class="main-label">Main Image</div></div>';
-        var thumbs = imageUrls.slice(1).map(function (url, i) { return '<div class="img-preview"><img src="' + escapeHtml(url) + '" alt="Product image ' + (i + 2) + '" /><button type="button" class="rm" data-idx="' + (i + 1) + '">&times;</button></div>'; }).join('');
+        var main = '<div class="img-main"><img src="' + escapeHtml(imageUrls[0]) + '" alt="Main product image" onerror="handleImageError(this)" /><button type="button" class="rm" data-idx="0" title="Remove main image">&times;</button><div class="main-label">Main Image</div></div>';
+        var thumbs = imageUrls.slice(1).map(function (url, i) { return '<div class="img-preview"><img src="' + escapeHtml(url) + '" alt="Product image ' + (i + 2) + '" onerror="handleImageError(this)" /><button type="button" class="rm" data-idx="' + (i + 1) + '">&times;</button></div>'; }).join('');
         grid.innerHTML = main + '<div class="img-thumbs">' + thumbs + '</div>';
       }
 

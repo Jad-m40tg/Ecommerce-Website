@@ -1,0 +1,84 @@
+/* Admin mobile drawer — shared responsive pass (max-width: 860px only).
+   Desktop layout (>860px) must remain untouched. Uses per-page CSS tokens.
+   NOTE: single breakpoint shared with admin-mobile-nav.js (resize close). */
+
+.admin-drawer-toggle { display: none; }
+.admin-drawer-backdrop { display: none; }
+
+@media (max-width: 860px) {
+  .admin-drawer-toggle {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--beige);
+    background: var(--white);
+    color: var(--charcoal);
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease;
+  }
+  .admin-drawer-toggle:hover { background: var(--cream); border-color: var(--charcoal); }
+  .admin-drawer-toggle svg { width: 18px; height: 18px; }
+
+  .admin-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(43, 41, 38, .45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+  }
+  .admin-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  /* Off-canvas drawer: slides in below the 72px topbar, over the content */
+  .sidebar {
+    position: fixed;
+    top: var(--topbar-h);
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-w);
+    height: calc(100vh - var(--topbar-h));
+    z-index: 60;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform .28s ease;
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  /* Restore the DESKTOP sidebar look inside the drawer (overrides each page's
+     existing max-width:860px rule that turns the sidebar into a horizontal row) */
+  .sidebar .side-nav { flex-direction: column; overflow: visible; }
+  .sidebar .side-nav a { white-space: normal; }
+  .sidebar .nav-label,
+  .sidebar .sidebar-foot { display: block; }
+  .sidebar .brand { border-bottom: 1px solid var(--beige); padding-bottom: 22px; margin-bottom: 18px; }
+
+  /* Restore other desktop values that each page's max-width:860px rule overrides */
+  .sidebar .side-nav { gap: 2px; }
+  .admin-chip .who { display: block; }
+  body { overflow-x: hidden; }
+
+  /* Keep the notification panel above the drawer/backdrop: .notif-panel (z-200)
+     is trapped inside .topbar's z-40 stacking context, so raise the topbar */
+  .topbar { z-index: 70; }
+
+  body.drawer-open { overflow: hidden; }
+
+  /* Dashboard stat cards: 3 in a row on tablets (601-860px) */
+  .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .stat-card { padding: 14px 12px; }
+  .stat-head { gap: 4px; }
+  .stat-label { font-size: 10.5px; letter-spacing: .08em; line-height: 1.35; }
+  .stat-value { font-size: 22px; margin-top: 6px; }
+  .stat-delta { font-size: 11px; margin-top: 4px; }
+}
+
+@media (max-width: 600px) {
+  /* Phone: 2 cards per row so they aren't squeezed; an odd last card spans the full row */
+  .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-grid .stat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}

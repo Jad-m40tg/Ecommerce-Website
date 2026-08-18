@@ -67,7 +67,7 @@
         else if (o.order_status === 'shipped') icon = TRUCK_SVG;
         else if (o.order_status === 'delivered') icon = '&#10003;';
         else icon = '&#9679;';
-        notifs.push({ key: key, icon: icon, text: '<strong>#' + (o.id || '').toString().slice(0, 8) + '</strong> ' + escapeHtml(o.customer_name || 'Customer') + ' - ' + (o.order_status || 'pending'), time: o.created_at });
+        notifs.push({ key: key, icon: icon, text: '<strong>#' + (o.id || '').toString().slice(0, 8) + '</strong> ' + escapeHtml(o.customer_name || 'Customer') + ' - ' + (o.order_status || 'pending'), time: o.created_at, orderId: o.id });
       });
       var unseen = notifs.filter(function (n) { return seenNotifs.indexOf(n.key) === -1; });
       if (notifDot) notifDot.style.display = unseen.length > 0 ? 'block' : 'none';
@@ -75,7 +75,7 @@
         notifBody.innerHTML = '<div class="notif-empty">No notifications yet</div>';
       } else {
         notifBody.innerHTML = notifs.map(function (n) {
-          return '<div class="notif-item" data-key="' + n.key + '"><div class="notif-icon">' + n.icon + '</div><div><div class="notif-text">' + n.text + '</div><div class="notif-time">' + timeAgo(n.time) + '</div></div></div>';
+          return '<div class="notif-item" data-key="' + n.key + '" data-id="' + n.orderId + '" style="cursor:pointer" title="Open order"><div class="notif-icon">' + n.icon + '</div><div><div class="notif-text">' + n.text + '</div><div class="notif-time">' + timeAgo(n.time) + '</div></div></div>';
         }).join('');
       }
     }).catch(function () {});
@@ -88,10 +88,19 @@
     if (!isOpen) {
       notifBody.querySelectorAll('.notif-item').forEach(function (item) {
         var key = item.getAttribute('data-key');
-        if (seenNotifs.indexOf(key) === -1) seenNotifs.push(key);
+        if (key && seenNotifs.indexOf(key) === -1) seenNotifs.push(key);
       });
       localStorage.setItem('seen_notifs', JSON.stringify(seenNotifs));
       if (notifDot) notifDot.style.display = 'none';
+    }
+  });
+
+  notifBody.addEventListener('click', function (e) {
+    var item = e.target.closest('.notif-item');
+    if (!item) return;
+    var id = item.getAttribute('data-id');
+    if (id) {
+      window.location.href = 'admin-orders.html?order=' + id;
     }
   });
 

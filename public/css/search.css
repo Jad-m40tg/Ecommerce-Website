@@ -130,8 +130,7 @@
   .results-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 800px) {
-  .container { padding: 0 18px; }
+@media (max-width: 900px) {
   .menu-toggle { display: block; }
   .nav-links {
     position: absolute; top: calc(var(--nav-height) + 14px); left: 0; right: 0;
@@ -142,6 +141,10 @@
   }
   .nav-links.open { display: flex; }
   .nav-links a { display: block; text-align: center; }
+}
+
+@media (max-width: 800px) {
+  .container { padding: 0 18px; }
   .product-card { flex: 0 0 220px; }
 }
 

@@ -207,6 +207,12 @@ document.addEventListener('click', function (event) {
   var radios = document.querySelectorAll('input[name="payment_method"]');
   radios.forEach(function (r) { if (r.checked) paymentMethod = r.value; });
 
+  var orderNonce = localStorage.getItem('boularas_order_nonce');
+  if (!orderNonce) {
+    orderNonce = 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+    localStorage.setItem('boularas_order_nonce', orderNonce);
+  }
+
   var orderData = {
     customer_name: (document.getElementById('firstName').value || '') + ' ' + (document.getElementById('lastName').value || ''),
     customer_email: document.getElementById('email').value || '',
@@ -216,7 +222,8 @@ document.addEventListener('click', function (event) {
     items: cart.map(function (item) { return { product_id: Number(item.id), quantity: item.qty }; }),
     notes: '',
     payment_method: paymentMethod,
-    promo_code: appliedPromo ? appliedPromo.code : null
+    promo_code: appliedPromo ? appliedPromo.code : null,
+    nonce: orderNonce
   };
 
   fetch('/api/orders', {
@@ -234,7 +241,11 @@ document.addEventListener('click', function (event) {
     var orderId = (data.order && data.order.id) || data.id;
     var trackingCode = (data.order && data.order.tracking_code) || data.tracking_code || '';
 
-    if (paymentMethod === 'cash_on_delivery') {
+    localStorage.removeItem('boularas_order_nonce');
+
+    if (data.duplicate === true && data.payment_url) {
+      window.location.href = data.payment_url;
+    } else if (data.duplicate === true || paymentMethod === 'cash_on_delivery') {
       saveCart([]);
       localStorage.removeItem(PROMO_STORAGE_KEY);
       window.location.href = 'order-placed.html?order_id=' + encodeURIComponent(orderId) + '&code=' + encodeURIComponent(trackingCode);
@@ -256,7 +267,21 @@ document.addEventListener('click', function (event) {
 
 /* Mobile menu toggle */
 document.getElementById('menuToggle').addEventListener('click', function () {
-  document.getElementById('navLinks').classList.toggle('open');
+  var navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+  var btn = document.getElementById('menuToggle');
+  if (btn) btn.setAttribute('aria-expanded', navLinks.classList.contains('open') ? 'true' : 'false');
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    var nl = document.getElementById('navLinks');
+    if (nl && nl.classList.contains('open')) {
+      nl.classList.remove('open');
+      var b = document.getElementById('menuToggle');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    }
+  }
 });
 
 /* Reveal-on-scroll */

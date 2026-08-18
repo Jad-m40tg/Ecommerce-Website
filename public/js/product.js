@@ -8,17 +8,12 @@ var lightboxEl = null;
 var lightboxIndex = 0;
 var lightboxImages = [];
 
-/* Reposition reviews on resize */
-window.matchMedia('(min-width: 961px)').addEventListener('change', function () {
-  positionReviews();
-});
-
 var selection = { color: '', size: '', qty: 1 };
 
 /* ---------- IMAGE HELPERS ---------- */
 function fallbackImage(category) {
   if (typeof window.DEFAULT_PRODUCT_IMAGE === 'string') return window.DEFAULT_PRODUCT_IMAGE;
-  return '/assets/noImageForItem.png';
+  return '/assets/noImageForItem.jpg';
 }
 
 function getProductImage(product) {
@@ -52,7 +47,7 @@ var requestedId = params.get('id');
 
 function showNotFound() {
   document.getElementById('breadcrumb').innerHTML =
-    '<a href="althome.html">Home</a><span class="sep">/</span>' +
+    '<a href="index.html">Home</a><span class="sep">/</span>' +
     '<a href="products.html">Shop</a><span class="sep">/</span>' +
     '<span class="current">Product not found</span>';
   document.getElementById('productRoot').innerHTML =
@@ -173,6 +168,8 @@ function fetchReviewsAndRender(product) {
       observeReveals();
       positionReviews();
       renderCartState();
+      if (typeof updateWishCount === 'function') updateWishCount();
+      applyReviewedState(product ? product.id : 0);
     });
 }
 
@@ -186,10 +183,13 @@ function renderReviews(productId) {
       stars += i < review.rating ? '&#9733;' : '&#9734;';
     }
     var date = review.created_at ? new Date(review.created_at).toLocaleDateString() : '';
+    var deleteBtn = localStorage.getItem('admin_token')
+      ? '<button type="button" class="review-delete-btn" data-review-id="' + review.id + '" aria-label="Delete review" title="Delete review">&#10005;</button>'
+      : '';
     return '<div class="review-card">' +
       '<div class="review-head">' +
         '<div><span class="review-name">' + escapeHtml(review.customer_name) + '</span> <span class="review-stars">' + stars + '</span></div>' +
-        '<div><span class="review-date">' + date + '</span> <button type="button" class="review-delete-btn" data-review-id="' + review.id + '" aria-label="Delete review" title="Delete review">&#10005;</button></div>' +
+        '<div><span class="review-date">' + date + '</span> ' + deleteBtn + '</div>' +
       '</div>' +
       '<p class="review-text">' + escapeHtml(review.comment) + '</p>' +
     '</div>';
@@ -208,7 +208,10 @@ function wireUpReviewDeleteButtons() {
     btn.addEventListener('click', function () {
       var reviewId = btn.getAttribute('data-review-id');
       if (!confirm('Delete this review?')) return;
-      fetch('/api/reviews/' + reviewId, { method: 'DELETE' })
+      var headers = {};
+      var adminToken = localStorage.getItem('admin_token');
+      if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+      fetch('/api/reviews/' + reviewId, { method: 'DELETE', headers: headers })
         .then(function (r) { return r.json(); })
         .then(function () {
           currentReviews = currentReviews.filter(function (r) { return String(r.id) !== String(reviewId); });
@@ -231,8 +234,29 @@ function wireUpViewAllButton() {
   }
 }
 
+/* Hide the review form once a customer has reviewed (once per product, per browser) */
+function markReviewFormDone(productId, message) {
+  var formCard = document.querySelector('.review-form-card');
+  if (!formCard) return;
+  formCard.style.display = 'none';
+  if (formCard.parentNode.querySelector('.review-form-done')) return;
+  var notice = document.createElement('div');
+  notice.className = 'reviews-empty review-form-done';
+  notice.textContent = message;
+  formCard.parentNode.insertBefore(notice, formCard);
+}
+
+function applyReviewedState(productId) {
+  if (localStorage.getItem('boularas_reviewed_' + productId)) {
+    markReviewFormDone(productId, 'You have already reviewed this product.');
+  }
+}
+
 /* ---------- RENDER PRODUCT ---------- */
 function renderProduct(p) {
+  document.title = p.name + ' | Boularas Modern Furniture & Home';
+  var md = document.querySelector('meta[name="description"]');
+  if (md && p.description) md.setAttribute('content', p.description.slice(0, 150));
   var description = p.description || 'A thoughtfully designed piece from the Boularas collection.';
   var colors = p.colors && p.colors.length > 0 ? p.colors : [];
   var sizes = p.sizes && p.sizes.length > 0 ? p.sizes : [];
@@ -250,7 +274,7 @@ function renderProduct(p) {
 
   var catLabel = getCategoryLabel(p.category);
   document.getElementById('breadcrumb').innerHTML =
-    '<a href="althome.html">Home</a><span class="sep">/</span>' +
+    '<a href="index.html">Home</a><span class="sep">/</span>' +
     '<a href="products.html">Shop</a><span class="sep">/</span>' +
     '<a href="products.html?category=' + encodeURIComponent(p.category) + '">' + escapeHtml(catLabel) + '</a>' +
     '<span class="sep">/</span>' +
@@ -584,6 +608,7 @@ function wireUpDetail(p, colors) {
       }
       localStorage.setItem('boularas_wishlist', JSON.stringify(wishList));
       showToast(wished ? 'Added to wishlist' : 'Removed from wishlist');
+      if (typeof updateWishCount === 'function') updateWishCount();
     });
   }
 
@@ -622,30 +647,48 @@ function wireUpDetail(p, colors) {
   });
 
   document.getElementById('submitReviewBtn').addEventListener('click', function () {
+    var submitBtn = document.getElementById('submitReviewBtn');
     var name = document.getElementById('reviewName').value.trim();
     var text = document.getElementById('reviewText').value.trim();
+    var emailInput = document.getElementById('reviewEmail');
+    var emailValue = '';
+    if (emailInput) emailValue = emailInput.value.trim();
     if (!currentRating) { showToast('Please select a rating'); return; }
     if (!name) { showToast('Please enter your name'); return; }
+    if (emailInput && !emailValue) { showToast('Please enter your email'); return; }
     if (!text) { showToast('Please write a review'); return; }
+    if (submitBtn) submitBtn.disabled = true;
+    var payload = { product_id: p.id, customer_name: name, rating: currentRating, comment: text };
+    if (emailInput) payload.customer_email = emailValue;
     fetch('/api/reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product_id: p.id, customer_name: name, rating: currentRating, comment: text })
+      body: JSON.stringify(payload)
     })
       .then(function (r) { return r.json(); })
       .then(function (newReview) {
-        if (newReview.error) { showToast(newReview.error); return; }
+        if (newReview.error) {
+          if (submitBtn) submitBtn.disabled = false;
+          showToast(newReview.error);
+          return;
+        }
+        localStorage.setItem('boularas_reviewed_' + p.id, '1');
         currentReviews.unshift(newReview);
         var list = document.getElementById('reviewsList');
         if (list) list.innerHTML = renderReviews(p.id);
         document.getElementById('reviewName').value = '';
         document.getElementById('reviewText').value = '';
+        if (emailInput) emailInput.value = '';
         currentRating = 0;
         starBtns.forEach(function (b) { b.classList.remove('filled'); b.style.color = 'var(--beige)'; });
         showToast('Review submitted!');
         wireUpReviewDeleteButtons();
+        markReviewFormDone(p.id, 'Thank you for your review!');
       })
-      .catch(function () { showToast('Could not submit review'); });
+      .catch(function () {
+        if (submitBtn) submitBtn.disabled = false;
+        showToast('Could not submit review');
+      });
   });
 }
 
@@ -802,7 +845,21 @@ document.querySelectorAll('[data-scroll]').forEach(function (button) {
 
 /* ---------- UI HELPERS ---------- */
 document.getElementById('menuToggle').addEventListener('click', function () {
-  document.getElementById('navLinks').classList.toggle('open');
+  var navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+  var btn = document.getElementById('menuToggle');
+  if (btn) btn.setAttribute('aria-expanded', navLinks.classList.contains('open') ? 'true' : 'false');
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    var nl = document.getElementById('navLinks');
+    if (nl && nl.classList.contains('open')) {
+      nl.classList.remove('open');
+      var b = document.getElementById('menuToggle');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    }
+  }
 });
 
 var revealObserver = new IntersectionObserver(function (entries) {

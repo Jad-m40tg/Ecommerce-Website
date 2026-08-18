@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin-
+Disallow: /uploads/
+Disallow: /payment-
+Disallow: /track.html
+Disallow: /order-placed.html

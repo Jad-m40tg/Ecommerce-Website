@@ -58,14 +58,30 @@ const loginLimiter = rateLimit({
 // checkoutLimiter is defined inside routes/orders.js and applied there.
 
 // Static files — serves uploaded images from the uploads/ directory.
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Uploaded image filenames are unique, so they can be cached for a year (immutable).
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '365d',
+  immutable: true,
+  setHeaders: (res) => res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+}));
 
 // Serves all frontend HTML pages and assets from the public/ directory.
 // 'index: false' prevents serving index.html at '/' (we handle that via SPA fallback).
-// 'extensions: ["html"]' allows /althome without the .html extension.
+// 'extensions: ["html"]' allows /index without the .html extension.
+// HTML is never cached (revalidated each visit); images cache for a year;
+// css/js cache for 1 day to avoid stale assets during updates.
 app.use(express.static(path.join(__dirname, 'public'), {
   index: false,
-  extensions: ['html']
+  extensions: ['html'],
+  setHeaders: (res, path) => {
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else if (/\.(png|jpe?g|webp|gif|svg|avif|ico)$/i.test(path)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (/\.(css|js)$/i.test(path)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+  }
 }));
 
 // ============================================================
@@ -101,8 +117,11 @@ app.use('/api/sales', require('./routes/sales'));         // Sales / deals manag
 app.use('/api/upload', require('./routes/upload'));       // Admin image upload
 app.use('/api/delivery', require('./routes/delivery'));   // NOEST delivery integration
 
+// Admin dashboard shortcuts — redirect to the admin login page.
+app.get(['/admin', '/dashboard', '/admin/dashboard'], (req, res) => res.redirect('/admin-login.html'));
+
 // ============================================================
-// SPA FALLBACK — serves althome.html for all non-API, non-upload routes.
+// SPA FALLBACK — serves index.html for all non-API, non-upload routes.
 // This allows client-side routing (e.g. /products, /checkout) to work
 // by always returning the main HTML page, which handles routing via JS.
 // Express 5 requires named wildcards (*path, not just *).
@@ -111,7 +130,7 @@ app.get('*path', (req, res) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
     return res.status(404).json({ error: 'Endpoint not found' });
   }
-  res.sendFile(path.join(__dirname, 'public', 'althome.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Global error handler — catches unhandled errors from all routes.
@@ -165,3 +184,7 @@ cleanupAbandonedOrders();
 
 // Then every 5 minutes
 setInterval(cleanupAbandonedOrders, 300000);
+
+// Process crash handlers — log fatal errors instead of dying silently.
+process.on('uncaughtException', (err) => { console.error('[FATAL] uncaughtException:', err); });
+process.on('unhandledRejection', (reason) => { console.error('[FATAL] unhandledRejection:', reason); });

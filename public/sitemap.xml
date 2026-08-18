@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TODO: replace localhost base URL with the production domain at launch -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://localhost:5000/index.html</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/products.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/categories.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/offers.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/search-results.html</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/wishlist.html</loc>
+    <priority>0.5</priority>
+  </url>
+  <!-- Individual product pages are JS-rendered and should be added to this sitemap
+       dynamically at launch (or later with the real catalog), priority 0.5 -->
+</urlset>

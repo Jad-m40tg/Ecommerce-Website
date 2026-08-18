@@ -2,7 +2,7 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
-const { createCheckout } = require('../services/payment');
+const { createCheckout, getCheckout } = require('../services/payment');
 
 const router = express.Router();
 
@@ -72,10 +72,36 @@ function cancelAndRestoreStock(orderId, order, extraUpdates, extraValues) {
   })();
 }
 
+// Builds the idempotent duplicate response for a retried checkout (same nonce).
+// Shared by the nonce pre-check and the UNIQUE-constraint race fallback.
+async function duplicateOrderResponse(existingOrder) {
+  const response = {
+    order: {
+      id: existingOrder.id,
+      order_status: existingOrder.order_status,
+      payment_status: existingOrder.payment_status,
+      tracking_code: existingOrder.tracking_code
+    },
+    tracking_code: existingOrder.tracking_code,
+    duplicate: true
+  };
+  if (existingOrder.payment_reference) {
+    try {
+      const checkout = await getCheckout(existingOrder.payment_reference);
+      if (checkout && checkout.checkout_url) {
+        response.payment_url = checkout.checkout_url;
+      }
+    } catch (e) {
+      console.error('Chargily getCheckout failed:', e.message);
+    }
+  }
+  return response;
+}
+
 // POST /api/orders — Create a new order (public, rate-limited). Validates items, reserves stock, optionally initiates online payment.
 router.post('/', checkoutLimiter, async (req, res, next) => {
   try {
-    const { customer_name, customer_email, customer_phone, customer_address, customer_city, items, notes, payment_method, promo_code } = req.body;
+    const { customer_name, customer_email, customer_phone, customer_address, customer_city, items, notes, payment_method, promo_code, nonce } = req.body;
 
     const PROMOS = {
       BOUL10:   { pct: 0.10 },
@@ -98,6 +124,20 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
     if (customer_address.length > MAX_ADDRESS_LEN) return res.status(400).json({ error: `customer_address must be ${MAX_ADDRESS_LEN} characters or fewer` });
     if (customer_city.length > MAX_CITY_LEN) return res.status(400).json({ error: `customer_city must be ${MAX_CITY_LEN} characters or fewer` });
     if (notes && notes.length > MAX_NOTES_LEN) return res.status(400).json({ error: `notes must be ${MAX_NOTES_LEN} characters or fewer` });
+
+    // Optional idempotency key — retrying a checkout with the same nonce
+    // returns the existing order instead of creating a duplicate.
+    if (nonce !== undefined && (typeof nonce !== 'string' || nonce.length > 100)) {
+      return res.status(400).json({ error: 'nonce must be a string of 100 characters or fewer' });
+    }
+
+    // If a nonce was provided and an order for it already exists, return the
+    // existing order (no new Chargily checkout, no new stock deduction).
+    // The UNIQUE index on orders(nonce) makes a second insert impossible anyway.
+    const existingNonceOrder = nonce ? db.prepare('SELECT id, payment_status, payment_reference, order_status, tracking_code FROM orders WHERE nonce = ?').get(nonce) : null;
+    if (existingNonceOrder) {
+      return res.status(200).json(await duplicateOrderResponse(existingNonceOrder));
+    }
 
     // Validate payment method
     const validPayMethod = payment_method && VALID_PAYMENT_METHODS.includes(payment_method);
@@ -147,12 +187,12 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
       const total_cents = subtotal_cents - discount_cents + actual_shipping;
 
       const stmt = db.prepare(`
-        INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, customer_city, items, subtotal_cents, delivery_fee_cents, total_cents, payment_method, payment_status, order_status, notes, tracking_code)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
+        INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, customer_city, items, subtotal_cents, delivery_fee_cents, total_cents, payment_method, payment_status, order_status, notes, tracking_code, nonce)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
       `);
       const result = stmt.run(customer_name, customer_email, customer_phone, customer_address, customer_city,
         JSON.stringify(resolvedItems), subtotal_cents, actual_shipping, total_cents,
-        payment_method || 'cash_on_delivery', orderStatus, notes || '', trackingCode);
+        payment_method || 'cash_on_delivery', orderStatus, notes || '', trackingCode, nonce || null);
 
       const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
       for (const item of resolvedItems) {
@@ -202,6 +242,11 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
 
     res.status(201).json({ order: orderData, tracking_code: trackingCode });
   } catch (err) {
+    if (err.code === 'SQLITE_CONSTRAINT_UNIQUE' && nonce) {
+      // Race: a concurrent request with the same nonce won the insert.
+      const existing = db.prepare('SELECT id, payment_status, payment_reference, order_status, tracking_code FROM orders WHERE nonce = ?').get(nonce);
+      if (existing) return res.status(200).json(await duplicateOrderResponse(existing));
+    }
     if (err.message && err.message.startsWith('Insufficient stock')) {
       return res.status(400).json({ error: err.message });
     }

@@ -52,7 +52,7 @@ window.priceFull = priceFull;
 // Image fallback for products with missing upload images
 // ============================================================
 
-var DEFAULT_PRODUCT_IMAGE = '/assets/noImageForItem.png';
+var DEFAULT_PRODUCT_IMAGE = '/assets/noImageForItem.jpg';
 
 function getFallbackImage(category) {
   return DEFAULT_PRODUCT_IMAGE;
@@ -193,3 +193,20 @@ window.initLazyImages = initLazyImages;
     '.lazy-loaded{opacity:1}';
   document.head.appendChild(style);
 })();
+
+// ============================================================
+// Wishlist count badge sync
+// ============================================================
+
+function updateWishCount() {
+  var el = document.getElementById('wishCount');
+  if (!el) return;
+  try {
+    var w = JSON.parse(localStorage.getItem('boularas_wishlist') || '[]');
+    el.textContent = w.length;
+    el.style.display = w.length ? 'inline-flex' : 'none';
+  } catch (e) { el.style.display = 'none'; }
+}
+
+document.addEventListener('DOMContentLoaded', updateWishCount);
+window.addEventListener('storage', function (e) { if (e.key === 'boularas_wishlist') updateWishCount(); });

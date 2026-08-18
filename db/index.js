@@ -44,7 +44,8 @@ const orderMigrations = {
   tracking_code: "ALTER TABLE orders ADD COLUMN tracking_code TEXT DEFAULT ''",
   noest_tracking: "ALTER TABLE orders ADD COLUMN noest_tracking TEXT DEFAULT ''",
   noest_status: "ALTER TABLE orders ADD COLUMN noest_status TEXT DEFAULT ''",
-  noest_payload: "ALTER TABLE orders ADD COLUMN noest_payload TEXT DEFAULT ''"
+  noest_payload: "ALTER TABLE orders ADD COLUMN noest_payload TEXT DEFAULT ''",
+  nonce: "ALTER TABLE orders ADD COLUMN nonce TEXT"
 };
 for (const [name, sql] of Object.entries(orderMigrations)) {
   if (!orderColumns.includes(name)) {
@@ -54,6 +55,15 @@ for (const [name, sql] of Object.entries(orderMigrations)) {
       console.error('Migration failed for orders.' + name + ':', err.message);
     }
   }
+}
+
+// Idempotency key for checkout — one order per nonce.
+// SQLite UNIQUE indexes allow multiple NULLs, so legacy rows stay NULL and safe.
+// Wrapped so a fresh (empty) database can still boot — the table may not exist yet.
+try {
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_nonce ON orders(nonce)');
+} catch (err) {
+  console.error('Migration failed for idx_orders_nonce:', err.message);
 }
 
 // Create hidden_customers table if it doesn't exist
@@ -90,6 +100,30 @@ for (const [name, sql] of Object.entries(salesMigrations)) {
       console.error('Migration failed for sales.' + name + ':', err.message);
     }
   }
+}
+
+// Idempotent migration — adds the customer_email column to reviews.
+// No DEFAULT on purpose: old rows must stay NULL so the unique index below
+// (which allows multiple NULLs in SQLite) doesn't collide on legacy data.
+const reviewsColumns = db.pragma('table_info(reviews)').map((col) => col.name);
+const reviewsMigrations = {
+  customer_email: "ALTER TABLE reviews ADD COLUMN customer_email TEXT"
+};
+for (const [name, sql] of Object.entries(reviewsMigrations)) {
+  if (!reviewsColumns.includes(name)) {
+    try {
+      db.exec(sql);
+    } catch (err) {
+      console.error('Migration failed for reviews.' + name + ':', err.message);
+    }
+  }
+}
+
+// One review per customer per product.
+try {
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_once ON reviews(product_id, customer_email)');
+} catch (err) {
+  console.error('Migration failed for idx_reviews_once:', err.message);
 }
 
 module.exports = db;

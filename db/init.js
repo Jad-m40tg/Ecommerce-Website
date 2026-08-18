@@ -113,6 +113,7 @@ try {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       product_id INTEGER NOT NULL,
       customer_name TEXT NOT NULL,
+      customer_email TEXT,
       rating INTEGER NOT NULL DEFAULT 5,
       comment TEXT DEFAULT '',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -130,6 +131,9 @@ try {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  // One review per customer per product.
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_once ON reviews(product_id, customer_email)');
 
   // Seed default admin account.
   // If SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD are set in .env, uses those.
@@ -153,14 +157,14 @@ try {
   `);
 
   const categories = [
-    ['Living Room', 'living-room', '/uploads/cat-living-room.jpg', 'Comfortable sofas, chairs, and coffee tables for your living space', 1],
-    ['Bedroom', 'bedroom', '/uploads/cat-bedroom.jpg', 'Beds, nightstands, and wardrobes for restful nights', 2],
-    ['Dining Room', 'dining-room', '/uploads/cat-dining-room.jpg', 'Dining tables, chairs, and sideboards for family meals', 3],
-    ['Office', 'office', '/uploads/cat-office.jpg', 'Desks, ergonomic chairs, and storage for productive workspaces', 4],
-    ['Outdoor', 'outdoor', '/uploads/cat-outdoor.jpg', 'Patio furniture, garden seating, and weather-resistant pieces', 5],
-    ['Storage', 'storage', '/uploads/cat-storage.jpg', 'Shelving units, cabinets, and organizational solutions', 6],
-    ['Lighting', 'lighting', '/uploads/cat-lighting.jpg', 'Floor lamps, pendants, and table lights to set the mood', 7],
-    ['Decor', 'decor', '/uploads/cat-decor.jpg', 'Vases, wall art, and decorative accents to finish any room', 8],
+    ['Living Room', 'living-room', '/assets/noImageForItem.jpg', 'Comfortable sofas, chairs, and coffee tables for your living space', 1],
+    ['Bedroom', 'bedroom', '/assets/noImageForItem.jpg', 'Beds, nightstands, and wardrobes for restful nights', 2],
+    ['Dining Room', 'dining-room', '/assets/noImageForItem.jpg', 'Dining tables, chairs, and sideboards for family meals', 3],
+    ['Office', 'office', '/assets/noImageForItem.jpg', 'Desks, ergonomic chairs, and storage for productive workspaces', 4],
+    ['Outdoor', 'outdoor', '/assets/noImageForItem.jpg', 'Patio furniture, garden seating, and weather-resistant pieces', 5],
+    ['Storage', 'storage', '/assets/noImageForItem.jpg', 'Shelving units, cabinets, and organizational solutions', 6],
+    ['Lighting', 'lighting', '/assets/noImageForItem.jpg', 'Floor lamps, pendants, and table lights to set the mood', 7],
+    ['Decor', 'decor', '/assets/noImageForItem.jpg', 'Vases, wall art, and decorative accents to finish any room', 8],
   ];
 
   // Wrap all category inserts in a single transaction for performance.
@@ -192,7 +196,7 @@ try {
       colors: JSON.stringify(['Emerald Green', 'Dusty Rose', 'Charcoal', 'Navy']),
       sizes: JSON.stringify(['2-Seater', '3-Seater', 'L-Shape']),
       tags: JSON.stringify(['new-arrival', 'bestseller']),
-      images: JSON.stringify(['/uploads/oslo-sofa-1.jpg', '/uploads/oslo-sofa-2.jpg']),
+      images: JSON.stringify(['/assets/noImageForItem.jpg']),
       featured: 1,
       on_sale: 0,
       status: 'active',
@@ -209,7 +213,7 @@ try {
       colors: JSON.stringify(['Natural Oak', 'Walnut']),
       sizes: JSON.stringify(['4-Seater', '6-Seater', '8-Seater']),
       tags: JSON.stringify(['on-sale', 'bestseller']),
-      images: JSON.stringify(['/uploads/bergen-table-1.jpg', '/uploads/bergen-table-2.jpg']),
+      images: JSON.stringify(['/assets/noImageForItem.jpg']),
       featured: 1,
       on_sale: 1,
       status: 'active',
@@ -226,7 +230,7 @@ try {
       colors: JSON.stringify(['Walnut', 'Matte Black', 'White Oak']),
       sizes: JSON.stringify(['Full', 'Queen', 'King']),
       tags: JSON.stringify(['new-arrival']),
-      images: JSON.stringify(['/uploads/nordic-bed-1.jpg', '/uploads/nordic-bed-2.jpg']),
+      images: JSON.stringify(['/assets/noImageForItem.jpg']),
       featured: 1,
       on_sale: 0,
       status: 'active',
@@ -243,7 +247,7 @@ try {
       colors: JSON.stringify(['Black', 'Space Gray', 'Cream']),
       sizes: JSON.stringify(['Standard']),
       tags: JSON.stringify(['on-sale']),
-      images: JSON.stringify(['/uploads/zurich-chair-1.jpg', '/uploads/zurich-chair-2.jpg']),
+      images: JSON.stringify(['/assets/noImageForItem.jpg']),
       featured: 0,
       on_sale: 1,
       status: 'active',
@@ -260,7 +264,7 @@ try {
       colors: JSON.stringify(['Natural Teak', 'Grey Wash']),
       sizes: JSON.stringify(['3-Piece', '5-Piece']),
       tags: JSON.stringify(['premium', 'on-sale']),
-      images: JSON.stringify(['/uploads/aspen-lounge-1.jpg', '/uploads/aspen-lounge-2.jpg']),
+      images: JSON.stringify(['/assets/noImageForItem.jpg']),
       featured: 1,
       on_sale: 1,
       status: 'active',
@@ -277,7 +281,7 @@ try {
       colors: JSON.stringify(['Black/Raw Pine', 'White/Pine', 'All Black']),
       sizes: JSON.stringify(['3-Tier', '5-Tier']),
       tags: JSON.stringify(['bestseller']),
-      images: JSON.stringify(['/uploads/calabar-shelf-1.jpg', '/uploads/calabar-shelf-2.jpg']),
+      images: JSON.stringify(['/assets/noImageForItem.jpg']),
       featured: 0,
       on_sale: 0,
       status: 'active',
@@ -294,7 +298,7 @@ try {
       colors: JSON.stringify(['Brushed Brass', 'Matte Black', 'Chrome']),
       sizes: JSON.stringify(['Standard']),
       tags: JSON.stringify(['on-sale']),
-      images: JSON.stringify(['/uploads/luna-lamp-1.jpg', '/uploads/luna-lamp-2.jpg']),
+      images: JSON.stringify(['/assets/noImageForItem.jpg']),
       featured: 0,
       on_sale: 1,
       status: 'active',
@@ -311,7 +315,7 @@ try {
       colors: JSON.stringify(['Terracotta', 'Sage', 'Sand']),
       sizes: JSON.stringify(['Set of 3']),
       tags: JSON.stringify(['new-arrival', 'gift-idea']),
-      images: JSON.stringify(['/uploads/sienna-vase-1.jpg', '/uploads/sienna-vase-2.jpg']),
+      images: JSON.stringify(['/assets/noImageForItem.jpg']),
       featured: 1,
       on_sale: 0,
       status: 'active',
@@ -328,7 +332,7 @@ try {
       colors: JSON.stringify(['Walnut', 'White', 'Black Oak']),
       sizes: JSON.stringify(['100cm', '120cm']),
       tags: JSON.stringify([]),
-      images: JSON.stringify(['/uploads/milano-desk-1.jpg', '/uploads/milano-desk-2.jpg']),
+      images: JSON.stringify(['/assets/noImageForItem.jpg']),
       featured: 0,
       on_sale: 0,
       status: 'active',
@@ -345,7 +349,7 @@ try {
       colors: JSON.stringify(['Linen Beige', 'Charcoal Linen']),
       sizes: JSON.stringify(['Standard']),
       tags: JSON.stringify(['on-sale', 'out-of-stock']),
-      images: JSON.stringify(['/uploads/haven-nightstand-1.jpg', '/uploads/haven-nightstand-2.jpg']),
+      images: JSON.stringify(['/assets/noImageForItem.jpg']),
       featured: 0,
       on_sale: 1,
       status: 'draft',

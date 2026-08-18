@@ -1,4 +1,4 @@
-/* home.js — althome.html specific logic */
+/* home.js — index.html specific logic */
 
 var _allProducts = [];
 
@@ -67,7 +67,7 @@ function loadHomeProducts() {
     products = products.filter(function (p) { return p.status === 'active'; }).map(function (p) {
       var imgs = [];
       try { imgs = JSON.parse(p.images || '[]'); } catch { imgs = []; }
-      p._image = (imgs.length > 0 ? imgs[0] : (window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.png'));
+      p._image = (imgs.length > 0 ? imgs[0] : (window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg'));
       p.badge = p.on_sale ? 'sale' : (p.featured ? 'new' : null);
       return p;
     });
@@ -160,7 +160,21 @@ document.querySelectorAll('[data-scroll]').forEach(function (btn) {
 
 /* Mobile menu toggle */
 document.getElementById('menuToggle').addEventListener('click', function () {
-  document.getElementById('navLinks').classList.toggle('open');
+  var navLinks = document.getElementById('navLinks');
+  navLinks.classList.toggle('open');
+  var btn = document.getElementById('menuToggle');
+  if (btn) btn.setAttribute('aria-expanded', navLinks.classList.contains('open') ? 'true' : 'false');
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    var nl = document.getElementById('navLinks');
+    if (nl && nl.classList.contains('open')) {
+      nl.classList.remove('open');
+      var b = document.getElementById('menuToggle');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    }
+  }
 });
 
 /* Reveal on scroll */

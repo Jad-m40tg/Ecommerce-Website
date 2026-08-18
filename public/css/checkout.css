@@ -254,8 +254,7 @@
   .summary { position: static; }
 }
 
-@media (max-width: 800px) {
-  .container { padding: 0 18px; }
+@media (max-width: 900px) {
   .menu-toggle { display: block; }
   .nav-links {
     position: absolute; top: calc(var(--nav-height) + 14px); left: 0; right: 0;
@@ -265,10 +264,13 @@
   }
   .nav-links.open { display: flex; }
   .nav-links a { display: block; text-align: center; }
+}
+
+@media (max-width: 800px) {
+  .container { padding: 0 18px; }
 
   .form-row { grid-template-columns: 1fr; }
   .card-row { grid-template-columns: 1fr 1fr; }
-  .checkout-layout { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {

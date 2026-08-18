@@ -1,7 +1,7 @@
 /* ============================================================
    SHARED RESPONSIVE BREAKPOINTS
    Non-navbar breakpoints used across multiple pages.
-   Navbar collapse at 800px is in navbar.css.
+   Navbar collapse at 900px is in navbar.css.
    ============================================================ */
 
 /* 1000px — 3-col grids drop to 2 */
@@ -37,16 +37,18 @@
   }
   .filters.open { display: flex; }
   .filters-toggle { display: inline-flex; }
+  .filters.reveal { opacity: 1; transform: none; }
   .product-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* 800px — navbar collapse handled in navbar.css, but shared container padding */
+/* 800px — navbar collapse handled in navbar.css (at 900px), shared container padding */
 @media (max-width: 800px) {
   .container { padding: 0 18px; }
   .product-card { flex: 0 0 280px; }
   .row-arrows { display: none; } /* rely on swipe on touch */
   .newsletter-form { flex-direction: column; }
   .footer-grid { grid-template-columns: repeat(2, 1fr); }
+  .section { padding: 44px 0; }
 }
 
 /* 520px — grids to 1 column */
@@ -56,6 +58,8 @@
   .categories-grid,
   .promo-grid { grid-template-columns: 1fr; }
   .search-bar { flex-direction: column; }
+  .section { padding: 40px 0; }
+  .section-head { margin-bottom: 28px; }
 }
 
 /* 500px — navbar/brand/cart sizing, footer stack */
@@ -64,16 +68,16 @@
   .navbar-actions { gap: 8px; }
   .brand { font-size: 20px; }
   .cart-btn { font-size: 12px; padding: 7px 12px; gap: 6px; }
+  .footer { margin-top: 44px; padding-top: 44px; }
   .footer-grid { grid-template-columns: 1fr; }
   .footer p { max-width: 100%; }
-  .product-row { margin-bottom: -80px; }
+  .product-row { margin-bottom: 0; }
   .product-row .product-card {
     flex: 0 0 260px;
-    transform: scale(0.7);
-    transform-origin: left top;
-    margin-right: -78px;
+    transform: none;
+    margin-right: 0;
   }
-  .product-row .product-card:hover { transform: scale(0.7) translateY(-6px); }
+  .product-row .product-card:hover { transform: translateY(-6px); }
 }
 
 /* 400px — ultra-small screens */
@@ -96,4 +100,31 @@
   .hero p { font-size: 16px; }
   .card-row { flex-direction: column; gap: 14px; }
   .item-media { width: 100%; }
+}
+
+/* ============================================================
+   ACCESSIBILITY — skip link + visible focus (all pages)
+   ============================================================ */
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: 16px;
+  z-index: 300;
+  padding: 10px 18px;
+  background: var(--charcoal);
+  color: var(--warm-white);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  transition: top 0.2s ease;
+}
+.skip-link:focus { top: 12px; }
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
 }
