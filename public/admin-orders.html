@@ -83,8 +83,9 @@
     tbody tr.order-flash{animation:order-flash 2.8s ease}
     @keyframes order-flash{0%{background:rgba(201,138,58,.28)}100%{background:transparent}}
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
+  @media(max-width:860px){.noest-fields{grid-template-columns:1fr}}
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=5" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=11" />
 </head>
 <body>
   <div class="app">
@@ -154,9 +155,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="utils.js"></script>
-  <script src="js/admin-topbar.js"></script>
-  <script src="js/admin-mobile-nav.js"></script>
+  <script src="utils.js?v=11"></script>
+  <script src="js/admin-topbar.js?v=12"></script>
+  <script src="js/admin-mobile-nav.js?v=11"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');
@@ -213,8 +214,9 @@
           tbody.innerHTML = rows.map(function (o) {
             var badge = o.order_status || 'pending';
             var payBadge = o.payment_status || 'pending';
-            var date = o.created_at ? new Date(o.created_at).toLocaleDateString() : '-';
-            var time = o.created_at ? new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-';
+            var created = o.created_at ? new Date(o.created_at.replace(' ', 'T') + 'Z') : null;
+            var date = created ? created.toLocaleDateString() : '-';
+            var time = created ? created.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-';
             var items = []; try { items = o.items ? (typeof o.items === 'string' ? JSON.parse(o.items) : o.items) : []; } catch (e) { items = []; }
             var itemCount = Array.isArray(items) ? items.length : 0;
             var payMethod = o.payment_method || 'cash_on_delivery';

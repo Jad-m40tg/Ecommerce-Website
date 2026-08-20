@@ -33,7 +33,7 @@ button { font-family: inherit; cursor: pointer; }
 
 /* Reusable centered container */
 .container {
-  width: min(var(--container), 92%);
+  width: min(var(--container), 95%);
   margin-inline: auto;
 }
 

@@ -15,10 +15,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  <link rel="stylesheet" href="css/global.css?v=5" />
-  <link rel="stylesheet" href="css/base.css?v=5" />
-  <link rel="stylesheet" href="css/navbar.css?v=5" />
-  <link rel="stylesheet" href="css/buttons.css?v=5" />
+  <link rel="stylesheet" href="css/global.css?v=11" />
+  <link rel="stylesheet" href="css/base.css?v=11" />
+  <link rel="stylesheet" href="css/navbar.css?v=11" />
+  <link rel="stylesheet" href="css/buttons.css?v=11" />
   <style>
     .success-page{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;overflow-x:hidden}
     .success-card{max-width:480px;width:100%;text-align:center;background:var(--white);border:1px solid var(--beige);border-radius:var(--radius-lg);padding:48px 36px;box-shadow:var(--shadow-soft);box-sizing:border-box}
@@ -42,7 +42,7 @@
   </style>
 </head>
 <body style="overflow-x:hidden">
-  <a class="skip-link" href="#main">Skip to content</a>
+  <!-- Skip link removed -->
   <header class="navbar">
     <div class="container navbar-inner">
       <a href="index.html" class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" class="brand-logo" /></a>
@@ -70,8 +70,8 @@
     </div>
   </main>
 
-  <script src="utils.js"></script>
-  <script src="js/cart-utils.js"></script>
+  <script src="utils.js?v=11"></script>
+  <script src="js/cart-utils.js?v=11"></script>
   <script>updateCartCount();</script>
   <script>
     (function () {
@@ -96,8 +96,6 @@
         return;
       }
 
-      var attempts = 0;
-      var maxAttempts = 15;
       var storePhone = '';
 
       fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) {
@@ -106,61 +104,95 @@
 
       function phoneHref(p) { return 'tel:+' + String(p).replace(/\D/g, ''); }
 
-      var pollInterval = setInterval(function () {
-        attempts++;
-        if (attempts > maxAttempts) {
-          clearInterval(pollInterval);
+      var POLL_INTERVAL_MS = 4000;
+      var TIMEOUT_MS = 90000;
+      var deadline = Date.now() + TIMEOUT_MS;
+      var paidSeen = false;
+      var cartCleared = false;
+      var waitingForCode = false;
+
+      function stopPolling() { clearInterval(pollInterval); }
+
+      function clearCart() {
+        if (cartCleared) return;
+        cartCleared = true;
+        saveCart([]);
+        localStorage.removeItem('boularas-promo');
+      }
+
+      function showTimeoutNote() {
+        if (paidSeen) {
+          content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Successful</h1><p>Your tracking code is being generated \u2014 keep this page open, it will appear automatically. You can also check your order on the tracking page.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+        } else {
           content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Processing</h1><p>Your payment is being processed. You will receive a confirmation email shortly.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+        }
+      }
+
+      var pollInterval = setInterval(function () {
+        if (Date.now() >= deadline) {
+          stopPolling();
+          showTimeoutNote();
           return;
         }
 
-        fetch('/api/payments/public-status/' + orderId).then(function (r) { if (r.status === 404) { clearInterval(pollInterval); content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Processing</h1><p>Your payment is being processed. You will receive a confirmation email shortly.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>'; return null; } return r.json(); }).then(function (data) {
+        fetch('/api/payments/public-status/' + orderId).then(function (r) {
+          if (r.status === 404) {
+            stopPolling();
+            content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Processing</h1><p>Your payment is being processed. You will receive a confirmation email shortly.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+            return null;
+          }
+          return r.json();
+        }).then(function (data) {
           if (!data) return;
           if (data.payment_status === 'refunded' && data.order_status === 'cancelled') {
-            clearInterval(pollInterval);
+            stopPolling();
             content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Order Cancelled & Refunded</h1><p>Your order has been cancelled and your payment has been refunded.</p>' +
               '<div class="cancelled-badge">Cancelled & Refunded</div>' +
               (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
               '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
           } else if (data.payment_status === 'refunded') {
-            clearInterval(pollInterval);
+            stopPolling();
             content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">refund</span></div><h1>Payment Refunded</h1><p>Your order has been refunded. If you have any questions, please contact us.</p>' +
               '<div class="cancelled-badge">Refunded</div>' +
               (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
               '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
           } else if (data.payment_status === 'paid') {
-            clearInterval(pollInterval);
+            paidSeen = true;
+            clearCart();
             var tc = data.tracking_code || '';
             var orderCancelled = data.order_status === 'cancelled';
             var noestCancelled = data.noest_status === 'CANCELLED';
-            var cancelled = orderCancelled || noestCancelled;
 
             if (orderCancelled) {
+              stopPolling();
               content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Payment Successful - Order Cancelled</h1><p>Thank you! Your payment was confirmed but your order has been cancelled by our team.</p>' +
                 '<div class="cancelled-badge">Order cancelled</div>' +
                 (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
                 '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
             } else if (tc) {
+              stopPolling();
               content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed and your order is being processed.</p>' +
                 '<div class="tracking-code">' + tc + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code: use it to follow your order.</p>' +
                 '<div class="success-actions"><a href="track.html' + (tc ? '?code=' + tc : '') + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
             } else if (noestCancelled) {
+              stopPolling();
               content.innerHTML = '<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Payment Successful - Shipment Cancelled</h1><p>Your payment has been confirmed but the shipment was cancelled.</p>' +
                 '<div class="cancelled-badge">Shipment cancelled</div>' +
                 (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
                 '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
-            } else {
+            } else if (!waitingForCode) {
+              waitingForCode = true;
               content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed. Your tracking code will appear here as soon as your order is shipped.</p>' +
                 '<div class="wait-badge"><span class="spinner-sm"></span>Waiting for tracking code</div>' +
                 (storePhone ? '<div class="call-note">Questions about your order? Call us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
                 '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
             }
           } else if (data.checkout_status === 'failed' || data.checkout_status === 'expired') {
-            clearInterval(pollInterval);
+            stopPolling();
             window.location.href = 'payment-failed.html?order_id=' + orderId;
           }
         }).catch(function () {});
-      }, 2000);
+      }, POLL_INTERVAL_MS);
     })();
   </script>
 </body>

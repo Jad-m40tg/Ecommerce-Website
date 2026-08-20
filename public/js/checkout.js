@@ -130,7 +130,7 @@ function emailTest(v) {
 }
 function phoneTest(v) {
   var digits = v.replace(/\D/g, '');
-  if (digits.length === 0) return true;
+  if (digits.length === 0) return 'Phone number is required.';
   return digits.length >= 7 ? true : 'Please enter a valid phone number.';
 }
 function firstNameTest(v) {

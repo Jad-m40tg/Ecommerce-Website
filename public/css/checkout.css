@@ -30,7 +30,14 @@
   gap: 32px;
   align-items: start;
   padding-bottom: 40px;
+  max-width: 100%;
 }
+
+/* Grid children must be allowed to shrink below their content's intrinsic
+   width, or any wide text (long product names, payment copy) blows the
+   layout out to the right while the navbar stays centered. */
+.checkout-form { min-width: 0; max-width: 100%; }
+.summary { min-width: 0; max-width: 100%; }
 
 /* ---- Form panel ---- */
 .checkout-form { display: flex; flex-direction: column; gap: 24px; }
@@ -41,6 +48,7 @@
   border-radius: var(--radius-lg);
   padding: 28px;
   box-shadow: var(--shadow-soft);
+  max-width: 100%;
 }
 
 .form-section h2 {
@@ -107,7 +115,7 @@
 .summary-item { display: flex; gap: 12px; align-items: center; }
 .summary-item .thumb {
   width: 48px; height: 48px; flex-shrink: 0;
-  border-radius: var(--radius-md); background: var(--cream); border: 1px solid var(--beige); overflow: hidden;
+  border-radius: 8px; background: var(--cream); border: 1px solid var(--beige); overflow: hidden;
 }
 .summary-item .thumb img { width: 100%; height: 100%; object-fit: cover; }
 .summary-item .info { flex: 1; min-width: 0; }

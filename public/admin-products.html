@@ -169,8 +169,9 @@
     .notif-item .notif-time{font-size:11px;color:var(--gray);margin-top:2px}
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
+  @media(max-width:860px){.sale-grid{grid-template-columns:1fr}}
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=5" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=11" />
 </head>
 <body>
 
@@ -328,9 +329,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="utils.js"></script>
-  <script src="js/admin-topbar.js"></script>
-  <script src="js/admin-mobile-nav.js"></script>
+  <script src="utils.js?v=11"></script>
+  <script src="js/admin-topbar.js?v=12"></script>
+  <script src="js/admin-mobile-nav.js?v=11"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');
@@ -420,7 +421,7 @@
       document.getElementById('prodRows').addEventListener('click', function (e) {
         var saleBtn = e.target.closest('button[data-sale]');
         if (saleBtn) {
-          openSaleModal();
+          openSaleModal(saleBtn.getAttribute('data-sale'));
           return;
         }
         var editBtn = e.target.closest('button[data-edit]');
@@ -442,6 +443,7 @@
       /* ---------- Add to Sale modal ---------- */
       var saleCandidates = [];
       var currentSaleProduct = null;
+      var preselectId = null;
       var saleMode = 'manual';
       var bannerUrl = '';
 
@@ -506,9 +508,10 @@
         }).join('');
       }
 
-      function openSaleModal() {
+      function openSaleModal(productId) {
         document.getElementById('saleForm').reset();
         currentSaleProduct = null;
+        preselectId = productId || null;
         resetBanner();
         setSaleMode('manual');
         document.getElementById('saleOrig').value = '';
@@ -532,7 +535,36 @@
           sel.innerHTML = '<option value="">Select a product…</option>' + saleCandidates.map(function (p) {
             return '<option value="' + p.id + '">' + escapeHtml(p.name) + ' - ' + priceFull(p.price_cents) + '</option>';
           }).join('');
+          if (preselectId) selectSaleProduct(preselectId);
         }).catch(function () { showToast('Failed to load products'); });
+      }
+
+      function selectSaleProduct(id) {
+        currentSaleProduct = null;
+        for (var i = 0; i < saleCandidates.length; i++) {
+          if (String(saleCandidates[i].id) === String(id)) { currentSaleProduct = saleCandidates[i]; break; }
+        }
+        var sel = document.getElementById('saleProduct');
+        if (!currentSaleProduct && id) {
+          for (var j = 0; j < allProducts.length; j++) {
+            if (String(allProducts[j].id) === String(id)) { currentSaleProduct = allProducts[j]; break; }
+          }
+          if (currentSaleProduct) {
+            var hasOpt = false;
+            for (var k = 0; k < sel.options.length; k++) {
+              if (String(sel.options[k].value) === String(id)) { hasOpt = true; break; }
+            }
+            if (!hasOpt) {
+              var opt = document.createElement('option');
+              opt.value = String(id);
+              opt.textContent = currentSaleProduct.name + ' - ' + priceFull(currentSaleProduct.price_cents);
+              sel.appendChild(opt);
+            }
+          }
+        }
+        if (currentSaleProduct) sel.value = String(id);
+        document.getElementById('saleOrig').value = currentSaleProduct ? priceFull(currentSaleProduct.price_cents) : '';
+        updatePreview();
       }
 
       function resetPreview() {
@@ -597,13 +629,7 @@
       }
 
       document.getElementById('saleProduct').addEventListener('change', function (e) {
-        var id = e.target.value;
-        currentSaleProduct = null;
-        for (var i = 0; i < saleCandidates.length; i++) {
-          if (String(saleCandidates[i].id) === String(id)) { currentSaleProduct = saleCandidates[i]; break; }
-        }
-        document.getElementById('saleOrig').value = currentSaleProduct ? priceFull(currentSaleProduct.price_cents) : '';
-        updatePreview();
+        selectSaleProduct(e.target.value);
       });
 
       document.getElementById('salePrice').addEventListener('input', updatePreview);

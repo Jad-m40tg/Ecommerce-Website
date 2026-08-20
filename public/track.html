@@ -16,13 +16,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=5" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=11" />
 
-  <link rel="stylesheet" href="css/global.css?v=5" />
-  <link rel="stylesheet" href="css/base.css?v=5" />
-  <link rel="stylesheet" href="css/navbar.css?v=5" />
-  <link rel="stylesheet" href="css/buttons.css?v=5" />
-  <link rel="stylesheet" href="css/footer.css?v=5" />
+  <link rel="stylesheet" href="css/global.css?v=11" />
+  <link rel="stylesheet" href="css/base.css?v=11" />
+  <link rel="stylesheet" href="css/navbar.css?v=11" />
+  <link rel="stylesheet" href="css/buttons.css?v=11" />
+  <link rel="stylesheet" href="css/footer.css?v=11" />
   <style>
     .track-page{max-width:640px;margin:0 auto;padding:40px 20px}
     .track-page h1{font-size:clamp(24px,3vw,32px);margin-bottom:8px}
@@ -72,6 +72,11 @@
     .tracking-info .info-row a{color:var(--sage);text-decoration:underline}
     .error-msg{color:#e41a1a;font-size:14px;margin-top:8px;display:none}
     .error-msg.visible{display:block}
+    .auto-update-hint{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray);margin:-14px 0 16px}
+    .auto-update-hint i{font-size:11px}
+    .contact-help{display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--beige);border-radius:var(--radius-md);padding:14px 18px;margin-top:20px;font-size:14px;color:var(--charcoal);box-shadow:var(--shadow-soft)}
+    .contact-help i{color:var(--sage);font-size:15px}
+    .contact-help a{color:var(--sage);font-weight:600;text-decoration:none}
     @media(max-width:600px){.track-input-group{flex-direction:column}}
     @media(max-width:500px){.track-page{padding:24px 14px}.order-info,.tracking-info{padding:18px}}
   </style>
@@ -115,13 +120,15 @@
 
     <div class="track-result" id="trackResult">
       <div class="order-info" id="orderInfo"></div>
+      <div class="auto-update-hint" id="autoUpdateHint" style="display:none"><i class="fa-solid fa-rotate"></i> Updates automatically</div>
       <div class="timeline" id="timeline"></div>
       <div class="tracking-info" id="trackingInfo" style="display:none"></div>
+      <div class="contact-help" id="contactHelp" style="display:none"></div>
     </div>
   </main>
 
-  <script src="utils.js"></script>
-  <script src="js/cart-utils.js"></script>
+  <script src="utils.js?v=11"></script>
+  <script src="js/cart-utils.js?v=11"></script>
   <script>updateCartCount();</script>
   <script>
     (function () {
@@ -145,6 +152,16 @@
         shipped: 'Shipped',
         delivered: 'Delivered'
       };
+
+      var POLL_INTERVAL = 6000;
+      var NO_CHANGE_TIMEOUT = 120000;
+      var FINAL_STATUSES = ['delivered', 'cancelled'];
+
+      var currentCode = null;
+      var pollTimer = null;
+      var fetching = false;
+      var lastStatus = null;
+      var lastChangeAt = 0;
 
       var params = new URLSearchParams(window.location.search);
       var prefill = params.get('code');
@@ -192,13 +209,55 @@
         document.getElementById('trackResult').classList.remove('visible');
       }
 
-      function doTrack(code) {
-        document.getElementById('trackError').classList.remove('visible');
-        document.getElementById('trackResult').classList.remove('visible');
-        document.getElementById('trackBtn').disabled = true;
-        document.getElementById('trackBtn').textContent = 'Checking...';
+      function isFinalStatus(status) {
+        return FINAL_STATUSES.indexOf(status) !== -1;
+      }
 
-        fetch('/api/orders/track?code=' + encodeURIComponent(code.toUpperCase()))
+      function showAutoHint() {
+        document.getElementById('autoUpdateHint').style.display = 'flex';
+      }
+
+      function hideAutoHint() {
+        document.getElementById('autoUpdateHint').style.display = 'none';
+      }
+
+      function stopPolling() {
+        if (pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+        hideAutoHint();
+      }
+
+      function startPolling() {
+        if (pollTimer) return;
+        showAutoHint();
+        pollTimer = setInterval(function () {
+          if (!document.hidden && currentCode && !fetching) fetchTrack(currentCode, true);
+        }, POLL_INTERVAL);
+      }
+
+      function onTrackSuccess(order) {
+        var status = order.order_status || 'pending';
+        if (isFinalStatus(status)) {
+          stopPolling();
+          return;
+        }
+        var now = Date.now();
+        if (status !== lastStatus) {
+          lastStatus = status;
+          lastChangeAt = now;
+        } else if (now - lastChangeAt > NO_CHANGE_TIMEOUT) {
+          stopPolling();
+          return;
+        }
+        startPolling();
+      }
+
+      function fetchTrack(code, silent) {
+        if (fetching) return Promise.resolve();
+        fetching = true;
+        return fetch('/api/orders/track?code=' + encodeURIComponent(code.toUpperCase()))
           .then(function (r) {
             if (!r.ok) return r.json().then(function (d) { throw new Error(d.error || 'Not found'); });
             return r.json();
@@ -208,19 +267,50 @@
             renderOrderInfo(order);
             renderTimeline(order);
             renderTrackingInfo(order);
-            document.getElementById('trackResult').classList.add('visible');
+            if (!silent) document.getElementById('trackResult').classList.add('visible');
+            onTrackSuccess(order);
           })
           .catch(function (err) {
-            showError(err.message || 'Order not found. Please check your tracking code.');
+            if (!silent) showError(err.message || 'Order not found. Please check your tracking code.');
           })
           .finally(function () {
-            document.getElementById('trackBtn').disabled = false;
-            document.getElementById('trackBtn').textContent = 'Track';
+            fetching = false;
           });
       }
 
+      function doTrack(code) {
+        stopPolling();
+        lastStatus = null;
+        lastChangeAt = 0;
+        document.getElementById('trackError').classList.remove('visible');
+        document.getElementById('trackResult').classList.remove('visible');
+        document.getElementById('trackBtn').disabled = true;
+        document.getElementById('trackBtn').textContent = 'Checking...';
+        currentCode = code;
+        fetchTrack(code, false).finally(function () {
+          document.getElementById('trackBtn').disabled = false;
+          document.getElementById('trackBtn').textContent = 'Track';
+        });
+      }
+
+      document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && pollTimer && currentCode && !fetching) fetchTrack(currentCode, true);
+      });
+
+      fetch('/api/settings')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (settings) {
+          var phone = settings && settings.contact_phone;
+          if (!phone || !String(phone).trim()) return;
+          var p = String(phone).trim();
+          var el = document.getElementById('contactHelp');
+          el.innerHTML = '<i class="fa-solid fa-phone"></i> Questions about your order? Call us at <a href="tel:' + encodeURIComponent(p) + '">' + escapeHtml(p) + '</a>';
+          el.style.display = 'flex';
+        })
+        .catch(function () {});
+
       function renderOrderInfo(order) {
-        var date = order.created_at ? new Date(order.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+        var date = order.created_at ? new Date(order.created_at.replace(' ', 'T') + 'Z').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
         var total = order.total_cents ? price(order.total_cents) : '—';
         document.getElementById('orderInfo').innerHTML =
           '<div class="order-id">Order #' + (order.id || '') + '</div>' +

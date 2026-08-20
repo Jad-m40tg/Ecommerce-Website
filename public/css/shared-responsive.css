@@ -43,6 +43,7 @@
 
 /* 800px — navbar collapse handled in navbar.css (at 900px), shared container padding */
 @media (max-width: 800px) {
+  body { overflow-x: hidden; }
   .container { padding: 0 18px; }
   .product-card { flex: 0 0 280px; }
   .row-arrows { display: none; } /* rely on swipe on touch */

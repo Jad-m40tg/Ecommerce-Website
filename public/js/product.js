@@ -182,7 +182,7 @@ function renderReviews(productId) {
     for (var i = 0; i < 5; i++) {
       stars += i < review.rating ? '&#9733;' : '&#9734;';
     }
-    var date = review.created_at ? new Date(review.created_at).toLocaleDateString() : '';
+    var date = review.created_at ? new Date(review.created_at.replace(' ', 'T') + 'Z').toLocaleDateString() : '';
     var deleteBtn = localStorage.getItem('admin_token')
       ? '<button type="button" class="review-delete-btn" data-review-id="' + review.id + '" aria-label="Delete review" title="Delete review">&#10005;</button>'
       : '';
@@ -319,7 +319,14 @@ function renderProduct(p) {
   var defaults = resolveVariantDefaults(p);
   selection.color = defaults.color;
   selection.size = defaults.size;
-  selection.qty = 1;
+  var cartQty = 0;
+  var cartItems = (typeof getCart === 'function') ? getCart() : [];
+  var cartKey = buildCartKey(p.id, selection.color, selection.size);
+  for (var ci = 0; ci < cartItems.length; ci++) {
+    if (cartItems[ci] && cartItems[ci].key === cartKey) { cartQty = Number(cartItems[ci].qty) || 0; break; }
+  }
+  var initialQty = Math.max(1, Math.min(cartQty || 1, p.stock > 0 ? p.stock : 99, 99));
+  selection.qty = initialQty;
 
   var stockHTML = p.stock > 0
     ? '<div class="stock-note">In stock (' + p.stock + ' left) &middot; ships in 2&ndash;4 days</div>'
@@ -379,12 +386,13 @@ function renderProduct(p) {
           '<div class="buy-row">' +
             '<div class="qty">' +
               '<button type="button" data-qty="-1" aria-label="Decrease quantity">&minus;</button>' +
-              '<input type="number" id="qtyInput" value="1" min="1" max="99" aria-label="Quantity" />' +
+              '<input type="number" id="qtyInput" value="' + initialQty + '" min="1" max="99" aria-label="Quantity" />' +
               '<button type="button" data-qty="1" aria-label="Increase quantity">+</button>' +
             '</div>' +
             '<button type="button" class="btn btn-primary" id="addToCartBtn"' + (p.stock <= 0 ? ' disabled style="opacity:0.5;pointer-events:none;"' : '') + '>Add to Cart</button>' +
             '<button type="button" class="btn-icon" id="wishlistBtn" aria-label="Add to wishlist" title="Add to wishlist"><span class="material-symbols-outlined">favorite_border</span></button>' +
           '</div>' +
+          '<div class="stock-note qty-stock-note" id="qtyStockNote" style="display:none"></div>' +
         '</div>' +
 
         '<div class="perks">' +
@@ -427,6 +435,20 @@ function renderProduct(p) {
   wireUpDetail(p, colors);
   updateOrderSummary(p);
   if (typeof initLazyImages === 'function') initLazyImages();
+}
+
+/* ---------- STOCK WARNING NEAR QUANTITY CONTROLS ---------- */
+function updateQtyStockNote(p) {
+  var note = document.getElementById('qtyStockNote');
+  if (!note) return;
+  var stock = p.stock || 0;
+  var maxQty = Math.min(stock || 99, 99);
+  if (stock > 0 && stock <= 99 && selection.qty >= maxQty) {
+    note.textContent = 'Only ' + maxQty + ' in stock';
+    note.style.display = '';
+  } else {
+    note.style.display = 'none';
+  }
 }
 
 /* ---------- REPOSITION REVIEWS BY SCREEN WIDTH ---------- */
@@ -555,6 +577,7 @@ function wireUpDetail(p, colors) {
       qtyInput.value = next;
       selection.qty = next;
       updateOrderSummary(p);
+      updateQtyStockNote(p);
       var plusBtn = document.querySelector('[data-qty="1"]');
       if (plusBtn) plusBtn.disabled = Number(qtyInput.value) >= (p.stock || 99);
       var minusBtn = document.querySelector('[data-qty="-1"]');
@@ -566,6 +589,7 @@ function wireUpDetail(p, colors) {
       selection.qty = Math.max(1, Math.min(p.stock || 99, 99, Number(qtyInput.value) || 1));
       qtyInput.value = selection.qty;
       updateOrderSummary(p);
+      updateQtyStockNote(p);
       var plusBtn = document.querySelector('[data-qty="1"]');
       if (plusBtn) plusBtn.disabled = Number(qtyInput.value) >= (p.stock || 99);
       var minusBtn = document.querySelector('[data-qty="-1"]');
@@ -578,7 +602,11 @@ function wireUpDetail(p, colors) {
   if (plusBtn && p.stock <= 1) plusBtn.disabled = true;
 
   document.getElementById('addToCartBtn').addEventListener('click', function () {
-    if (isInCart(p.id, selection.color, selection.size)) { window.location.href = 'cart.html'; return; }
+    if (isInCart(p.id, selection.color, selection.size)) {
+      updateQty(buildCartKey(p.id, selection.color, selection.size), selection.qty);
+      window.location.href = 'cart.html';
+      return;
+    }
     addToCart(p, { qty: selection.qty, color: selection.color, size: selection.size });
     showToast(p.name + ' added to cart');
     renderCartState();

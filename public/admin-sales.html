@@ -147,8 +147,9 @@
     .notif-item .notif-time{font-size:11px;color:var(--gray);margin-top:2px}
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
+  @media(max-width:860px){.sale-grid{grid-template-columns:1fr}}
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=5" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=11" />
 </head>
 <body>
 
@@ -288,9 +289,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="utils.js"></script>
-  <script src="js/admin-topbar.js"></script>
-  <script src="js/admin-mobile-nav.js"></script>
+  <script src="utils.js?v=11"></script>
+  <script src="js/admin-topbar.js?v=12"></script>
+  <script src="js/admin-mobile-nav.js?v=11"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');

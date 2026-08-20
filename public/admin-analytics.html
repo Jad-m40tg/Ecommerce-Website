@@ -43,7 +43,7 @@
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=5" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=11" />
 </head>
 <body>
 
@@ -93,7 +93,7 @@
 
         <section class="grid-eq">
           <div class="panel">
-            <div class="panel-head"><div><h2>Revenue by Week</h2><span class="muted">Last 8 weeks</span></div></div>
+            <div class="panel-head"><div><h2>Revenue by Week</h2><span class="muted" id="revenueRangeLabel">Last 30 days</span></div></div>
             <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
           </div>
           <div class="panel">
@@ -110,9 +110,9 @@
     </div>
   </div>
 
-  <script src="utils.js"></script>
-  <script src="js/admin-topbar.js"></script>
-  <script src="js/admin-mobile-nav.js"></script>
+  <script src="utils.js?v=11"></script>
+  <script src="js/admin-topbar.js?v=12"></script>
+  <script src="js/admin-mobile-nav.js?v=11"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');
@@ -126,12 +126,20 @@
       var revenueChart = null;
       var statusChart = null;
       var currentPeriod = 'daily';
+      var rangeConfig = {
+        '7D':  { days: 7,   period: 'daily',   label: 'Last 7 days' },
+        '30D': { days: 30,  period: 'daily',   label: 'Last 30 days' },
+        '90D': { days: 90,  period: 'weekly',  label: 'Last 12 weeks' },
+        '1Y':  { days: 365, period: 'monthly', label: 'Last 12 months' }
+      };
 
-      function loadAnalytics(period) {
-        currentPeriod = period || 'daily';
+      function loadAnalytics(range) {
+        var cfg = rangeConfig[range] || rangeConfig['30D'];
+        currentPeriod = cfg.period;
+        document.getElementById('revenueRangeLabel').textContent = cfg.label;
         Promise.all([
-          apiFetch('/api/analytics/overview'),
-          apiFetch('/api/analytics/revenue?period=' + currentPeriod),
+          apiFetch('/api/analytics/overview?days=' + cfg.days),
+          apiFetch('/api/analytics/revenue?days=' + cfg.days + '&period=' + cfg.period),
           apiFetch('/api/analytics/top-products?limit=10')
         ]).then(function (results) {
           var overview = results[0];
@@ -160,7 +168,7 @@
         var ctx1 = document.getElementById('revenueChart');
         if (!ctx1) return;
         if (revenueChart) revenueChart.destroy();
-        revenueChart = new Chart(ctx1, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Revenue', data: values, backgroundColor: 'rgba(107,127,94,0.7)', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' },                     ticks: { callback: function (v) { return price(v); } } }, x: { grid: { display: false } } } } });
+        revenueChart = new Chart(ctx1, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Revenue', data: values, backgroundColor: 'rgba(107,127,94,0.7)', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(232,224,211,0.6)' },                     ticks: { callback: function (v) { return v.toLocaleString('en-US') + ' DA'; } } }, x: { grid: { display: false } } } } });
       }
 
       function renderStatusChart() {
@@ -195,13 +203,11 @@
         btn.addEventListener('click', function () {
           document.querySelectorAll('.range button').forEach(function (b) { b.classList.remove('active'); });
           btn.classList.add('active');
-          var periodMap = { '7D': 'daily', '30D': 'daily', '90D': 'weekly', '1Y': 'monthly' };
-          var period = periodMap[btn.textContent.trim()] || 'daily';
-          loadAnalytics(period);
+          loadAnalytics(btn.textContent.trim());
         });
       });
 
-      loadAnalytics('daily');
+      loadAnalytics('30D');
     })();
   </script>
 </body>

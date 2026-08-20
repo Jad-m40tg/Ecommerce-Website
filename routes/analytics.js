@@ -13,9 +13,15 @@ router.use(authenticateToken, requireAdmin);
 // Returns total revenue, order count, product count, unique customer count,
 // and the 5 most recent orders — all in a single query batch.
 router.get('/overview', (req, res) => {
-  const revenue = db.prepare("SELECT COALESCE(SUM(total_cents), 0) as total_revenue FROM orders WHERE payment_status = 'paid'").get();
-  const revenue30d = db.prepare("SELECT COALESCE(SUM(total_cents), 0) as revenue_30d FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', '-30 days')").get();
-  const orders = db.prepare('SELECT COUNT(*) as total_orders FROM orders').get();
+  // Optional ?days=N filters revenue/order totals to the last N days.
+  // Without the param, all-time stats are returned (backward compatible).
+  const days = Number(req.query.days) || 0;
+  const inRange = days >= 1;
+  const rangeFilter = inRange ? `created_at >= date('now', 'localtime', '-' || ${days} || ' days')` : null;
+
+  const revenue = db.prepare("SELECT COALESCE(SUM(total_cents), 0) as total_revenue FROM orders WHERE payment_status = 'paid'" + (rangeFilter ? ' AND ' + rangeFilter : '')).get();
+  const revenue30d = db.prepare("SELECT COALESCE(SUM(total_cents), 0) as revenue_30d FROM orders WHERE payment_status = 'paid'" + (rangeFilter ? ' AND ' + rangeFilter : " AND created_at >= date('now', 'localtime', '-30 days')")).get();
+  const orders = db.prepare('SELECT COUNT(*) as total_orders FROM orders' + (rangeFilter ? ' WHERE ' + rangeFilter : '')).get();
   const products = db.prepare('SELECT COUNT(*) as total_products FROM products').get();
   const customers = db.prepare('SELECT COUNT(DISTINCT customer_email) as total_customers FROM orders').get();
   const recentOrders = db.prepare('SELECT id, customer_name, customer_email, total_cents, order_status, payment_status, created_at FROM orders ORDER BY created_at DESC LIMIT 5').all();
@@ -35,22 +41,26 @@ router.get('/overview', (req, res) => {
 // Uses SQLite's strftime() to group dates into day/week/month buckets.
 router.get('/revenue', (req, res) => {
   const { period = 'daily' } = req.query;
+  // Optional ?days=N selects the range: 7/30 → daily, 90 → weekly (84 days), 365 → monthly.
+  const days = Number(req.query.days) || 0;
 
   let sql;
   if (period === 'weekly') {
-    // Last 84 days grouped by ISO week
-    sql = `SELECT strftime('%Y-%W', created_at) as period, SUM(total_cents) as revenue_cents, COUNT(*) as order_count
-           FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', '-84 days')
+    // 90D range maps to the last 12 ISO weeks (84 days); no param keeps the current default
+    const weekDays = 84;
+    sql = `SELECT strftime('%Y-%W', created_at, 'localtime') as period, SUM(total_cents) as revenue_cents, COUNT(*) as order_count
+           FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', 'localtime', '-' || ${weekDays} || ' days')
            GROUP BY period ORDER BY period`;
   } else if (period === 'monthly') {
-    // Last 12 months grouped by year-month
-    sql = `SELECT strftime('%Y-%m', created_at) as period, SUM(total_cents) as revenue_cents, COUNT(*) as order_count
-           FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', '-12 months')
+    // Last 12 months grouped by year-month ('-12 months' keeps correct month grouping for 1Y)
+    sql = `SELECT strftime('%Y-%m', created_at, 'localtime') as period, SUM(total_cents) as revenue_cents, COUNT(*) as order_count
+           FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', 'localtime', '-12 months')
            GROUP BY period ORDER BY period`;
   } else {
-    // Default: last 30 days grouped by date
-    sql = `SELECT date(created_at) as period, SUM(total_cents) as revenue_cents, COUNT(*) as order_count
-           FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', '-30 days')
+    // Daily buckets: ?days=7 → last 7 days; default (or ?days=30) → last 30 days
+    const dailyDays = days >= 1 ? days : 30;
+    sql = `SELECT date(created_at, 'localtime') as period, SUM(total_cents) as revenue_cents, COUNT(*) as order_count
+           FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', 'localtime', '-' || ${dailyDays} || ' days')
            GROUP BY period ORDER BY period`;
   }
 

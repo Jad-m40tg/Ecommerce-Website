@@ -111,6 +111,12 @@
   background: var(--sage); border-radius: 50%;
   box-shadow: 0 0 0 4px rgba(107, 127, 94, 0.18);
 }
+.qty-stock-note {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--wood);
+}
+.qty-stock-note::before { display: none; }
 
 .info-desc { color: var(--gray); font-size: 15px; margin-bottom: 26px; text-wrap: pretty; }
 
