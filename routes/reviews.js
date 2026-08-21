@@ -33,6 +33,18 @@ router.get('/', (req, res) => {
   res.json({ reviews, total: reviews.length });
 });
 
+// GET /api/reviews/recent — Public. Newest reviews across all products (homepage testimonials).
+router.get('/recent', (req, res) => {
+  const reviews = db.prepare(
+    `SELECT r.id, r.product_id, p.name AS product_name, r.customer_name, r.rating, r.comment, r.created_at
+     FROM reviews r
+     JOIN products p ON p.id = r.product_id
+     ORDER BY r.created_at DESC, r.id DESC
+     LIMIT 12`
+  ).all();
+  res.json({ reviews, total: reviews.length });
+});
+
 // POST /api/reviews — Public. Submit a review for a product (rating 1-5, optional comment).
 router.post('/', reviewLimiter, (req, res) => {
 

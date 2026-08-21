@@ -15,7 +15,7 @@ function showToast(msg) {
 
 /* ---------- PRODUCT CARD HTML ---------- */
 function productCardHTML(product) {
-  var rating = product.rating || 4.5;
+  var rating = product.rating || 0;
   var reviews = product.reviews || 0;
   var stars = '';
   for (var i = 0; i < Math.round(rating); i++) stars += '\u2605';
@@ -23,11 +23,16 @@ function productCardHTML(product) {
   var badge = '';
   if (product.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
   if (product.badge === 'new')  badge = '<span class="card-badge">New</span>';
+  if (!(product.stock > 0)) {
+    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    badge = badge ? badge + ' ' + outBadge : outBadge;
+  }
 
   var oldPrice = product.old_price_cents ? '<s>' + price(product.old_price_cents) + ' </s>' : '';
   var inCart = isInCart(product.id);
   var btnClass = inCart ? 'card-added' : 'card-add';
   var btnText = inCart ? 'In Cart' : 'Add';
+  var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
   return (
     '<article class="product-card">' +
@@ -41,7 +46,7 @@ function productCardHTML(product) {
         '<div class="card-rating">' + stars + '<span>(' + reviews + ')</span></div>' +
         '<div class="card-price-row">' +
           '<div class="card-price">' + price(product.price_cents) + oldPrice + '</div>' +
-          '<button class="' + btnClass + '" type="button" data-add="' + product.id + '">' + btnText + '</button>' +
+          '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
         '</div>' +
       '</div>' +
     '</article>'
@@ -118,8 +123,64 @@ function loadHomeProducts() {
   });
 }
 
+/* ---------- ANNOUNCEMENT BAR ---------- */
+function loadAnnouncementBar() {
+  fetch('/api/settings').then(function (r) { return r.json(); }).then(function (data) {
+    var s = data.settings || data || {};
+    var bar = document.getElementById('announcementBar');
+    if (!bar) return;
+    if (s.announcement_enabled === false) { bar.style.display = 'none'; return; }
+    var text = s.announcement_text;
+    if (!text) return;
+    var track = document.getElementById('announcementTrack');
+    if (track) track.innerHTML = '<span>' + escapeHtml(text) + '</span><span>' + escapeHtml(text) + '</span>';
+  }).catch(function () {});
+}
+
+/* ---------- TESTIMONIALS (real reviews) ---------- */
+function initialsOf(name) {
+  var parts = String(name || '').trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+  return String(name || '?').slice(0, 2).toUpperCase();
+}
+
+function testimonialCardHTML(review) {
+  var stars = '';
+  for (var i = 0; i < 5; i++) stars += i < review.rating ? '\u2605' : '\u2606';
+  return (
+    '<article class="testimonial-card reveal">' +
+      '<div class="stars" aria-label="' + review.rating + ' out of 5 stars">' + stars + '</div>' +
+      '<blockquote>&ldquo;' + escapeHtml(review.comment || '') + '&rdquo;</blockquote>' +
+      '<div class="who">' +
+        '<div class="avatar" aria-hidden="true">' + initialsOf(review.customer_name) + '</div>' +
+        '<div><b>' + escapeHtml(review.customer_name) + '</b><small>on ' + escapeHtml(review.product_name) + '</small></div>' +
+      '</div>' +
+    '</article>'
+  );
+}
+
+function loadTestimonials() {
+  fetch('/api/reviews/recent').then(function (r) { return r.json(); }).then(function (data) {
+    var reviews = data.reviews || [];
+    var grid = document.getElementById('testimonialGrid');
+    if (!grid) return;
+    if (reviews.length === 0) {
+      var section = document.getElementById('testimonials');
+      if (section) section.style.display = 'none';
+      return;
+    }
+    grid.innerHTML = reviews.slice(0, 3).map(testimonialCardHTML).join('');
+    document.querySelectorAll('#testimonialGrid .reveal').forEach(function (el) { revealObserver.observe(el); });
+  }).catch(function () {
+    var section = document.getElementById('testimonials');
+    if (section) section.style.display = 'none';
+  });
+}
+
 /* ---------- INIT ---------- */
 loadHomeProducts();
+loadAnnouncementBar();
+loadTestimonials();
 
 /* Delegated click: Add to cart */
 document.addEventListener('click', function (event) {
@@ -131,6 +192,7 @@ document.addEventListener('click', function (event) {
   }
   var product = _allProducts.find(function (p) { return String(p.id) === String(addBtn.getAttribute('data-add')); });
   if (!product) return;
+  if (!(product.stock > 0)) return;
   addToCart(product);
   showToast(product.name + ' added to cart');
   addBtn.textContent = 'In Cart';
@@ -189,13 +251,6 @@ var revealObserver = new IntersectionObserver(function (entries) {
 
 document.querySelectorAll('.reveal').forEach(function (el) { revealObserver.observe(el); });
 
-/* Newsletter fake submit */
-document.getElementById('newsletterForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  document.getElementById('newsletterSuccess').style.display = 'block';
-  this.reset();
-});
-
 /* Countdown timer (defaults to 3 days from load, driven by the active sale when one exists) */
 var saleEnd = Date.now() + 3 * 24 * 60 * 60 * 1000;
 function updateCountdown() {
@@ -229,7 +284,7 @@ function loadActiveSale() {
     var name = sale.product_name || 'selected furniture';
     if (titleEl) titleEl.textContent = 'On Sale Now: ' + name;
     if (descEl) descEl.textContent = 'Save on ' + name + ' while stock lasts. The deal ends when the timer runs out.';
-    if (shopEl && sale.product_id) shopEl.href = 'product.html?id=' + sale.product_id;
+    if (shopEl) shopEl.href = 'products.html?sale=' + (sale.id || 1);
     if (imgEl && sale.banner_image_url) imgEl.src = sale.banner_image_url;
   }).catch(function () {});
 }

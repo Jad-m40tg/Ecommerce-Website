@@ -149,21 +149,27 @@ function renderSummary() {
   var panel = document.getElementById('summaryPanel');
   var isEmpty = cart.length === 0;
 
+  function priceHTML(cents) {
+    var s = price(cents);
+    var m = s.match(/^(-?[\d.,]+)\s+DA$/);
+    return m ? '<span class="amount">' + m[1] + '</span><span class="unit">DA</span>' : s;
+  }
+
   var shippingLabel = isEmpty
     ? 'Free'
-    : (totals.shipping === 0 ? 'Free' : price(totals.shipping));
+    : (totals.shipping === 0 ? 'Free' : priceHTML(totals.shipping));
 
   var discountLine = appliedPromo
-    ? '<div class="summary-line"><span>Discount (' + escapeHtml(appliedPromo.code) + ')</span><b style="color: var(--sage)">-' + price(totals.discount) + '</b></div>'
+    ? '<div class="summary-line"><span>Discount (' + escapeHtml(appliedPromo.code) + ')</span><b style="color: var(--sage)">' + priceHTML(-totals.discount) + '</b></div>'
     : '';
 
   panel.innerHTML =
     '<h2>Order Summary</h2>' +
 
-    '<div class="summary-line"><span>Subtotal</span><b>' + price(totals.subtotal) + '</b></div>' +
+    '<div class="summary-line"><span>Subtotal</span><b>' + priceHTML(totals.subtotal) + '</b></div>' +
     discountLine +
     '<div class="summary-line"><span>Shipping</span><b>' + shippingLabel + '</b></div>' +
-    '<div class="summary-line"><span>Tax (est.)</span><b>' + price(totals.tax) + '</b></div>' +
+    '<div class="summary-line"><span>Tax (est.)</span><b>' + priceHTML(totals.tax) + '</b></div>' +
 
     '<div class="summary-divider"></div>' +
 
@@ -183,7 +189,7 @@ function renderSummary() {
 
     '<div class="summary-total">' +
       '<span>Total</span>' +
-      '<span class="value">' + price(totals.total) + '</span>' +
+      '<span class="value">' + priceHTML(totals.total) + '</span>' +
     '</div>' +
 
     '<button type="button" class="btn btn-primary" id="checkoutBtn" ' + (isEmpty ? 'disabled style="opacity:0.5;cursor:not-allowed"' : '') + '>' +

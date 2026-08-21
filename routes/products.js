@@ -69,7 +69,7 @@ router.get('/browse/featured', (req, res) => {
   const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   const offset = (Number(page) - 1) * safeLimit;
   const saleMap = activeSalesMap();
-  const products = db.prepare("SELECT * FROM products WHERE status = 'active' AND featured = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?").all(safeLimit, offset)
+  const products = db.prepare("SELECT *, (SELECT COALESCE(ROUND(AVG(rating),1),0) FROM reviews WHERE product_id = products.id) AS rating, (SELECT COUNT(*) FROM reviews WHERE product_id = products.id) AS reviews FROM products WHERE status = 'active' AND featured = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?").all(safeLimit, offset)
     .map((p) => withSalePrice(p, saleMap));
   const { count } = db.prepare("SELECT COUNT(*) as count FROM products WHERE status = 'active' AND featured = 1").get();
   res.json({ products, total: count, page: Number(page), limit: safeLimit });
@@ -90,7 +90,7 @@ router.get('/browse/on-sale', (req, res) => {
     params.push(...saleIds);
   }
   where += ')';
-  const products = db.prepare(`SELECT * FROM products WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`).all(...params, safeLimit, offset)
+  const products = db.prepare(`SELECT *, (SELECT COALESCE(ROUND(AVG(rating),1),0) FROM reviews WHERE product_id = products.id) AS rating, (SELECT COUNT(*) FROM reviews WHERE product_id = products.id) AS reviews FROM products WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`).all(...params, safeLimit, offset)
     .map((p) => withSalePrice(p, saleMap));
   const { count } = db.prepare(`SELECT COUNT(*) as count FROM products WHERE ${where}`).get(...params);
   res.json({ products, total: count, page: Number(page), limit: safeLimit });
@@ -102,7 +102,7 @@ router.get('/browse/on-sale', (req, res) => {
 router.get('/browse', (req, res) => {
   const { category, search, sort, page = 1, limit = 20, display_section } = req.query;
   const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999); // cap at 100
-  let sql = "SELECT * FROM products WHERE status = 'active'";
+  let sql = "SELECT *, (SELECT COALESCE(ROUND(AVG(rating),1),0) FROM reviews WHERE product_id = products.id) AS rating, (SELECT COUNT(*) FROM reviews WHERE product_id = products.id) AS reviews FROM products WHERE status = 'active'";
   let countSql = "SELECT COUNT(*) as count FROM products WHERE status = 'active'";
   const params = [];
   const countParams = [];
@@ -144,7 +144,7 @@ router.get('/browse', (req, res) => {
 
 // GET /api/products/browse/:id — Get a single product by ID (must be active)
 router.get('/browse/:id', (req, res) => {
-  const product = db.prepare("SELECT * FROM products WHERE id = ? AND status = 'active'").get(req.params.id);
+  const product = db.prepare("SELECT *, (SELECT COALESCE(ROUND(AVG(rating),1),0) FROM reviews WHERE product_id = products.id) AS rating, (SELECT COUNT(*) FROM reviews WHERE product_id = products.id) AS reviews FROM products WHERE id = ? AND status = 'active'").get(req.params.id);
   if (!product) return res.status(404).json({ error: 'Product not found' });
   res.json(withSalePrice(product, activeSalesMap()));
 });
@@ -189,21 +189,23 @@ router.get('/:id', (req, res) => {
 // Database auto-generates the ID (client cannot supply one).
 // Validates that price is a non-negative number.
 router.post('/', (req, res, next) => {
-  const { name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status, display_section } = req.body;
+  const { name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status, display_section, free_delivery, warranty_months } = req.body;
   if (!name || price_cents === undefined) return res.status(400).json({ error: 'name, price_cents required' });
   if (typeof price_cents !== 'number' || price_cents < 0) return res.status(400).json({ error: 'price_cents must be a non-negative number' });
   if (stock !== undefined && (typeof stock !== 'number' || stock < 0)) return res.status(400).json({ error: 'stock must be a non-negative number' });
+  if (warranty_months !== undefined && warranty_months !== null && (typeof warranty_months !== 'number' || !Number.isInteger(warranty_months) || warranty_months < 0)) return res.status(400).json({ error: 'warranty_months must be a non-negative integer or null' });
 
   const stmt = db.prepare(`
-    INSERT INTO products (name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status, display_section)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO products (name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status, display_section, free_delivery, warranty_months)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   try {
     // Array/object fields (colors, sizes, tags, images, specifications) are stored as JSON strings in SQLite
     const result = stmt.run(name, description || '', price_cents, old_price_cents || null, category || '', brand || '', sku || null, stock || 0,
       JSON.stringify(colors || []), JSON.stringify(sizes || []), JSON.stringify(tags || []), JSON.stringify(images || []), JSON.stringify(specifications || []),
       shipping_info || '', returns_info || '',
-      featured ? 1 : 0, on_sale ? 1 : 0, status || 'active', display_section || '');
+      featured ? 1 : 0, on_sale ? 1 : 0, status || 'active', display_section || '',
+      free_delivery ? 1 : 0, warranty_months == null ? null : warranty_months);
     res.status(201).json({ id: result.lastInsertRowid });
   } catch (e) {
     if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') return res.status(409).json({ error: 'SKU already exists' });
@@ -217,7 +219,7 @@ router.put('/:id', (req, res, next) => {
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
   if (!product) return res.status(404).json({ error: 'Product not found' });
 
-  const fields = ['name', 'description', 'price_cents', 'old_price_cents', 'category', 'brand', 'sku', 'stock', 'colors', 'sizes', 'tags', 'images', 'specifications', 'shipping_info', 'returns_info', 'featured', 'on_sale', 'status', 'display_section'];
+  const fields = ['name', 'description', 'price_cents', 'old_price_cents', 'category', 'brand', 'sku', 'stock', 'colors', 'sizes', 'tags', 'images', 'specifications', 'shipping_info', 'returns_info', 'featured', 'on_sale', 'status', 'display_section', 'free_delivery', 'warranty_months'];
   const updates = [];
   const values = [];
 
@@ -236,6 +238,10 @@ router.put('/:id', (req, res, next) => {
         const v = req.body[field];
         if (typeof v !== 'number' || v < 0 || !Number.isInteger(v)) return res.status(400).json({ error: 'stock must be a non-negative integer' });
       }
+      if (field === 'warranty_months') {
+        const v = req.body[field];
+        if (v !== null && (typeof v !== 'number' || !Number.isInteger(v) || v < 0)) return res.status(400).json({ error: 'warranty_months must be a non-negative integer or null' });
+      }
       if (field === 'status') {
         const allowed = ['active', 'draft'];
         if (!allowed.includes(req.body[field])) return res.status(400).json({ error: 'status must be active or draft' });
@@ -244,6 +250,10 @@ router.put('/:id', (req, res, next) => {
       // Array/object fields need to be stringified before saving
       if (['colors', 'sizes', 'tags', 'images', 'specifications'].includes(field)) {
         values.push(JSON.stringify(req.body[field]));
+      } else if (field === 'free_delivery') {
+        values.push(req.body[field] ? 1 : 0);
+      } else if (field === 'warranty_months') {
+        values.push(req.body[field] == null ? null : req.body[field]);
       } else if (field === 'sku' && !String(req.body[field] || '').trim()) {
         // Empty SKU must be NULL, not '', so the UNIQUE constraint allows multiple products without one.
         values.push(null);

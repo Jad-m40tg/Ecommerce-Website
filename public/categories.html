@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Categories | Boularas Modern Furniture &amp; Home</title>
-  <meta name="description" content="Browse Boularas furniture by category: living room, bedroom, office, kitchen, dining, outdoor, lighting, and décor." />
+  <meta name="description" content="Browse Boularas furniture by category: living room, bedroom, office, kitchen, dining, outdoor, lighting, and dï¿½cor." />
   <meta property="og:title" content="Categories | Boularas Modern Furniture &amp; Home" />
-  <meta property="og:description" content="Browse Boularas furniture by category: living room, bedroom, office, kitchen, dining, outdoor, lighting, and décor." />
+  <meta property="og:description" content="Browse Boularas furniture by category: living room, bedroom, office, kitchen, dining, outdoor, lighting, and dï¿½cor." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/assets/Boularas_Logo.png" />
   <meta name="twitter:card" content="summary" />
@@ -18,17 +18,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/global.css?v=11" />
-  <link rel="stylesheet" href="css/base.css?v=11" />
-  <link rel="stylesheet" href="css/navbar.css?v=11" />
-  <link rel="stylesheet" href="css/buttons.css?v=11" />
-  <link rel="stylesheet" href="css/footer.css?v=11" />
-  <link rel="stylesheet" href="css/reveal.css?v=11" />
-  <link rel="stylesheet" href="css/toast.css?v=11" />
-  <link rel="stylesheet" href="css/skeleton.css?v=11" />
-  <link rel="stylesheet" href="css/shared-responsive.css?v=11" />
-  <link rel="stylesheet" href="css/categories.css?v=11" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=11" />
+  <link rel="stylesheet" href="css/global.css?v=12" />
+  <link rel="stylesheet" href="css/base.css?v=12" />
+  <link rel="stylesheet" href="css/navbar.css?v=13" />
+  <link rel="stylesheet" href="css/buttons.css?v=12" />
+  <link rel="stylesheet" href="css/footer.css?v=12" />
+  <link rel="stylesheet" href="css/reveal.css?v=12" />
+  <link rel="stylesheet" href="css/toast.css?v=12" />
+  <link rel="stylesheet" href="css/skeleton.css?v=12" />
+  <link rel="stylesheet" href="css/shared-responsive.css?v=12" />
+  <link rel="stylesheet" href="css/categories.css?v=13" />
+  <link rel="stylesheet" href="css/categories.css?v=13" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=12" />
 </head>
 <body>
 
@@ -91,6 +92,70 @@
     </section>
 
     <!-- ==========================================================
+         CATALOG - all products with category filter, price and sort
+         ========================================================== -->
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <div class="catalog">
+
+          <aside class="filters reveal" id="filtersPanel" aria-label="Product filters">
+            <button type="button" class="filters-close" id="filtersClose" aria-label="Close filters">&times;</button>
+            <div class="filter-group">
+              <h3>Category</h3>
+              <ul class="filter-list" id="categoryList">
+              </ul>
+            </div>
+            <div class="filter-group">
+              <h3>Price</h3>
+              <input type="range" class="price-slider" id="priceSlider"
+                     min="0" max="1600" step="50" value="1600" aria-label="Maximum price" />
+              <div class="price-values">
+                <span>0 DA</span>
+                <span>Up to <b id="priceMaxLabel">0 DA</b></span>
+              </div>
+            </div>
+            <button type="button" class="clear-btn" id="clearFilters">Clear all filters</button>
+          </aside>
+
+          <div>
+            <div class="catalog-toolbar reveal">
+              <div class="result-count">
+                Showing <b id="resultCount">0</b> products
+              </div>
+
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button type="button" class="filters-toggle" id="filtersToggle" aria-label="Toggle filters">
+                  &#9776; Filters
+                </button>
+
+                <div class="sort-wrap">
+                  <label for="sortSelect">Sort by</label>
+                  <select id="sortSelect" class="sort-select">
+                    <option value="featured">Featured</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="rating">Top Rated</option>
+                    <option value="name">Name (A-Z)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="product-grid" id="categoryProductGrid">
+              <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+              <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+              <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+              <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+              <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+              <div class="skel-card"><div class="skeleton skel-img"></div><div class="skel-body"><div class="skeleton skel-line w40"></div><div class="skeleton skel-line w80 h20"></div><div class="skeleton skel-line w60"></div></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================
          BEST SELLERS IN EACH CATEGORY (horizontal scrolling row)
          ========================================================== -->
     <section class="section" style="padding-top: 0;">
@@ -136,14 +201,6 @@
           </ul>
         </div>
         <div>
-          <h4>Company</h4>
-          <ul>
-            <li><a href="index.html">About Boularas</a></li>
-            <li><a href="offers.html">Current Offers</a></li>
-            <li><a href="index.html">Sustainability</a></li>
-          </ul>
-        </div>
-        <div>
           <h4>Contact</h4>
           <ul>
             <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> <span class="footer-contact-address">123 Boularas Lane, Furniture District</span></li>
@@ -160,16 +217,17 @@
           </div>
         </div>
       </div>
-      <div class="footer-bottom">&copy; 2026 Boularas. All rights reserved. A fictional brand for learning purposes.</div>
+      <div class="footer-bottom"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" class="footer-bottom-logo" /> 2026 Boularas, all rights reserved</div>
     </div>
   </footer>
 
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="utils.js?v=11"></script>
-  <script src="js/cart-utils.js?v=11"></script>
-  <script src="js/footer.js?v=11"></script>
-  <script src="js/categories.js?v=11"></script>
+  <script src="utils.js?v=12"></script>
+  <script src="js/cart-utils.js?v=12"></script>
+  <script src="js/footer.js?v=12"></script>
+  <script src="js/categories.js?v=13"></script>
+  <script src="js/language.js?v=12"></script>
 </body>
 </html>

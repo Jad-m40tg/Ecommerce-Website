@@ -37,6 +37,12 @@ function calcTotals(cart) {
 }
 
 /* ---------- 3. RENDER SUMMARY ---------- */
+function priceHTML(cents) {
+  var s = price(cents);
+  var m = s.match(/^(-?[\d.,]+)\s+DA$/);
+  return m ? '<span class="amount">' + m[1] + '</span><span class="unit">DA</span>' : s;
+}
+
 function renderSummary() {
   var cart = getCart();
   var totals = calcTotals(cart);
@@ -54,7 +60,7 @@ function renderSummary() {
 
   if (subtitle) subtitle.textContent = cart.reduce(function (s, i) { return s + i.qty; }, 0) + ' item(s) ready for checkout.';
 
-  var shippingLabel = totals.shipping === 0 ? 'Free' : price(totals.shipping);
+  var shippingLabel = totals.shipping === 0 ? 'Free' : priceHTML(totals.shipping);
 
   var itemsHtml = cart.map(function (item) {
     var prod = PRODUCT_CATALOG[String(item.id)];
@@ -78,16 +84,16 @@ function renderSummary() {
 
     '<div class="summary-divider"></div>' +
 
-    '<div class="summary-line"><span>Subtotal</span><b>' + price(totals.subtotal) + '</b></div>' +
-    (totals.discount > 0 ? '<div class="summary-line"><span>Discount (' + escapeHtml(appliedPromo.code) + ')</span><b style="color: var(--sage)">-' + price(totals.discount) + '</b></div>' : '') +
+    '<div class="summary-line"><span>Subtotal</span><b>' + priceHTML(totals.subtotal) + '</b></div>' +
+    (totals.discount > 0 ? '<div class="summary-line"><span>Discount (' + escapeHtml(appliedPromo.code) + ')</span><b style="color: var(--sage)">' + priceHTML(-totals.discount) + '</b></div>' : '') +
     '<div class="summary-line"><span>Shipping</span><b>' + shippingLabel + '</b></div>' +
-    '<div class="summary-line"><span>Tax (est.)</span><b>' + price(totals.tax) + '</b></div>' +
+    '<div class="summary-line"><span>Tax (est.)</span><b>' + priceHTML(totals.tax) + '</b></div>' +
 
     '<div class="summary-divider"></div>' +
 
     '<div class="summary-total">' +
       '<span>Total</span>' +
-      '<span class="value">' + price(totals.total) + '</span>' +
+      '<span class="value">' + priceHTML(totals.total) + '</span>' +
     '</div>' +
 
     '<button type="button" class="btn btn-primary" id="placeOrderBtn">Place Order</button>' +

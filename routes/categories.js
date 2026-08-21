@@ -13,8 +13,15 @@ const router = express.Router();
 // ============================================================
 
 // GET /api/categories — Public. List all categories sorted by sort_order then name.
+// Each category includes a real product_count (products join on categories.slug via products.category).
 router.get('/', (req, res) => {
-  const categories = db.prepare('SELECT * FROM categories ORDER BY sort_order ASC, name ASC').all();
+  const categories = db.prepare(`
+    SELECT c.*, COUNT(p.id) AS product_count
+    FROM categories c
+    LEFT JOIN products p ON p.category = c.slug
+    GROUP BY c.id
+    ORDER BY c.sort_order ASC, c.name ASC
+  `).all();
   res.json({ categories });
 });
 
@@ -68,6 +75,25 @@ router.delete('/:slug', (req, res) => {
   const result = db.prepare('DELETE FROM categories WHERE slug = ?').run(req.params.slug);
   if (result.changes === 0) return res.status(404).json({ error: 'Category not found' });
   res.json({ success: true });
+});
+
+// POST /api/categories/:slug/products — Admin only. Assign products to a category.
+router.post('/:slug/products', (req, res) => {
+  const cat = db.prepare('SELECT * FROM categories WHERE slug = ?').get(req.params.slug);
+  if (!cat) return res.status(404).json({ error: 'Category not found' });
+  const { product_ids } = req.body;
+  if (!Array.isArray(product_ids) || product_ids.length === 0) {
+    return res.status(400).json({ error: 'product_ids must be a non-empty array' });
+  }
+  const ids = [...new Set(product_ids.map(Number))];
+  for (const id of ids) {
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid product id: ' + id });
+    const exists = db.prepare('SELECT id FROM products WHERE id = ?').get(id);
+    if (!exists) return res.status(404).json({ error: 'Product not found: ' + id });
+  }
+  const placeholders = ids.map(() => '?').join(',');
+  db.prepare('UPDATE products SET category = ?, updated_at = CURRENT_TIMESTAMP WHERE id IN (' + placeholders + ')').run(cat.slug, ...ids);
+  res.json({ success: true, assigned: ids.length });
 });
 
 module.exports = router;

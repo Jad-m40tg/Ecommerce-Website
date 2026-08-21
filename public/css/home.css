@@ -212,37 +212,7 @@
 .who small { color: var(--gray); font-size: 13px; }
 
 /* ============================================================
-   6. NEWSLETTER
-   ============================================================ */
-.newsletter {
-  background: var(--cream);
-  border-radius: var(--radius-lg);
-  padding: clamp(36px, 5vw, 60px);
-  text-align: center;
-  border: 1px solid var(--beige);
-}
-
-.newsletter h2 { font-size: clamp(24px, 3vw, 34px); margin-bottom: 10px; }
-.newsletter p { color: var(--gray); margin-bottom: 26px; }
-
-.newsletter-form {
-  display: flex; gap: 10px; max-width: 480px; margin-inline: auto;
-}
-
-.newsletter-form input {
-  flex: 1; padding: 14px 18px;
-  border: 1.5px solid var(--beige);
-  border-radius: var(--radius-md);
-  background: var(--white);
-  font-family: inherit; font-size: 14.5px; color: var(--charcoal);
-  outline: none; transition: border-color 0.25s ease;
-}
-.newsletter-form input:focus { border-color: var(--sage); }
-
-.newsletter-success { display: none; color: var(--sage); font-weight: 600; margin-top: 14px; }
-
-/* ============================================================
-   7. PRODUCT ROW (horizontal scrolling product carousel)
+   6. PRODUCT ROW (horizontal scrolling product carousel)
    ============================================================ */
 .row-header {
   display: flex; align-items: flex-end; justify-content: space-between;
@@ -272,7 +242,7 @@
 .product-row::-webkit-scrollbar-thumb { background: var(--beige); border-radius: 3px; }
 
 /* ============================================================
-   8. PRODUCT CARD (row context)
+   7. PRODUCT CARD (row context)
    ============================================================ */
 .product-card {
   flex: 0 0 260px;
@@ -292,12 +262,20 @@
 
 .card-badge {
   position: absolute; top: 12px; left: 12px;
-  padding: 5px 12px; border-radius: var(--radius-pill);
+  padding: 4px 10px; border-radius: var(--radius-md);
   background: var(--sage); color: var(--warm-white);
-  font-size: 11.5px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   letter-spacing: 0.06em; text-transform: uppercase;
+  transition: transform 0.2s ease;
 }
-.card-badge.sale { background: var(--wood); }
+.card-badge.sale {
+  background: var(--wood);
+  margin-bottom: 4px;
+}
+.card-badge:not(.sale) {
+  position: absolute; right: 12px; left: auto; bottom: 12px; top: auto;
+  background: #9aa0a6;
+}
 
 .card-body { padding: 16px 18px 20px; display: flex; flex-direction: column; flex: 1; }
 .card-category {
@@ -337,7 +315,7 @@
 .card-added:hover { background: var(--sage-dark); }
 
 /* ============================================================
-   9. RESPONSIVE OVERRIDES (page-specific breakpoints)
+   8. RESPONSIVE OVERRIDES (page-specific breakpoints)
    ============================================================ */
 @media (max-width: 900px) {
   .category-grid { grid-template-columns: repeat(2, 1fr); }

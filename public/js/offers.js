@@ -35,12 +35,17 @@ function productCardHTML(product) {
   var badge = '';
   if (product.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
   if (product.badge === 'new')  badge = '<span class="card-badge">New</span>';
+  if (!(product.stock > 0)) {
+    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    badge = badge ? badge + ' ' + outBadge : outBadge;
+  }
   var oldPrice = product.price_cents && product.old_price_cents
     ? '<s>' + price(product.old_price_cents) + '</s>' : '';
   var priceHtml = product.price_cents ? price(product.price_cents) : '';
   var inCart = isInCart(product.id);
   var btnClass = inCart ? 'card-added' : 'card-add';
   var btnText = inCart ? 'In Cart' : 'Add';
+  var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
   return (
     '<article class="product-card">' +
@@ -54,7 +59,7 @@ function productCardHTML(product) {
         '<div class="card-rating">' + stars + '<span>(' + (product.reviews || 0) + ')</span></div>' +
         '<div class="card-price-row">' +
           '<div class="card-price">' + priceHtml + oldPrice + '</div>' +
-          '<button class="' + btnClass + '" type="button" data-add="' + product.id + '">' + btnText + '</button>' +
+          '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
         '</div>' +
       '</div>' +
     '</article>'
@@ -76,6 +81,7 @@ document.addEventListener('click', function (event) {
   var pid = Number(addButton.getAttribute('data-add'));
   var product = PRODUCTS.find(function (p) { return p.id === pid; });
   if (product) {
+    if (!(product.stock > 0)) return;
     addToCart(product);
     showToast(product.name + ' added to cart');
   }
@@ -118,21 +124,7 @@ document.querySelectorAll('[data-scroll]').forEach(function (button) {
 });
 
 /* ---------- COUNTDOWN TIMER ---------- */
-var COUNTDOWN_KEY = 'boularas-sale-end';
-var DEFAULT_DURATION = 3 * 24 * 60 * 60 * 1000;
-
-function getSaleEndDate() {
-  var stored = localStorage.getItem(COUNTDOWN_KEY);
-  if (stored) {
-    var ts = parseInt(stored, 10);
-    if (!isNaN(ts) && ts > Date.now()) return ts;
-  }
-  var end = Date.now() + DEFAULT_DURATION;
-  localStorage.setItem(COUNTDOWN_KEY, String(end));
-  return end;
-}
-
-var saleEnd = getSaleEndDate();
+var saleEnd = Date.now() + 3 * 24 * 60 * 60 * 1000;
 
 function updateCountdown() {
   var remaining = Math.max(0, saleEnd - Date.now());
@@ -148,6 +140,29 @@ function updateCountdown() {
 
 updateCountdown();
 setInterval(updateCountdown, 1000);
+
+function loadActiveSale() {
+  fetch('/api/sales/active').then(function (r) { return r.json(); }).then(function (data) {
+    var sales = data.sales || [];
+    if (sales.length === 0) return;
+    var sale = sales[0];
+    var end = new Date(sale.end_at).getTime();
+    if (isNaN(end)) return;
+    saleEnd = end;
+    updateCountdown();
+    var titleEl = document.getElementById('offerTitle');
+    var descEl  = document.getElementById('offerDesc');
+    var shopEl  = document.getElementById('offerShop');
+    var imgEl   = document.getElementById('offerImg');
+    var name = sale.product_name || 'selected furniture';
+    if (titleEl) titleEl.textContent = 'On Sale Now: ' + name;
+    if (descEl) descEl.textContent = 'Save on ' + name + ' while stock lasts. The deal ends when the timer runs out.';
+    if (imgEl) imgEl.src = sale.image_url || sale.image || '/assets/noImageForItem.jpg';
+    if (shopEl) shopEl.href = 'products.html?sale=' + sale.id;
+  }).catch(function () {});
+}
+
+loadActiveSale();
 
 /* ---------- UI HELPERS ---------- */
 
@@ -214,6 +229,7 @@ fetch('/api/products/browse/on-sale')
         category_name: (p.category_name || p.category || 'Uncategorized'),
         price_cents: p.price_cents || 0,
         old_price_cents: p.old_price_cents || null,
+        stock: p.stock || 0,
         on_sale: !!p.on_sale,
         rating: parseFloat(p.rating) || 0,
         reviews: parseInt(p.reviews, 10) || 0,

@@ -2,6 +2,8 @@
 
 var PRODUCTS = [];
 var CATEGORY_LABELS = { all: 'All Products' };
+var PRICE_MAX_DA = null;
+var PRICE_MAX_LABEL = '';
 
 function getProductImage(product) {
   var imgs = [];
@@ -18,6 +20,32 @@ function getProductImage(product) {
 function getProductCategory(product) {
   return (product.category || product.category_name || 'uncategorized');
 }
+function isOnSale(product) {
+  return !!(product.on_sale || product.on_sale === 1);
+}
+
+/* The base set every count derives from: everything fetched, sale view narrows it */
+function getBaseProducts() {
+  return state.sale ? PRODUCTS.filter(isOnSale) : PRODUCTS;
+}
+
+/* Slider scale from real data: top is the true max price (step-rounded up) */
+function setupPriceSlider() {
+  var base = getBaseProducts();
+  var maxCents = 0;
+  base.forEach(function (p) {
+    var c = p.price_cents || 0;
+    if (c > maxCents) maxCents = c;
+  });
+  PRICE_MAX_DA = Math.max(1, Math.ceil((maxCents / 100) / 50) * 50);
+  PRICE_MAX_LABEL = sliderLabel(maxCents / 100);
+  state.maxPrice = PRICE_MAX_DA;
+  var slider = document.getElementById('priceSlider');
+  slider.min = 0;
+  slider.max = PRICE_MAX_DA;
+  slider.value = PRICE_MAX_DA;
+  document.getElementById('priceMaxLabel').textContent = PRICE_MAX_LABEL;
+}
 
 /* Format the price-slider max label in DZD */
 function sliderLabel(dzd) {
@@ -28,9 +56,13 @@ function sliderLabel(dzd) {
 const params = new URLSearchParams(window.location.search);
 const state = {
   category: params.get('category') || 'all',
-  maxPrice: 1600,
+  sale: params.get('sale') || null,
+  maxPrice: null,
   sort: 'featured'
 };
+
+var saleBanner = document.getElementById('saleBanner');
+if (saleBanner && state.sale) saleBanner.style.display = '';
 
 function productCardHTML(product) {
   var img = getProductImage(product);
@@ -40,10 +72,15 @@ function productCardHTML(product) {
   var badge = '';
   if (isSale && oldPrice) badge = '<span class="card-badge sale">Sale</span>';
   else if (product.featured) badge = '<span class="card-badge">Featured</span>';
+  if (!(product.stock > 0)) {
+    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    badge = badge ? badge + ' ' + outBadge : outBadge;
+  }
   var oldPriceHTML = oldPrice ? '<s>' + price(oldPrice) + '</s>' : '';
   var inCart = isInCart(product.id);
   var btnClass = inCart ? 'card-added' : 'card-add';
   var btnText = inCart ? 'In Cart' : 'Add';
+  var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
   return (
     '<article class="product-card">' +
@@ -56,7 +93,7 @@ function productCardHTML(product) {
         '<h3><a href="product.html?id=' + product.id + '">' + escapeHtml(product.name) + '</a></h3>' +
         '<div class="card-price-row">' +
           '<div class="card-price">' + price(product.price_cents || 0) + oldPriceHTML + '</div>' +
-          '<button class="' + btnClass + '" type="button" data-add="' + product.id + '">' + btnText + '</button>' +
+          '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
         '</div>' +
       '</div>' +
     '</article>'
@@ -64,8 +101,9 @@ function productCardHTML(product) {
 }
 
 function renderCategoryList() {
-  var counts = { all: PRODUCTS.length };
-  PRODUCTS.forEach(function (p) {
+  var base = getBaseProducts();
+  var counts = { all: base.length };
+  base.forEach(function (p) {
     var cat = getProductCategory(p).toLowerCase();
     counts[cat] = (counts[cat] || 0) + 1;
   });
@@ -85,16 +123,23 @@ function renderCategoryList() {
 }
 
 function renderProducts() {
+  if (!PRODUCTS.length) return;
   var list = PRODUCTS.slice();
+
+  if (state.sale) {
+    list = list.filter(isOnSale);
+  }
 
   if (state.category !== 'all') {
     list = list.filter(function (p) {
       return getProductCategory(p).toLowerCase() === state.category;
     });
   }
-  list = list.filter(function (p) {
-    return (p.price_cents || 0) <= state.maxPrice * 100;
-  });
+  if (PRICE_MAX_DA !== null) {
+    list = list.filter(function (p) {
+      return (p.price_cents || 0) <= state.maxPrice * 100;
+    });
+  }
 
   if (state.sort === 'price-asc')  list.sort(function (a, b) { return (a.price_cents || 0) - (b.price_cents || 0); });
   if (state.sort === 'price-desc') list.sort(function (a, b) { return (b.price_cents || 0) - (a.price_cents || 0); });
@@ -113,6 +158,7 @@ function renderProducts() {
     document.getElementById('emptyReset').addEventListener('click', clearFilters);
   } else {
     grid.innerHTML = list.map(productCardHTML).join('');
+    if (typeof initLazyImages === 'function') initLazyImages();
   }
 
   document.getElementById('resultCount').textContent = list.length;
@@ -120,10 +166,10 @@ function renderProducts() {
 
 function clearFilters() {
   state.category = 'all';
-  state.maxPrice = 1600;
+  state.maxPrice = PRICE_MAX_DA;
   state.sort = 'featured';
-  document.getElementById('priceSlider').value = 1600;
-  document.getElementById('priceMaxLabel').textContent = sliderLabel(1600);
+  document.getElementById('priceSlider').value = PRICE_MAX_DA;
+  document.getElementById('priceMaxLabel').textContent = PRICE_MAX_LABEL;
   document.getElementById('sortSelect').value = 'featured';
   renderCategoryList();
   renderProducts();
@@ -141,7 +187,6 @@ document.getElementById('categoryList').addEventListener('click', function (even
 /* Price slider */
 document.getElementById('priceSlider').addEventListener('input', function () {
   state.maxPrice = Number(this.value);
-  document.getElementById('priceMaxLabel').textContent = sliderLabel(Number(this.value));
   renderProducts();
 });
 
@@ -163,6 +208,7 @@ document.addEventListener('click', function (event) {
   }
   const product = PRODUCTS.find(function (p) { return String(p.id) === String(addButton.getAttribute('data-add')); });
   if (!product) return;
+  if (!(product.stock > 0)) return;
   addToCart(product);
   showToast(product.name + ' added to cart');
   addButton.textContent = 'In Cart';
@@ -261,6 +307,7 @@ updateCartCount();
       });
     }
 
+    setupPriceSlider();
     renderCategoryList();
     renderProducts();
     if (typeof initLazyImages === 'function') initLazyImages();

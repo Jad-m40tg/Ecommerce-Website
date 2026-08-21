@@ -101,7 +101,7 @@
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=11" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=12" />
 </head>
 <body>
 
@@ -197,6 +197,17 @@
             </div>
           </section>
 
+          <section class="panel">
+            <h2 class="panel-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Product Perks</h2>
+            <div class="form-grid">
+              <div class="field full">
+                <label for="pFreeDelivery">Free Delivery <span class="hint">unchecked falls back to the store default in Settings</span></label>
+                <input type="checkbox" id="pFreeDelivery" style="width:20px;height:20px;accent-color:var(--sage)" />
+              </div>
+              <div class="field"><label for="pWarrantyMonths">Warranty <span class="hint">(months — blank uses the store default)</span></label><input class="input" type="number" id="pWarrantyMonths" min="0" step="1" placeholder="12" /></div>
+            </div>
+          </section>
+
           <div class="save-bar">
             <a href="admin-products.html" class="qa-btn">Cancel</a>
             <span class="spacer"></span>
@@ -209,9 +220,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="utils.js?v=11"></script>
+  <script src="utils.js?v=12"></script>
   <script src="js/admin-topbar.js?v=12"></script>
-  <script src="js/admin-mobile-nav.js?v=11"></script>
+  <script src="js/admin-mobile-nav.js?v=12"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');
@@ -251,6 +262,8 @@
           document.getElementById('pBrand').value = p.brand || '';
           document.getElementById('pShippingInfo').value = p.shipping_info || '';
           document.getElementById('pReturnsInfo').value = p.returns_info || '';
+          document.getElementById('pFreeDelivery').checked = !!p.free_delivery;
+          if (p.warranty_months != null && p.warranty_months !== '') document.getElementById('pWarrantyMonths').value = p.warranty_months;
           var parsedSpecs = []; try { parsedSpecs = Array.isArray(p.specifications) ? p.specifications : typeof p.specifications === 'string' ? JSON.parse(p.specifications || '[]') : []; } catch (e) { parsedSpecs = []; }
           document.getElementById('specRows').innerHTML = '';
           parsedSpecs.forEach(function (spec) { addSpecRow(spec.label, spec.value); });
@@ -376,6 +389,8 @@
           sku: document.getElementById('pSku').value.trim() || null,
           shipping_info: document.getElementById('pShippingInfo').value.trim(),
           returns_info: document.getElementById('pReturnsInfo').value.trim(),
+          free_delivery: document.getElementById('pFreeDelivery').checked,
+          warranty_months: (parseInt(document.getElementById('pWarrantyMonths').value, 10) || null),
           specifications: Array.from(document.querySelectorAll('.spec-row')).map(function (row) { var inp = row.querySelectorAll('input'); return { label: inp[0].value.trim(), value: inp[1].value.trim() }; }).filter(function (s) { return s.label || s.value; }),
           sizes: document.getElementById('pSizes').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean),
           colors: selectedColors,

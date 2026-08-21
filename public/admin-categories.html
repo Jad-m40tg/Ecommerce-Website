@@ -29,6 +29,12 @@
     .modal-body{padding:8px 24px 20px;display:flex;flex-direction:column;gap:14px}.form-field label{display:block;font-size:12.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gray);margin-bottom:6px}.form-field input,.form-field select,.form-field textarea{width:100%;padding:11px 14px;border:1.5px solid var(--beige);border-radius:var(--radius-md);background:var(--warm-white);color:var(--charcoal);font-size:14px;transition:border-color .2s ease,box-shadow .2s ease}.form-field textarea{resize:vertical;min-height:80px}.form-field input:focus,.form-field select:focus,.form-field textarea:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 4px rgba(107,127,94,.12)}
     .modal-foot{padding:16px 24px 22px;display:flex;gap:10px;justify-content:flex-end;background:var(--warm-white);border-top:1px solid var(--beige)}
     .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--charcoal);color:var(--warm-white);padding:12px 20px;border-radius:var(--radius-pill);font-size:14px;font-weight:500;box-shadow:var(--shadow-lift);opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s ease;z-index:200}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .banner-drop{position:relative;border:1.5px dashed var(--beige);border-radius:var(--radius-md);background:var(--warm-white);padding:14px;text-align:center;cursor:pointer;overflow:hidden;transition:border-color .2s ease,background .2s ease}.banner-drop:hover{border-color:var(--sage);background:var(--cream)}.banner-drop span{display:block;font-size:12.5px;color:var(--gray)}.banner-drop img{max-height:140px;width:auto;max-width:100%;margin:0 auto;border-radius:var(--radius-sm)}.banner-drop.has-img{border-style:solid;border-color:var(--sage)}
+    .picker-list{max-height:380px;overflow-y:auto;border:1.5px solid var(--beige);border-radius:var(--radius-md);padding:6px;display:flex;flex-direction:column;gap:2px}
+    .picker-item{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:13.5px}.picker-item:hover{background:var(--warm-white)}.picker-item input{width:16px;height:16px;accent-color:var(--sage);flex-shrink:0}
+    .picker-thumb{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--cream);overflow:hidden;flex-shrink:0}.picker-thumb img{width:100%;height:100%;object-fit:cover}
+    .picker-item .pi-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.picker-item .pi-price{color:var(--gray);font-size:12.5px;white-space:nowrap}
+    .picker-empty{text-align:center;padding:20px;color:var(--gray);font-size:13px}
     @media(max-width:860px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.side-nav{flex-direction:row;overflow-x:auto;gap:6px}.side-nav a{white-space:nowrap}.nav-label,.sidebar-foot{display:none}.sidebar .brand{border-bottom:none;padding-bottom:12px;margin-bottom:8px}.topbar{padding:0 20px;gap:10px}.admin-chip .who{display:none}.content{padding:20px}}
     .notif-panel{position:absolute;top:52px;right:0;width:320px;max-height:400px;background:var(--white);border:1.5px solid var(--beige);border-radius:var(--radius-lg);box-shadow:var(--shadow-lift);z-index:200;display:flex;flex-direction:column;overflow:hidden}
     .notif-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--beige)}
@@ -45,7 +51,7 @@
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=11" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=12" />
 </head>
 <body>
 
@@ -101,7 +107,7 @@
       <div class="modal-body">
         <div class="form-field"><label for="fName">Name</label><input id="fName" type="text" placeholder="e.g. Sofas" /></div>
         <div class="form-field"><label for="fSlug">Slug</label><input id="fSlug" type="text" placeholder="e.g. sofas (auto-generated from name)" /></div>
-        <div class="form-field"><label for="fImage">Image URL</label><input id="fImage" type="url" placeholder="https://…" /></div>
+        <div class="form-field"><label for="fImage">Image</label><div class="banner-drop" id="catImageDrop"><input type="file" id="catImageInput" accept="image/*" hidden /><span id="catImagePlaceholder">Click to upload an image (JPEG, PNG, GIF, WebP)</span><img id="catImagePreview" alt="Category image preview" style="display:none" /></div><input id="fImage" type="url" placeholder="https://… or uploaded URL" style="margin-top:8px" /></div>
         <div class="form-field"><label for="fStatus">Status</label><select id="fStatus"><option value="active">Active</option><option value="draft">Draft</option></select></div>
         <div class="form-field"><label for="fDesc">Description</label><textarea id="fDesc" placeholder="Short description…"></textarea></div>
       </div>
@@ -111,9 +117,20 @@
 
   <div class="toast" id="toast">Saved</div>
 
-  <script src="utils.js?v=11"></script>
+  <div class="modal-backdrop" id="pickerModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pickerTitle" style="max-width:640px">
+      <div class="modal-head"><h2 id="pickerTitle">Add products</h2><button class="modal-close" id="pickerClose" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+      <div class="modal-body">
+        <div class="form-field"><input id="pickerSearch" type="search" placeholder="Search products…" /></div>
+        <div class="picker-list" id="pickerList"><div class="picker-empty">Loading products…</div></div>
+      </div>
+      <div class="modal-foot"><button class="qa-btn" id="pickerCancel">Cancel</button><button class="qa-btn primary" id="pickerSave">Add selected</button></div>
+    </div>
+  </div>
+
+  <script src="utils.js?v=12"></script>
   <script src="js/admin-topbar.js?v=12"></script>
-  <script src="js/admin-mobile-nav.js?v=11"></script>
+  <script src="js/admin-mobile-nav.js?v=12"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');
@@ -146,7 +163,7 @@
         });
         countEl.textContent = list.length;
         grid.innerHTML = list.map(function (c) {
-          return '<article class="cat-card"><div class="cat-media"><img src="' + escapeHtml(c.image || c.img || '') + '" alt="' + escapeHtml(c.name || '') + '" loading="lazy" onerror="this.style.display=\'none\'" /><span class="cat-status ' + escapeHtml(c.status || 'active') + '"><span class="dot"></span> ' + statusLabel(c.status || 'active') + '</span></div><div class="cat-body"><h3 class="cat-title">' + escapeHtml(c.name || '') + '</h3><div class="cat-meta"><span class="count-pill">' + (c.product_count || c.count || 0) + ' products</span></div><div class="cat-actions"><button data-action="edit" data-slug="' + escapeHtml(c.slug || '') + '">Edit</button><button class="delete" data-action="delete" data-slug="' + escapeHtml(c.slug || '') + '">Delete</button></div></div></article>';
+          return '<article class="cat-card"><div class="cat-media"><img src="' + escapeHtml(c.image || c.img || '') + '" alt="' + escapeHtml(c.name || '') + '" loading="lazy" onerror="this.style.display=\'none\'" /><span class="cat-status ' + escapeHtml(c.status || 'active') + '"><span class="dot"></span> ' + statusLabel(c.status || 'active') + '</span></div><div class="cat-body"><h3 class="cat-title">' + escapeHtml(c.name || '') + '</h3><div class="cat-meta"><span class="count-pill">' + (c.product_count || c.count || 0) + ' products</span></div><div class="cat-actions"><button data-action="products" data-slug="' + escapeHtml(c.slug || '') + '">Add Products</button><button data-action="edit" data-slug="' + escapeHtml(c.slug || '') + '">Edit</button><button class="delete" data-action="delete" data-slug="' + escapeHtml(c.slug || '') + '">Delete</button></div></div></article>';
         }).join('');
       }
 
@@ -154,7 +171,9 @@
         var btn = e.target.closest('button[data-action]');
         if (!btn) return;
         var slug = btn.dataset.slug;
-        if (btn.dataset.action === 'edit') {
+        if (btn.dataset.action === 'products') {
+          openPicker(slug);
+        } else if (btn.dataset.action === 'edit') {
           var cat = categories.find(function (c) { return c.slug === slug; });
           if (cat) openModal('Edit category', cat);
         } else {
@@ -180,6 +199,7 @@
         fName.value = cat ? cat.name : '';
         fSlug.value = cat ? cat.slug : '';
         fImage.value = cat ? (cat.image || cat.img || '') : '';
+        setCatImagePreview(cat ? (cat.image || cat.img || '') : '');
         fStatus.value = cat ? (cat.status || 'active') : 'active';
         fDesc.value = cat ? (cat.description || '') : '';
         modal.classList.add('open');
@@ -190,7 +210,7 @@
       document.getElementById('modalClose').addEventListener('click', closeModal);
       document.getElementById('modalCancel').addEventListener('click', closeModal);
       modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
-      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeModal(); closePicker(); } });
 
       document.getElementById('modalSave').addEventListener('click', function () {
         var name = fName.value.trim();
@@ -211,6 +231,109 @@
 
       search.addEventListener('input', render);
       statusFilter.addEventListener('change', render);
+
+      var catImageDrop = document.getElementById('catImageDrop');
+      var catImageInput = document.getElementById('catImageInput');
+      var catImagePreview = document.getElementById('catImagePreview');
+      var catImagePlaceholder = document.getElementById('catImagePlaceholder');
+
+      function setCatImagePreview(url) {
+        if (url) {
+          catImagePreview.src = url;
+          catImagePreview.style.display = 'block';
+          catImagePlaceholder.style.display = 'none';
+          catImageDrop.classList.add('has-img');
+        } else {
+          catImagePreview.src = '';
+          catImagePreview.style.display = 'none';
+          catImagePlaceholder.style.display = 'block';
+          catImageDrop.classList.remove('has-img');
+        }
+      }
+
+      function uploadCatImage(file) {
+        var fd = new FormData();
+        fd.append('image', file);
+        fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.url) { fImage.value = data.url; setCatImagePreview(data.url); toast('Image uploaded'); }
+            else { toast(data.error || 'Upload failed'); }
+          })
+          .catch(function () { toast('Upload failed'); });
+      }
+
+      catImageDrop.addEventListener('click', function () { catImageInput.click(); });
+      catImageInput.addEventListener('change', function () {
+        if (catImageInput.files && catImageInput.files[0]) uploadCatImage(catImageInput.files[0]);
+      });
+
+      var pickerModal = document.getElementById('pickerModal');
+      var pickerList = document.getElementById('pickerList');
+      var pickerSearch = document.getElementById('pickerSearch');
+      var pickerCat = null;
+      var pickerProducts = [];
+
+      function openPicker(slug) {
+        var cat = categories.find(function (c) { return c.slug === slug; });
+        if (!cat) return;
+        pickerCat = cat;
+        pickerProducts = [];
+        pickerSearch.value = '';
+        document.getElementById('pickerTitle').textContent = 'Add products to ' + (cat.name || cat.slug);
+        renderPicker();
+        pickerModal.classList.add('open');
+        apiFetch('/api/products?limit=9999').then(function (data) {
+          pickerProducts = data.products || data || [];
+          renderPicker();
+        }).catch(function () {
+          pickerList.innerHTML = '<div class="picker-empty">Unable to load products</div>';
+        });
+      }
+
+      function closePicker() { pickerModal.classList.remove('open'); pickerCat = null; pickerProducts = []; }
+
+      function renderPicker() {
+        if (!pickerCat) return;
+        var q = pickerSearch.value.trim().toLowerCase();
+        var list = pickerProducts.filter(function (p) {
+          if ((p.category || '') === pickerCat.slug) return false;
+          return !q || (p.name || '').toLowerCase().includes(q);
+        });
+        if (!pickerProducts.length) { pickerList.innerHTML = '<div class="picker-empty">Loading products…</div>'; return; }
+        if (!list.length) { pickerList.innerHTML = '<div class="picker-empty">No products to add</div>'; return; }
+        pickerList.innerHTML = list.map(function (p) {
+          var imgs = []; try { imgs = p.images ? (typeof p.images === 'string' ? JSON.parse(p.images) : p.images) : []; } catch (e) { imgs = []; }
+          var img = imgs[0] || '';
+          return '<label class="picker-item"><input type="checkbox" value="' + p.id + '" /><span class="picker-thumb"><img src="' + escapeHtml(img || '') + '" alt="" onerror="handleImageError(this)" /></span><span class="pi-name">' + escapeHtml(p.name || '') + '</span><span class="pi-price">' + priceFull(p.price_cents) + '</span></label>';
+        }).join('');
+      }
+
+      document.getElementById('pickerClose').addEventListener('click', closePicker);
+      document.getElementById('pickerCancel').addEventListener('click', closePicker);
+      pickerModal.addEventListener('click', function (e) { if (e.target === pickerModal) closePicker(); });
+      pickerSearch.addEventListener('input', renderPicker);
+
+      document.getElementById('pickerSave').addEventListener('click', function () {
+        if (!pickerCat) return;
+        var checked = [];
+        pickerList.querySelectorAll('input[type="checkbox"]:checked').forEach(function (cb) { checked.push(Number(cb.value)); });
+        if (!checked.length) { toast('Select at least one product'); return; }
+        var saveBtn = document.getElementById('pickerSave');
+        saveBtn.disabled = true;
+        apiFetch('/api/categories/' + encodeURIComponent(pickerCat.slug) + '/products', { method: 'POST', body: JSON.stringify({ product_ids: checked }) })
+          .then(function (data) {
+            if (data.error) throw new Error(data.error);
+            closePicker();
+            toast('Products added to category');
+            apiFetch('/api/categories').then(function (data) {
+              categories = data.categories || data || [];
+              render();
+            }).catch(function () { render(); });
+          })
+          .catch(function (err) { toast(err.message || 'Failed to add products'); })
+          .finally(function () { saveBtn.disabled = false; });
+      });
 
       var toastTimer;
       function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2200); }

@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Boularas | Modern Furniture &amp; Home</title>
-  <meta name="description" content="Boularas: premium modern furniture and home décor. Sofas, chairs, tables, lighting and more, crafted for beautiful living." />
+  <meta name="description" content="Boularas: premium modern furniture and home dï¿½cor. Sofas, chairs, tables, lighting and more, crafted for beautiful living." />
   <meta property="og:title" content="Boularas | Modern Furniture &amp; Home" />
-  <meta property="og:description" content="Boularas: premium modern furniture and home décor. Sofas, chairs, tables, lighting and more, crafted for beautiful living." />
+  <meta property="og:description" content="Boularas: premium modern furniture and home dï¿½cor. Sofas, chairs, tables, lighting and more, crafted for beautiful living." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/assets/Boularas_Logo.png" />
   <meta name="twitter:card" content="summary" />
@@ -23,19 +23,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/global.css?v=11" />
-  <link rel="stylesheet" href="css/base.css?v=11" />
-  <link rel="stylesheet" href="css/navbar.css?v=11" />
-  <link rel="stylesheet" href="css/buttons.css?v=11" />
-  <link rel="stylesheet" href="css/footer.css?v=11" />
-  <link rel="stylesheet" href="css/reveal.css?v=11" />
-  <link rel="stylesheet" href="css/toast.css?v=11" />
-  <link rel="stylesheet" href="css/skeleton.css?v=11" />
-  <link rel="stylesheet" href="css/shared-responsive.css?v=11" />
-  <link rel="stylesheet" href="css/home.css?v=11" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=11" />
+  <link rel="stylesheet" href="css/global.css?v=12" />
+  <link rel="stylesheet" href="css/base.css?v=12" />
+  <link rel="stylesheet" href="css/navbar.css?v=13" />
+  <link rel="stylesheet" href="css/buttons.css?v=12" />
+  <link rel="stylesheet" href="css/footer.css?v=12" />
+  <link rel="stylesheet" href="css/reveal.css?v=12" />
+  <link rel="stylesheet" href="css/toast.css?v=12" />
+  <link rel="stylesheet" href="css/skeleton.css?v=12" />
+  <link rel="stylesheet" href="css/shared-responsive.css?v=12" />
+  <link rel="stylesheet" href="css/home.css?v=13" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=12" />
   <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Organization","name":"Boularas","description":"Boularas — premium furniture & home decor.","logo":"/assets/Boularas_Logo.png"}
+{"@context":"https://schema.org","@type":"Organization","name":"Boularas","description":"Boularas ï¿½ premium furniture & home decor.","logo":"/assets/Boularas_Logo.png"}
 </script>
 </head>
 
@@ -98,8 +98,8 @@
          MARQUEE STRIP (scrolling slogans)
          Content is duplicated so the -50% loop is seamless.
          ========================================================== -->
-    <div class="marquee" aria-hidden="true">
-      <div class="marquee-track">
+    <div class="marquee" id="announcementBar" aria-hidden="true">
+      <div class="marquee-track" id="announcementTrack">
         <span>Free Delivery Over 66,700 DA</span><span>Sustainably Sourced Wood</span><span>10-Year Warranty</span><span>Designed in Copenhagen</span><span>30-Day Returns</span>
         <span>Free Delivery Over 66,700 DA</span><span>Sustainably Sourced Wood</span><span>10-Year Warranty</span><span>Designed in Copenhagen</span><span>30-Day Returns</span>
       </div>
@@ -178,7 +178,7 @@
               <div class="count-box"><b id="cdMins">0</b><small>Mins</small></div>
               <div class="count-box"><b id="cdSecs">0</b><small>Secs</small></div>
             </div>
-            <a href="products.html?category=living-room" id="offerShop" class="btn btn-primary">Shop the Sale</a>
+            <a href="products.html?sale=1" id="offerShop" class="btn btn-primary">Shop the Sale</a>
           </div>
           <div class="offer-media">
             <img src="/assets/furn-offer.jpg" id="offerImg" alt="Cozy reading corner with sage green armchair and warm lamp light" />
@@ -238,59 +238,14 @@
     <!-- ==========================================================
          TESTIMONIALS
          ========================================================== -->
-    <section class="section" style="background: var(--cream);">
+    <section class="section" id="testimonials" style="background: var(--cream);">
       <div class="container">
         <div class="section-head reveal">
           <span class="eyebrow">Loved by thousands</span>
           <h2>What Our Customers Say</h2>
         </div>
 
-        <div class="testimonial-grid">
-          <article class="testimonial-card reveal">
-            <div class="stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-            <blockquote>&ldquo;The Marlow sofa completely changed our living room. The linen is gorgeous and it&apos;s somehow even more comfortable than it looks.&rdquo;</blockquote>
-            <div class="who">
-              <div class="avatar" aria-hidden="true">SR</div>
-              <div><b>Sofia Reyes</b><small>Verified buyer &middot; Austin, TX</small></div>
-            </div>
-          </article>
-
-          <article class="testimonial-card reveal">
-            <div class="stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-            <blockquote>&ldquo;Delivery was fast, assembly took ten minutes, and the oak table feels like it will last a lifetime. Worth every dollar.&rdquo;</blockquote>
-            <div class="who">
-              <div class="avatar" aria-hidden="true">JK</div>
-              <div><b>James Kim</b><small>Verified buyer &middot; Seattle, WA</small></div>
-            </div>
-          </article>
-
-          <article class="testimonial-card reveal">
-            <div class="stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-            <blockquote>&ldquo;I furnished my whole home office from Boularas. Everything matches beautifully and the quality is far beyond the price.&rdquo;</blockquote>
-            <div class="who">
-              <div class="avatar" aria-hidden="true">AM</div>
-              <div><b>Amara Mensah</b><small>Verified buyer &middot; Chicago, IL</small></div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==========================================================
-         NEWSLETTER
-         ========================================================== -->
-    <section class="section">
-      <div class="container">
-        <div class="newsletter reveal">
-          <h2>Join the Boularas List</h2>
-          <p>Early access to new collections, styling tips, and members-only offers. No spam, ever.</p>
-          <form class="newsletter-form" id="newsletterForm">
-            <label for="newsletterEmail" class="sr-only">Email address</label>
-            <input type="email" id="newsletterEmail" placeholder="you@example.com" required />
-            <button type="submit" class="btn btn-primary">Subscribe</button>
-          </form>
-          <p class="newsletter-success" id="newsletterSuccess">Thank you! You&apos;re on the list.</p>
-        </div>
+        <div class="testimonial-grid" id="testimonialGrid"></div>
       </div>
     </section>
 
@@ -316,14 +271,6 @@
           </ul>
         </div>
         <div>
-          <h4>Company</h4>
-          <ul>
-            <li><a href="index.html">About Boularas</a></li>
-            <li><a href="offers.html">Current Offers</a></li>
-            <li><a href="index.html">Sustainability</a></li>
-          </ul>
-        </div>
-        <div>
           <h4>Contact</h4>
           <ul>
             <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> <span class="footer-contact-address">123 Boularas Lane, Furniture District</span></li>
@@ -340,16 +287,17 @@
           </div>
         </div>
       </div>
-      <div class="footer-bottom">&copy; 2026 Boularas. All rights reserved. A fictional brand for learning purposes.</div>
+      <div class="footer-bottom"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" class="footer-bottom-logo" /> 2026 Boularas, all rights reserved</div>
     </div>
   </footer>
 
   <!-- Toast notification for cart feedback -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="utils.js?v=11"></script>
-  <script src="js/cart-utils.js?v=11"></script>
-  <script src="js/footer.js?v=11"></script>
-  <script src="js/home.js?v=11"></script>
+  <script src="utils.js?v=12"></script>
+  <script src="js/cart-utils.js?v=12"></script>
+  <script src="js/footer.js?v=12"></script>
+  <script src="js/home.js?v=13"></script>
+  <script src="js/language.js?v=12"></script>
 </body>
 </html>

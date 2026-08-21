@@ -150,7 +150,7 @@
 .summary h2 { font-family: 'Inter', sans-serif; font-size: 24px; margin-bottom: 18px; font-weight: 600; }
 
 .summary-line { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; font-size: 14.5px; color: var(--gray); }
-.summary-line b { color: var(--charcoal); font-weight: 600; }
+.summary-line b { color: var(--charcoal); font-weight: 600; white-space: nowrap; display: inline-flex; align-items: baseline; gap: 0.35em; }
 
 .summary-divider { border-top: 1px dashed var(--beige); margin: 8px 0; }
 
@@ -160,6 +160,7 @@
 }
 .summary-total .value {
   font-family: 'Inter', sans-serif; font-size: 30px; font-weight: 600; color: var(--charcoal);
+  white-space: nowrap; display: inline-flex; align-items: baseline; gap: 0.25em;
 }
 
 /* Promo code input */
@@ -197,19 +198,6 @@
 @media (max-width: 960px) {
   .cart-layout { grid-template-columns: 1fr; }
   .summary { position: static; }
-}
-
-@media (max-width: 900px) {
-  .menu-toggle { display: block; }
-  .nav-links {
-    position: absolute; top: calc(var(--nav-height) + 14px); left: 0; right: 0;
-    flex-direction: column; align-items: stretch;
-    background: var(--warm-white);
-    border-bottom: 1px solid var(--beige);
-    padding: 12px 4%; display: none;
-  }
-  .nav-links.open { display: flex; }
-  .nav-links a { display: block; text-align: center; }
 }
 
 @media (max-width: 800px) {

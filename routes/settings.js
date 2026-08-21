@@ -11,11 +11,11 @@ const { JWT_SECRET } = require('../config');
 const router = express.Router();
 
 // These keys are safe to show to anyone (customers see them on the storefront)
-const PUBLIC_KEYS = ['store_name', 'store_tagline', 'currency', 'language', 'delivery_fee_cents', 'free_delivery_threshold_cents', 'contact_email', 'contact_phone', 'store_address', 'reviews', 'shipping_policy', 'returns_policy'];
+const PUBLIC_KEYS = ['store_name', 'store_tagline', 'currency', 'language', 'delivery_fee_cents', 'free_delivery_threshold_cents', 'contact_email', 'contact_phone', 'store_address', 'reviews', 'shipping_policy', 'returns_policy', 'perks_free_delivery', 'perks_warranty_months', 'perks_returns_days', 'announcement_text', 'announcement_enabled'];
 
 // Whitelist of keys that admins are allowed to update.
 // Prevents accidentally injecting or overwriting unintended configuration.
-const ALLOWED_SETTINGS_KEYS = ['store_name', 'store_tagline', 'currency', 'delivery_fee_cents', 'free_delivery_threshold_cents', 'contact_email', 'contact_phone', 'store_address', 'language', 'shipping_policy', 'returns_policy'];
+const ALLOWED_SETTINGS_KEYS = ['store_name', 'store_tagline', 'currency', 'delivery_fee_cents', 'free_delivery_threshold_cents', 'contact_email', 'contact_phone', 'store_address', 'language', 'shipping_policy', 'returns_policy', 'perks_free_delivery', 'perks_warranty_months', 'perks_returns_days', 'announcement_text', 'announcement_enabled'];
 
 // Helper: checks if the request has a valid admin token (without rejecting it).
 // Used to decide whether to return all settings or just the public ones.

@@ -18,17 +18,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/global.css?v=11" />
-  <link rel="stylesheet" href="css/base.css?v=11" />
-  <link rel="stylesheet" href="css/navbar.css?v=11" />
-  <link rel="stylesheet" href="css/buttons.css?v=11" />
-  <link rel="stylesheet" href="css/footer.css?v=11" />
-  <link rel="stylesheet" href="css/reveal.css?v=11" />
-  <link rel="stylesheet" href="css/toast.css?v=11" />
-  <link rel="stylesheet" href="css/skeleton.css?v=11" />
-  <link rel="stylesheet" href="css/shared-responsive.css?v=11" />
-  <link rel="stylesheet" href="css/offers.css?v=11" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=11" />
+  <link rel="stylesheet" href="css/global.css?v=12" />
+  <link rel="stylesheet" href="css/base.css?v=12" />
+  <link rel="stylesheet" href="css/navbar.css?v=13" />
+  <link rel="stylesheet" href="css/buttons.css?v=12" />
+  <link rel="stylesheet" href="css/footer.css?v=12" />
+  <link rel="stylesheet" href="css/reveal.css?v=12" />
+  <link rel="stylesheet" href="css/toast.css?v=12" />
+  <link rel="stylesheet" href="css/skeleton.css?v=12" />
+  <link rel="stylesheet" href="css/shared-responsive.css?v=12" />
+  <link rel="stylesheet" href="css/offers.css?v=13" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=12" />
 </head>
 <body>
 
@@ -82,18 +82,18 @@
         <div class="offer-hero reveal" id="heroOffer">
           <div class="offer-hero-text">
             <span class="eyebrow">Limited time</span>
-            <h2>The Autumn Comfort Sale: up to 30% off seating</h2>
-            <p>Sink into something softer. Selected sofas, armchairs and accent chairs are on sale until the timer runs out. Free delivery included.</p>
+            <h2 id="offerTitle">The Autumn Comfort Sale: up to 30% off seating</h2>
+            <p id="offerDesc">Sink into something softer. Selected sofas, armchairs and accent chairs are on sale until the timer runs out. Free delivery included.</p>
             <div class="countdown" aria-label="Sale countdown">
               <div class="count-box"><b id="cdDays">0</b><small>Days</small></div>
               <div class="count-box"><b id="cdHours">0</b><small>Hours</small></div>
               <div class="count-box"><b id="cdMins">0</b><small>Mins</small></div>
               <div class="count-box"><b id="cdSecs">0</b><small>Secs</small></div>
             </div>
-            <a href="products.html?category=seating" class="btn btn-primary">Shop the Sale</a>
+            <a href="products.html?sale=1" id="offerShop" class="btn btn-primary">Shop the Sale</a>
           </div>
           <div class="offer-hero-media">
-            <img src="/assets/furn-offer.jpg" alt="Cozy reading corner with sage green armchair" />
+            <img src="/assets/furn-offer.jpg" id="offerImg" alt="Cozy reading corner with sage green armchair" />
           </div>
         </div>
       </div>
@@ -165,14 +165,6 @@
           </ul>
         </div>
         <div>
-          <h4>Company</h4>
-          <ul>
-            <li><a href="index.html">About Boularas</a></li>
-            <li><a href="offers.html">Current Offers</a></li>
-            <li><a href="index.html">Sustainability</a></li>
-          </ul>
-        </div>
-        <div>
           <h4>Contact</h4>
           <ul>
             <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> <span class="footer-contact-address">123 Boularas Lane, Furniture District</span></li>
@@ -189,16 +181,17 @@
           </div>
         </div>
       </div>
-      <div class="footer-bottom">&copy; 2026 Boularas. All rights reserved. A fictional brand for learning purposes.</div>
+      <div class="footer-bottom"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" class="footer-bottom-logo" /> 2026 Boularas, all rights reserved</div>
     </div>
   </footer>
 
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="utils.js?v=11"></script>
-  <script src="js/cart-utils.js?v=11"></script>
-  <script src="js/footer.js?v=11"></script>
-  <script src="js/offers.js?v=11"></script>
+  <script src="utils.js?v=12"></script>
+  <script src="js/cart-utils.js?v=12"></script>
+  <script src="js/footer.js?v=12"></script>
+  <script src="js/offers.js?v=13"></script>
+  <script src="js/language.js?v=12"></script>
 </body>
 </html>

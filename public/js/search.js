@@ -28,10 +28,15 @@ function productCardHTML(product) {
   var badge = '';
   if (isSale && oldPrice) badge = '<span class="card-badge sale">Sale</span>';
   else if (product.featured) badge = '<span class="card-badge">Featured</span>';
+  if (!(product.stock > 0)) {
+    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    badge = badge ? badge + ' ' + outBadge : outBadge;
+  }
   var oldPriceHTML = oldPrice ? '<s>' + price(oldPrice) + '</s>' : '';
   var inCart = isInCart(product.id);
   var btnClass = inCart ? 'card-added' : 'card-add';
   var btnText = inCart ? 'In Cart' : 'Add';
+  var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
   return (
     '<article class="product-card reveal">' +
@@ -44,7 +49,7 @@ function productCardHTML(product) {
         '<h3><a href="product.html?id=' + product.id + '">' + escapeHtml(product.name) + '</a></h3>' +
         '<div class="card-price-row">' +
           '<div class="card-price">' + price(product.price_cents || 0) + oldPriceHTML + '</div>' +
-          '<button class="' + btnClass + '" type="button" data-add="' + product.id + '">' + btnText + '</button>' +
+          '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
         '</div>' +
       '</div>' +
     '</article>'
@@ -120,6 +125,7 @@ document.addEventListener('click', function (event) {
   }
   var product = PRODUCTS.find(function (p) { return String(p.id) === String(addButton.getAttribute('data-add')); });
   if (!product) return;
+  if (!(product.stock > 0)) return;
   addToCart(product);
   showToast(product.name + ' added to cart');
   addButton.textContent = 'In Cart';
@@ -132,6 +138,12 @@ function renderCartState() {
     var inCart = isInCart(addButton.getAttribute('data-add'));
     addButton.textContent = inCart ? 'In Cart' : 'Add';
     addButton.className = inCart ? 'card-added' : 'card-add';
+    var product = PRODUCTS.find(function (p) { return String(p.id) === String(addButton.getAttribute('data-add')); });
+    if (product && !(product.stock > 0)) {
+      addButton.disabled = true;
+      addButton.style.opacity = '0.5';
+      addButton.style.pointerEvents = 'none';
+    }
   });
 }
 window.addEventListener('cart:updated', renderCartState);

@@ -242,7 +242,14 @@ router.put('/:id', (req, res) => {
     WHERE id = ?
   `).run(nextProductId, nextOrig, nextSale, toLocalInput(nextStart), toLocalInput(nextEnd), nextBanner || '', existing.id);
 
-  res.json({ success: true });
+  const updated = db.prepare(`
+    SELECT s.*, p.name AS product_name, p.status AS product_status
+    FROM sales s
+    LEFT JOIN products p ON p.id = s.product_id
+    WHERE s.id = ?
+  `).get(existing.id);
+
+  res.json({ success: true, sale: withActiveFlag(updated, Date.now()) });
 });
 
 // DELETE /api/sales/:id — Remove a sale record.

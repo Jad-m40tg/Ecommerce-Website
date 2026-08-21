@@ -171,7 +171,7 @@
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   @media(max-width:860px){.sale-grid{grid-template-columns:1fr}}
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=11" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=12" />
 </head>
 <body>
 
@@ -329,9 +329,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="utils.js?v=11"></script>
+  <script src="utils.js?v=12"></script>
   <script src="js/admin-topbar.js?v=12"></script>
-  <script src="js/admin-mobile-nav.js?v=11"></script>
+  <script src="js/admin-mobile-nav.js?v=12"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');
@@ -353,6 +353,8 @@
       }).catch(function () {
         document.getElementById('prodRows').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--gray)">Unable to load products</td></tr>';
       });
+
+      loadSalesCache();
 
       function getFiltered() {
         var q = state.search.trim().toLowerCase();
@@ -446,6 +448,8 @@
       var preselectId = null;
       var saleMode = 'manual';
       var bannerUrl = '';
+      var salesCache = [];
+      var editingSaleId = null;
 
       function resetBanner() {
         bannerUrl = '';
@@ -455,23 +459,28 @@
         document.getElementById('bannerDrop').classList.remove('has-img');
       }
 
+      function setBanner(url) {
+        bannerUrl = url || '';
+        var img = document.getElementById('bannerPreview');
+        var ph = document.getElementById('bannerPlaceholder');
+        if (bannerUrl) {
+          img.src = bannerUrl;
+          img.style.display = 'block';
+          ph.style.display = 'none';
+          document.getElementById('bannerDrop').classList.add('has-img');
+        } else {
+          resetBanner();
+        }
+      }
+
       function uploadBanner(file) {
         var fd = new FormData();
         fd.append('image', file);
         fetch('/api/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd })
           .then(function (r) { return r.json(); })
           .then(function (data) {
-            if (data.url) {
-              bannerUrl = data.url;
-              var img = document.getElementById('bannerPreview');
-              img.src = data.url;
-              img.style.display = 'block';
-              document.getElementById('bannerPlaceholder').style.display = 'none';
-              document.getElementById('bannerDrop').classList.add('has-img');
-              showToast('Banner image uploaded');
-            } else {
-              showToast(data.error || 'Upload failed');
-            }
+            if (data.url) { setBanner(data.url); showToast('Banner image uploaded'); }
+            else { showToast(data.error || 'Upload failed'); }
           })
           .catch(function () { showToast('Upload failed'); });
       }
@@ -490,7 +499,9 @@
         });
         document.getElementById('paneManual').style.display = mode === 'manual' ? 'block' : 'none';
         document.getElementById('panePercent').style.display = mode === 'percent' ? 'block' : 'none';
-        document.getElementById('saleModalTitle').textContent = mode === 'manual' ? 'Add Product to Sale' : 'Add Products to Sale';
+        if (!editingSaleId) {
+          document.getElementById('saleModalTitle').textContent = mode === 'manual' ? 'Add Product to Sale' : 'Add Products to Sale';
+        }
       }
 
       function renderMultiList() {
@@ -508,12 +519,25 @@
         }).join('');
       }
 
+      function loadSalesCache() {
+        apiFetch('/api/sales').then(function (data) {
+          salesCache = data.sales || [];
+        }).catch(function () { salesCache = []; });
+      }
+
       function openSaleModal(productId) {
+        var existing = null;
+        for (var i = 0; i < salesCache.length; i++) {
+          if (String(salesCache[i].product_id) === String(productId) && salesCache[i].active) { existing = salesCache[i]; break; }
+        }
+        if (existing) { openEditSaleModal(existing, productId); return; }
+        editingSaleId = null;
         document.getElementById('saleForm').reset();
         currentSaleProduct = null;
         preselectId = productId || null;
         resetBanner();
         setSaleMode('manual');
+        document.getElementById('saleSubmit').textContent = 'Add to Sale';
         document.getElementById('saleOrig').value = '';
         resetPreview();
         document.getElementById('percentPreview').innerHTML = '<span class="preview-new">&mdash;</span>';
@@ -537,6 +561,44 @@
           }).join('');
           if (preselectId) selectSaleProduct(preselectId);
         }).catch(function () { showToast('Failed to load products'); });
+      }
+
+      function openEditSaleModal(sale, productId) {
+        editingSaleId = sale.id;
+        currentSaleProduct = {
+          id: sale.product_id,
+          name: sale.product_name || 'Product #' + sale.product_id,
+          price_cents: sale.original_price_cents || 0
+        };
+        preselectId = productId || sale.product_id;
+        document.getElementById('saleForm').reset();
+        resetBanner();
+        resetPreview();
+        setSaleMode('manual');
+        document.getElementById('saleModalTitle').textContent = 'Edit Sale';
+        document.getElementById('saleSubmit').textContent = 'Save Changes';
+        document.getElementById('saleOrig').value = priceFull(sale.original_price_cents);
+        document.getElementById('salePrice').value = Math.round(sale.sale_price_cents / 100);
+        document.getElementById('saleStart').value = sale.start_at || '';
+        document.getElementById('saleEnd').value = sale.end_at || '';
+        var d = (sale.original_price_cents > 0) ? Math.round((1 - sale.sale_price_cents / sale.original_price_cents) * 100) : 15;
+        document.getElementById('saleDiscount').value = d;
+        setBanner(sale.banner_image_url);
+        document.getElementById('saleModal').style.display = 'flex';
+        apiFetch('/api/sales/candidates').then(function (data) {
+          saleCandidates = data.products || [];
+          if (!saleCandidates.some(function (c) { return String(c.id) === String(currentSaleProduct.id); })) {
+            saleCandidates.unshift(currentSaleProduct);
+          }
+          renderMultiList();
+          var sel = document.getElementById('saleProduct');
+          document.getElementById('saleSubmit').disabled = false;
+          sel.innerHTML = '<option value="">Select a product…</option>' + saleCandidates.map(function (p) {
+            return '<option value="' + p.id + '">' + escapeHtml(p.name) + ' - ' + priceFull(p.price_cents) + '</option>';
+          }).join('');
+          sel.value = String(currentSaleProduct.id);
+        }).catch(function () { showToast('Failed to load products'); });
+        updatePreview();
       }
 
       function selectSaleProduct(id) {
@@ -657,6 +719,37 @@
         var endVal = document.getElementById('saleEnd').value;
         if (!startVal || !endVal) { showToast('Choose start and end dates'); return; }
 
+        if (editingSaleId) {
+          if (!currentSaleProduct) { showToast('Select a product'); return; }
+          var saleCents;
+          if (saleMode === 'percent') {
+            var pct = parseFloat(document.getElementById('saleDiscount').value);
+            if (!pct || pct <= 0 || pct >= 100) { showToast('Enter a discount between 1 and 99%'); return; }
+            saleCents = computeSaleCents(currentSaleProduct.price_cents, pct);
+          } else {
+            var manual = parseInt(document.getElementById('salePrice').value, 10);
+            if (!manual || manual <= 0) { showToast('Enter a sale price'); return; }
+            saleCents = manual * 100;
+          }
+          if (saleCents >= currentSaleProduct.price_cents) { showToast('Sale price must be lower than the original'); return; }
+          var ebody = {
+            product_id: currentSaleProduct.id,
+            original_price_cents: currentSaleProduct.price_cents,
+            sale_price_cents: saleCents,
+            start_at: startVal,
+            end_at: endVal,
+            banner_image_url: bannerUrl
+          };
+          apiFetch('/api/sales/' + editingSaleId, { method: 'PUT', body: JSON.stringify(ebody) }).then(function (data) {
+            if (data.error) throw new Error(data.error);
+            closeSaleModal();
+            editingSaleId = null;
+            loadSalesCache();
+            showToast('Sale updated');
+          }).catch(function (err) { showToast(err.message || 'Failed to update sale'); });
+          return;
+        }
+
         if (saleMode === 'manual') {
           if (!currentSaleProduct) { showToast('Select a product'); return; }
           var sale = parseInt(document.getElementById('salePrice').value, 10);
@@ -673,6 +766,7 @@
           apiFetch('/api/sales', { method: 'POST', body: JSON.stringify(body) }).then(function (data) {
             if (data.error) throw new Error(data.error);
             closeSaleModal();
+            loadSalesCache();
             showToast('Product added to sale');
           }).catch(function (err) { showToast(err.message || 'Failed to add to sale'); });
         } else {
@@ -685,6 +779,7 @@
           apiFetch('/api/sales/bulk', { method: 'POST', body: JSON.stringify(body2) }).then(function (data) {
             if (data.error) throw new Error(data.error);
             closeSaleModal();
+            loadSalesCache();
             showToast(ids.length + ' product' + (ids.length === 1 ? '' : 's') + ' added to sale');
           }).catch(function (err) { showToast(err.message || 'Failed to add products to sale'); });
         }

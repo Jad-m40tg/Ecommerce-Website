@@ -47,7 +47,6 @@
   .container { padding: 0 18px; }
   .product-card { flex: 0 0 280px; }
   .row-arrows { display: none; } /* rely on swipe on touch */
-  .newsletter-form { flex-direction: column; }
   .footer-grid { grid-template-columns: repeat(2, 1fr); }
   .section { padding: 44px 0; }
 }

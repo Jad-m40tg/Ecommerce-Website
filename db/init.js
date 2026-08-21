@@ -70,6 +70,8 @@ try {
       returns_info TEXT DEFAULT '',
       featured INTEGER DEFAULT 0,
       on_sale INTEGER DEFAULT 0,
+      free_delivery INTEGER DEFAULT 0,
+      warranty_months INTEGER,
       status TEXT DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -385,6 +387,11 @@ try {
     ['contact_email', 'support@boularas.com'],
     ['contact_phone', '+1 (555) 123-4567'],
     ['store_address', '123 Boularas Lane, Furniture District'],
+    ['perks_free_delivery', 'false'],
+    ['perks_warranty_months', '12'],
+    ['perks_returns_days', '30'],
+    ['announcement_text', 'Free Delivery Over 66,700 DA'],
+    ['announcement_enabled', 'true'],
   ];
 
   // Wrap all setting inserts in a transaction.
@@ -399,7 +406,7 @@ try {
   console.log('  - 1 admin account');
   console.log('  - 8 categories');
   console.log('  - 10 sample products');
-  console.log('  - 7 default settings');
+  console.log('  - 13 default settings');
 } catch (err) {
   console.error('Database initialization failed:', err.message);
   process.exit(1);

@@ -15,14 +15,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  <link rel="stylesheet" href="css/global.css?v=11" />
-  <link rel="stylesheet" href="css/base.css?v=11" />
-  <link rel="stylesheet" href="css/navbar.css?v=11" />
-  <link rel="stylesheet" href="css/buttons.css?v=11" />
-  <link rel="stylesheet" href="css/footer.css?v=11" />
-  <link rel="stylesheet" href="css/toast.css?v=11" />
-  <link rel="stylesheet" href="css/shared-responsive.css?v=11" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=11" />
+  <link rel="stylesheet" href="css/global.css?v=12" />
+  <link rel="stylesheet" href="css/base.css?v=12" />
+  <link rel="stylesheet" href="css/navbar.css?v=13" />
+  <link rel="stylesheet" href="css/buttons.css?v=12" />
+  <link rel="stylesheet" href="css/footer.css?v=12" />
+  <link rel="stylesheet" href="css/toast.css?v=12" />
+  <link rel="stylesheet" href="css/shared-responsive.css?v=12" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=12" />
   <style>
     .wish-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; padding-bottom: 60px; }
     .wish-card { background: var(--white); border: 1.5px solid var(--beige); border-radius: var(--radius-lg); overflow: hidden; transition: transform 0.25s ease, box-shadow 0.25s ease; }
@@ -102,14 +102,6 @@
           </ul>
         </div>
         <div>
-          <h4>Company</h4>
-          <ul>
-            <li><a href="index.html">About Boularas</a></li>
-            <li><a href="offers.html">Current Offers</a></li>
-            <li><a href="index.html">Sustainability</a></li>
-          </ul>
-        </div>
-        <div>
           <h4>Contact</h4>
           <ul>
             <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> <span class="footer-contact-address">123 Boularas Lane, Furniture District</span></li>
@@ -126,13 +118,13 @@
           </div>
         </div>
       </div>
-      <div class="footer-bottom">&copy; 2026 Boularas. All rights reserved. A fictional brand for learning purposes.</div>
+      <div class="footer-bottom"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" class="footer-bottom-logo" /> 2026 Boularas, all rights reserved</div>
     </div>
   </footer>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="utils.js?v=11"></script>
+  <script src="utils.js?v=12"></script>
   <script>
     (function () {
       var toggle = document.getElementById('menuToggle');
@@ -198,6 +190,7 @@
       renderWishlist();
     })();
   </script>
-  <script src="js/footer.js?v=11"></script>
+  <script src="js/footer.js?v=12"></script>
+  <script src="js/language.js?v=12"></script>
 </body>
 </html>

@@ -20,7 +20,9 @@ const columnMigrations = {
   specifications: "ALTER TABLE products ADD COLUMN specifications TEXT DEFAULT '[]'",
   shipping_info: "ALTER TABLE products ADD COLUMN shipping_info TEXT DEFAULT ''",
   returns_info: "ALTER TABLE products ADD COLUMN returns_info TEXT DEFAULT ''",
-  display_section: "ALTER TABLE products ADD COLUMN display_section TEXT DEFAULT ''"
+  display_section: "ALTER TABLE products ADD COLUMN display_section TEXT DEFAULT ''",
+  free_delivery: 'ALTER TABLE products ADD COLUMN free_delivery INTEGER DEFAULT 0',
+  warranty_months: 'ALTER TABLE products ADD COLUMN warranty_months INTEGER'
 };
 for (const [name, sql] of Object.entries(columnMigrations)) {
   if (!productColumns.includes(name)) {

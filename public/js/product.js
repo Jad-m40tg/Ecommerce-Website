@@ -119,6 +119,8 @@ if (!requestedId) {
         image: getProductImage(apiProduct),
         featured: apiProduct.featured,
         on_sale: apiProduct.on_sale,
+        free_delivery: apiProduct.free_delivery,
+        warranty_months: apiProduct.warranty_months,
         brand: apiProduct.brand || '',
         sku: apiProduct.sku || '',
         specifications: [],
@@ -134,6 +136,8 @@ if (!requestedId) {
       currentProduct.returns_info = apiProduct.returns_info || '';
 
       document.getElementById('orderSection').style.display = 'block';
+      var confirmBtn = document.getElementById('confirmOrderBtn');
+      if (confirmBtn && !(currentProduct.stock > 0)) confirmBtn.disabled = true;
       fetchReviewsAndRender(currentProduct);
     })
     .catch(function (err) {
@@ -327,6 +331,7 @@ function renderProduct(p) {
   }
   var initialQty = Math.max(1, Math.min(cartQty || 1, p.stock > 0 ? p.stock : 99, 99));
   selection.qty = initialQty;
+  var outOfStock = !(p.stock > 0);
 
   var stockHTML = p.stock > 0
     ? '<div class="stock-note">In stock (' + p.stock + ' left) &middot; ships in 2&ndash;4 days</div>'
@@ -345,6 +350,10 @@ function renderProduct(p) {
   var returnsText = (p.returns_info && p.returns_info.trim()) ? p.returns_info
     : (storeSettings.returns_policy && storeSettings.returns_policy.trim()) ? storeSettings.returns_policy
     : 'Not the right fit? Send it back within 30 days for a full refund - we will even collect it from your door.';
+
+  var perksFreeDelivery = p.free_delivery ? true : !!(storeSettings.perks_free_delivery);
+  var perksWarrantyMonths = (p.warranty_months && p.warranty_months > 0) ? p.warranty_months : ((storeSettings.perks_warranty_months && storeSettings.perks_warranty_months > 0) ? storeSettings.perks_warranty_months : 12);
+  var perksReturnsDays = (storeSettings.perks_returns_days && storeSettings.perks_returns_days > 0) ? storeSettings.perks_returns_days : 30;
 
   document.getElementById('productRoot').innerHTML =
     '<div class="product-detail">' +
@@ -385,20 +394,20 @@ function renderProduct(p) {
           '<label>Quantity</label>' +
           '<div class="buy-row">' +
             '<div class="qty">' +
-              '<button type="button" data-qty="-1" aria-label="Decrease quantity">&minus;</button>' +
-              '<input type="number" id="qtyInput" value="' + initialQty + '" min="1" max="99" aria-label="Quantity" />' +
-              '<button type="button" data-qty="1" aria-label="Increase quantity">+</button>' +
+              '<button type="button" data-qty="-1" aria-label="Decrease quantity"' + (outOfStock ? ' disabled' : '') + '>&minus;</button>' +
+              '<input type="number" id="qtyInput" value="' + initialQty + '" min="1" max="99" aria-label="Quantity"' + (outOfStock ? ' disabled' : '') + ' />' +
+              '<button type="button" data-qty="1" aria-label="Increase quantity"' + (outOfStock ? ' disabled' : '') + '>+</button>' +
             '</div>' +
-            '<button type="button" class="btn btn-primary" id="addToCartBtn"' + (p.stock <= 0 ? ' disabled style="opacity:0.5;pointer-events:none;"' : '') + '>Add to Cart</button>' +
+            '<button type="button" class="btn btn-primary" id="addToCartBtn"' + (outOfStock ? ' disabled style="opacity:0.5;pointer-events:none;"' : '') + '>Add to Cart</button>' +
             '<button type="button" class="btn-icon" id="wishlistBtn" aria-label="Add to wishlist" title="Add to wishlist"><span class="material-symbols-outlined">favorite_border</span></button>' +
           '</div>' +
           '<div class="stock-note qty-stock-note" id="qtyStockNote" style="display:none"></div>' +
         '</div>' +
 
         '<div class="perks">' +
-          '<div><b>Free Delivery</b>On orders over 66,700 DA</div>' +
-          '<div><b>10-Year Warranty</b>On every frame</div>' +
-          '<div><b>30-Day Returns</b>Hassle-free</div>' +
+          '<div><b>Free Delivery</b>' + (perksFreeDelivery ? 'On every order' : 'On orders over 66,700 DA') + '</div>' +
+          '<div><b>' + perksWarrantyMonths + '-Month Warranty</b>On every frame</div>' +
+          '<div><b>' + perksReturnsDays + '-Day Returns</b>Hassle-free</div>' +
         '</div>' +
 
         '<div class="tabs">' +
@@ -434,6 +443,7 @@ function renderProduct(p) {
 
   wireUpDetail(p, colors);
   updateOrderSummary(p);
+  updateQtyStockNote(p);
   if (typeof initLazyImages === 'function') initLazyImages();
 }
 
@@ -442,6 +452,11 @@ function updateQtyStockNote(p) {
   var note = document.getElementById('qtyStockNote');
   if (!note) return;
   var stock = p.stock || 0;
+  if (stock <= 0) {
+    note.textContent = 'This item is out of stock';
+    note.style.display = '';
+    return;
+  }
   var maxQty = Math.min(stock || 99, 99);
   if (stock > 0 && stock <= 99 && selection.qty >= maxQty) {
     note.textContent = 'Only ' + maxQty + ' in stock';
@@ -572,6 +587,7 @@ function wireUpDetail(p, colors) {
   var qtyInput = document.getElementById('qtyInput');
   document.querySelectorAll('[data-qty]').forEach(function (btn) {
     btn.addEventListener('click', function () {
+      if (p.stock <= 0) return;
       var step = Number(btn.getAttribute('data-qty'));
       var next = Math.max(1, Math.min(p.stock || 99, 99, Number(qtyInput.value) + step));
       qtyInput.value = next;
@@ -586,6 +602,7 @@ function wireUpDetail(p, colors) {
   });
   if (qtyInput) {
     qtyInput.addEventListener('change', function () {
+      if (p.stock <= 0) return;
       selection.qty = Math.max(1, Math.min(p.stock || 99, 99, Number(qtyInput.value) || 1));
       qtyInput.value = selection.qty;
       updateOrderSummary(p);
@@ -599,9 +616,16 @@ function wireUpDetail(p, colors) {
 
   // Initial button state
   var plusBtn = document.querySelector('[data-qty="1"]');
-  if (plusBtn && p.stock <= 1) plusBtn.disabled = true;
+  var minusBtn = document.querySelector('[data-qty="-1"]');
+  if (p.stock <= 0) {
+    if (plusBtn) plusBtn.disabled = true;
+    if (minusBtn) minusBtn.disabled = true;
+  } else if (plusBtn && p.stock <= 1) {
+    plusBtn.disabled = true;
+  }
 
   document.getElementById('addToCartBtn').addEventListener('click', function () {
+    if (p.stock <= 0) { showToast('This item is out of stock'); return; }
     if (isInCart(p.id, selection.color, selection.size)) {
       updateQty(buildCartKey(p.id, selection.color, selection.size), selection.qty);
       window.location.href = 'cart.html';
@@ -787,6 +811,8 @@ document.getElementById('orderForm').addEventListener('submit', function (event)
 
   if (!currentProduct) { showToast('Product not loaded yet'); return; }
 
+  if (currentProduct.stock <= 0) { showToast('This item is out of stock'); return; }
+
   addToCart(currentProduct, { qty: selection.qty, color: selection.color, size: selection.size });
   showToast('Added to cart! Redirecting to checkout...');
   setTimeout(function () { window.location.href = 'checkout.html'; }, 800);
@@ -808,11 +834,16 @@ function relatedProductCard(p) {
   var badge = '';
   if (p.on_sale) badge = '<span class="card-badge sale">Sale</span>';
   else if (p.featured) badge = '<span class="card-badge">New</span>';
+  if (!(p.stock > 0)) {
+    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    badge = badge ? badge + ' ' + outBadge : outBadge;
+  }
   var oldPriceHTML = p.old_price_cents ? '<s>' + price(p.old_price_cents) + '</s>' : '';
   var defaults = resolveVariantDefaults(p);
   var inCart = isInCart(p.id, defaults.color, defaults.size);
   var btnClass = inCart ? 'card-added' : 'card-add';
   var btnText = inCart ? 'In Cart' : 'Add';
+  var btnDisabled = !(p.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
   return '<article class="product-card">' +
     '<a href="product.html?id=' + p.id + '" class="card-media">' + badge +
     '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(p.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></a>' +
@@ -821,7 +852,7 @@ function relatedProductCard(p) {
       '<h3><a href="product.html?id=' + p.id + '">' + escapeHtml(p.name) + '</a></h3>' +
       '<div class="card-price-row">' +
         '<div class="card-price">' + price(p.price_cents) + oldPriceHTML + '</div>' +
-        '<button class="' + btnClass + '" type="button" data-add="' + p.id + '">' + btnText + '</button>' +
+        '<button class="' + btnClass + '" type="button" data-add="' + p.id + '"' + btnDisabled + '>' + btnText + '</button>' +
       '</div>' +
     '</div>' +
   '</article>';

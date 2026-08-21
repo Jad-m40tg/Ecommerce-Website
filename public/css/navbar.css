@@ -167,6 +167,11 @@
 /* ============================================================
    RESPONSIVE NAVBAR — mobile collapse at 900px
    ============================================================ */
+@keyframes nav-drop {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (max-width: 900px) {
   .navbar-inner { gap: 14px; padding: 0 18px; }
   .nav-links a { padding: 8px 12px; font-size: 13.5px; }
@@ -184,10 +189,24 @@
     background: var(--warm-white);
     border-bottom: 1px solid var(--beige);
     padding: 12px 4%;
-    display: none; /* toggled by JS */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity .28s ease, transform .28s ease, visibility 0s linear .28s;
   }
-  .nav-links.open { display: flex; }
-  .nav-links a { display: block; text-align: center; }
+  .nav-links.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+    transition: opacity .28s ease, transform .28s ease, visibility 0s linear 0s;
+  }
+  .nav-links a {
+    display: block;
+    text-align: center;
+    border-radius: var(--radius-pill);
+  }
 }
 
 @media (max-width: 480px) {
@@ -230,4 +249,121 @@
   .cart-btn svg { width: 14px; height: 14px; }
   .cart-count { min-width: 12px; height: 12px; font-size: 8px; }
   .menu-toggle { font-size: 16px; }
+}
+
+/* ============================================================
+   LANGUAGE SWITCHER
+   Desktop dropdown in navbar-actions, mobile pill row inside
+   the expanded menu. Injected by js/language.js.
+   ============================================================ */
+.lang-switcher {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px;
+  border: 1.5px solid var(--beige);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--charcoal);
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.lang-btn:hover { background: var(--beige); color: var(--charcoal); }
+
+.lang-globe { flex-shrink: 0; }
+.lang-chev { flex-shrink: 0; color: var(--gray); }
+.lang-btn:hover .lang-chev { color: var(--charcoal); }
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 132px;
+  padding: 6px;
+  background: var(--warm-white);
+  border: 1.5px solid var(--beige);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lift);
+  display: none;
+  z-index: 120;
+}
+.lang-menu.open {
+  display: block;
+  animation: nav-drop 0.22s ease forwards;
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: none;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--gray);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.lang-option:hover { background: var(--beige); color: var(--charcoal); }
+.lang-option.active { color: var(--charcoal); font-weight: 600; }
+
+.lang-code {
+  width: 24px;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+/* Mobile pill row (inside expanded menu) */
+.lang-switcher-mobile {
+  display: none;
+  list-style: none;
+  gap: 8px;
+  justify-content: center;
+  padding: 12px 4% 2px;
+}
+
+.lang-mobile-btn {
+  padding: 8px 16px;
+  border: 1.5px solid var(--beige);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--gray);
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.lang-mobile-btn:hover { background: var(--beige); color: var(--charcoal); }
+.lang-mobile-btn.active {
+  background: var(--charcoal);
+  color: var(--warm-white);
+  border-color: var(--charcoal);
+}
+
+@media (max-width: 900px) {
+  .lang-switcher { display: none; }
+  .lang-switcher-mobile { display: flex; }
+}
+
+@media (max-width: 480px) {
+  .lang-mobile-btn { padding: 7px 13px; font-size: 12.5px; }
+}
+
+@media (max-width: 398px) {
+  .lang-mobile-btn { padding: 6px 10px; font-size: 11.5px; }
+}
+
+@media (max-width: 340px) {
+  .lang-mobile-btn { padding: 6px 8px; font-size: 11px; }
 }
