@@ -43,6 +43,15 @@ async function lookupAndSyncOrder(param) {
     if (result.changes > 0) {
       order.payment_status = 'paid';
     }
+  } else if (checkout && (checkout.status === 'failed' || checkout.status === 'canceled' || checkout.status === 'cancelled' || checkout.status === 'expired') && order.order_status !== 'cancelled' && order.payment_status !== 'paid' && order.payment_status !== 'refunded') {
+    try {
+      const ordersRouter = require('./orders');
+      ordersRouter.cancelAndRestoreStock(order.id, order);
+      order.order_status = 'cancelled';
+      console.log('[SYNC] Order #' + order.id + ' auto-cancelled (checkout ' + checkout.status + ') — stock restored');
+    } catch (e) {
+      console.error('[SYNC] Failed to auto-cancel order #' + order.id, e);
+    }
   }
 
   return { order, checkout };
@@ -104,11 +113,10 @@ router.post('/webhook', (req, res) => {
     }
 
     const event = req.body;
+    const checkout = event.data || event;
+    const orderId = checkout && checkout.metadata && checkout.metadata.order_id;
 
-    if (event.type === 'checkout.paid' || (event.data && event.data.status === 'paid')) {
-      const checkout = event.data || event;
-      const orderId = checkout.metadata && checkout.metadata.order_id;
-
+    if (event.type === 'checkout.paid' || (checkout && checkout.status === 'paid')) {
       if (orderId) {
         // Atomic conditional UPDATE — only transitions if not already paid/refunded
         const result = db.prepare(
@@ -116,6 +124,19 @@ router.post('/webhook', (req, res) => {
         ).run(checkout.id || checkout.checkout_id || '', JSON.stringify(checkout), orderId);
         if (result.changes > 0) {
           console.log('[WEBHOOK] Order #' + orderId + ' transitioned to paid');
+        }
+      }
+    } else if (event.type === 'checkout.failed' || event.type === 'checkout.canceled' || event.type === 'checkout.cancelled' || (checkout && (checkout.status === 'failed' || checkout.status === 'canceled' || checkout.status === 'cancelled' || checkout.status === 'expired'))) {
+      if (orderId) {
+        const order = db.prepare('SELECT id, items, order_status, payment_status FROM orders WHERE id = ?').get(orderId);
+        if (order && order.order_status !== 'cancelled' && order.payment_status !== 'paid' && order.payment_status !== 'refunded') {
+          try {
+            const ordersRouter = require('./orders');
+            ordersRouter.cancelAndRestoreStock(order.id, order);
+            console.log('[WEBHOOK] Order #' + orderId + ' auto-cancelled (checkout ' + (checkout.status || event.type) + ') — stock restored');
+          } catch (e) {
+            console.error('[WEBHOOK] Failed to auto-cancel order #' + orderId, e);
+          }
         }
       }
     }

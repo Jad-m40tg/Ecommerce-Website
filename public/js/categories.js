@@ -303,7 +303,7 @@ fetch('/api/categories')
   .then(function (data) {
     var cats = data.categories || data.data || data;
     if (!Array.isArray(cats) || !cats.length) return;
-    CATEGORIES = cats.filter(function (c) { return c.status !== 'inactive'; })
+    CATEGORIES = cats.filter(function (c) { return (c.status || 'active') === 'active'; })
       .sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
     CATEGORY_LABELS = { all: 'All Products' };
     CATEGORIES.forEach(function (c) {

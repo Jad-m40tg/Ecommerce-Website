@@ -142,8 +142,12 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 function loadActiveSale() {
-  fetch('/api/sales/active').then(function (r) { return r.json(); }).then(function (data) {
-    var sales = data.sales || [];
+  var saleData = null;
+  var campaignBanner = '';
+
+  function apply() {
+    if (!saleData) return;
+    var sales = saleData.sales || [];
     if (sales.length === 0) return;
     var sale = sales[0];
     var end = new Date(sale.end_at).getTime();
@@ -154,11 +158,24 @@ function loadActiveSale() {
     var descEl  = document.getElementById('offerDesc');
     var shopEl  = document.getElementById('offerShop');
     var imgEl   = document.getElementById('offerImg');
-    var name = sale.product_name || 'selected furniture';
-    if (titleEl) titleEl.textContent = 'On Sale Now: ' + name;
-    if (descEl) descEl.textContent = 'Save on ' + name + ' while stock lasts. The deal ends when the timer runs out.';
-    if (imgEl) imgEl.src = sale.image_url || sale.image || '/assets/noImageForItem.jpg';
+    var maxPct = 0;
+    for (var i = 0; i < sales.length; i++) {
+      if ((sales[i].discount_percent || 0) > maxPct) maxPct = sales[i].discount_percent;
+    }
+    if (titleEl) titleEl.textContent = 'On Sale Now: Save up to ' + maxPct + '%';
+    if (descEl) descEl.textContent = 'Shop selected products while stock lasts. The deal ends when the timer runs out.';
+    var banner = campaignBanner || sale.banner_image_url;
+    if (imgEl && banner) imgEl.src = banner;
     if (shopEl) shopEl.href = 'products.html?sale=' + sale.id;
+  }
+
+  fetch('/api/sales/active').then(function (r) { return r.json(); }).then(function (data) {
+    saleData = data;
+    apply();
+  }).catch(function () {});
+  fetch('/api/settings').then(function (r) { return r.json(); }).then(function (data) {
+    campaignBanner = data.offer_banner_url || '';
+    apply();
   }).catch(function () {});
 }
 

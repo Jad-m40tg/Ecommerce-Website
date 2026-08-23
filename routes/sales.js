@@ -51,7 +51,13 @@ router.get('/active', (req, res) => {
   `).all();
   const active = rows
     .filter((r) => isLiveAt(r, now))
-    .sort((a, b) => new Date(a.end_at).getTime() - new Date(b.end_at).getTime());
+    .sort((a, b) => new Date(a.end_at).getTime() - new Date(b.end_at).getTime())
+    .map((r) => ({
+      ...r,
+      discount_percent: r.original_price_cents > 0
+        ? Math.round((1 - r.sale_price_cents / r.original_price_cents) * 100)
+        : 0
+    }));
   res.json({ sales: active });
 });
 
@@ -73,16 +79,16 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/sales/candidates — Products eligible for a new sale:
-// status = 'active' AND no sale that is still live or upcoming (end_at >= now).
-// Feeds the "Add Product to Sale" dropdown.
+// status = 'active' AND no sale that is currently active (isLiveAt).
+// Upcoming sales (not yet started) do not block — eligibility is checked
+// again at POST /bulk time for the chosen date range to prevent overlaps.
 router.get('/candidates', (req, res) => {
   const now = Date.now();
-  const products = db.prepare("SELECT id, name, price_cents FROM products WHERE status = 'active'").all();
+  const products = db.prepare("SELECT id, name, price_cents, images FROM products WHERE status = 'active'").all();
   const sales = db.prepare('SELECT product_id, start_at, end_at FROM sales').all();
   const blocked = new Set();
   for (const s of sales) {
-    const end = new Date(s.end_at).getTime();
-    if (!isNaN(end) && end >= now) blocked.add(s.product_id);
+    if (isLiveAt(s, now)) blocked.add(s.product_id);
   }
   const candidates = products
     .filter((p) => !blocked.has(p.id))

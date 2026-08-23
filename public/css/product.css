@@ -393,14 +393,14 @@
   border-color: var(--sage);
   box-shadow: 0 0 0 3px rgba(107, 127, 94, 0.14);
 }
-.field input.error, .field textarea.error { border-color: var(--wood); background: #fbf3ea; }
-.field .msg { font-size: 12.5px; color: var(--wood); min-height: 16px; }
+.field input.error, .field textarea.error { border-color: var(--warning); background: #fdf6ec; }
+.field .msg { font-size: 12px; color: var(--warning); min-height: 0; max-width: 100%; word-break: break-word; }
+.field .msg:not(:empty) { display: inline-flex; align-items: center; gap: 6px; background: rgba(201,138,58,.12); border: 1px solid rgba(201,138,58,.22); border-radius: var(--radius-pill); padding: 5px 10px; margin-top: 4px; }
 .field { position: relative; }
-.field input.valid { border: 2px solid var(--sage) !important; }
-.field input.invalid { border: 2px solid #e41a1a !important; box-shadow: 0 0 8px rgba(218,29,29,.31); }
+.field input.valid { border: 1.5px solid var(--sage) !important; background: rgba(107,127,94,.06); }
+.field input.invalid { border: 1.5px solid var(--warning) !important; box-shadow: 0 0 0 3px rgba(201,138,58,.14); }
 .validation-icon { position: absolute; right: 14px; top: 40px; color: var(--sage); font-size: 18px; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
 .field input.valid + .validation-icon { opacity: 1; }
-.field .msg { color: #e41a1a; }
 
 /* Order summary inside form */
 .order-summary {
@@ -418,6 +418,7 @@
 
 .order-actions { margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap; }
 .order-actions .btn { flex: 1; min-width: 200px; }
+.order-actions .btn:disabled, #confirmOrderBtn:disabled { opacity: .5; pointer-events: none; filter: grayscale(.2); }
 
 /* ============================================================
    6. MODAL POPUP
@@ -540,23 +541,23 @@
 
 .card-price-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  margin-top: auto;
+  margin-top: auto; flex-wrap: nowrap;
 }
-.card-price { font-size: 17px; font-weight: 700; color: var(--charcoal); }
-.card-price s { font-size: 13px; font-weight: 500; color: var(--gray); margin-left: 6px; }
+.card-price { font-size: 16px; font-weight: 700; color: var(--charcoal); flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+.card-price s { font-size: 12px; font-weight: 500; color: var(--gray); margin-left: 0; }
 
 .card-add {
-  padding: 9px 16px; border: none; border-radius: var(--radius-md);
+  padding: 9px 14px; border: none; border-radius: var(--radius-md);
   background: var(--charcoal); color: var(--warm-white);
-  font-size: 13px; font-weight: 600;
+  font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
   transition: background 0.25s ease;
 }
 .card-add:hover { background: var(--sage); }
 
 .card-added {
-  padding: 9px 16px; border: none; border-radius: var(--radius-md);
+  padding: 9px 14px; border: none; border-radius: var(--radius-md);
   background: var(--sage); color: var(--warm-white);
-  font-size: 13px; font-weight: 600;
+  font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
 }
 .card-added:hover { background: var(--sage-dark); }
 

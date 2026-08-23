@@ -137,7 +137,12 @@ if (!requestedId) {
 
       document.getElementById('orderSection').style.display = 'block';
       var confirmBtn = document.getElementById('confirmOrderBtn');
-      if (confirmBtn && !(currentProduct.stock > 0)) confirmBtn.disabled = true;
+      if (confirmBtn) {
+        var out = !(currentProduct.stock > 0);
+        confirmBtn.disabled = out;
+        confirmBtn.textContent = out ? 'Out of Stock' : 'Confirm Order';
+        confirmBtn.setAttribute('aria-disabled', out ? 'true' : 'false');
+      }
       fetchReviewsAndRender(currentProduct);
     })
     .catch(function (err) {
@@ -444,6 +449,13 @@ function renderProduct(p) {
   wireUpDetail(p, colors);
   updateOrderSummary(p);
   updateQtyStockNote(p);
+  var cBtn = document.getElementById('confirmOrderBtn');
+  if (cBtn) {
+    var out2 = !(p.stock > 0);
+    cBtn.disabled = out2;
+    cBtn.textContent = out2 ? 'Out of Stock' : 'Confirm Order';
+    cBtn.setAttribute('aria-disabled', out2 ? 'true' : 'false');
+  }
   if (typeof initLazyImages === 'function') initLazyImages();
 }
 

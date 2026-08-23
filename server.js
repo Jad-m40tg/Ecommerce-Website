@@ -164,7 +164,7 @@ const db = require('./db');
 function cleanupAbandonedOrders() {
   try {
     const staleOrders = db.prepare(
-      "SELECT id, items FROM orders WHERE payment_method = 'card' AND payment_status = 'pending' AND order_status NOT IN ('cancelled', 'delivered') AND created_at < datetime('now', '-1 hour')"
+      "SELECT id, items FROM orders WHERE payment_method = 'card' AND payment_status = 'pending' AND order_status NOT IN ('cancelled', 'delivered') AND created_at < datetime('now', '-30 minutes')"
     ).all();
     for (const order of staleOrders) {
       try {

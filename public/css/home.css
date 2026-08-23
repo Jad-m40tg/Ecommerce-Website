@@ -170,6 +170,7 @@
 .count-box small { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #b6b0a6; }
 
 .offer-media img { width: 100%; height: 100%; object-fit: cover; }
+.offer > * { min-width: 0; }
 
 /* ============================================================
    5. TESTIMONIALS
@@ -294,23 +295,23 @@
 
 .card-price-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  margin-top: auto;
+  margin-top: auto; flex-wrap: nowrap;
 }
-.card-price { font-size: 17px; font-weight: 700; color: var(--charcoal); }
-.card-price s { font-size: 13px; font-weight: 500; color: var(--gray); margin-left: 6px; }
+.card-price { font-size: 16px; font-weight: 700; color: var(--charcoal); flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+.card-price s { font-size: 12px; font-weight: 500; color: var(--gray); margin-left: 0; }
 
 .card-add {
-  padding: 9px 16px; border: none; border-radius: var(--radius-md);
+  padding: 9px 14px; border: none; border-radius: var(--radius-md);
   background: var(--charcoal); color: var(--warm-white);
-  font-size: 13px; font-weight: 600;
+  font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
   transition: background 0.25s ease;
 }
 .card-add:hover { background: var(--sage); }
 
 .card-added {
-  padding: 9px 16px; border: none; border-radius: var(--radius-md);
+  padding: 9px 14px; border: none; border-radius: var(--radius-md);
   background: var(--sage); color: var(--warm-white);
-  font-size: 13px; font-weight: 600;
+  font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
 }
 .card-added:hover { background: var(--sage-dark); }
 
@@ -346,7 +347,8 @@
   .category-grid { gap: 14px; }
   .category-card .category-label { padding: 10px 12px; font-size: 12px; }
   .category-card .category-label small { font-size: 10.5px; }
-  .offer, .offer.reveal.visible { transform: scale(0.95); }
+  .offer, .offer.reveal.visible { transform: none; width: 100%; max-width: 100%; margin-inline: auto; box-sizing: border-box; }
+  .offer > * { min-width: 0; }
   .offer-text .countdown,
   .offer-text .btn-primary { align-self: center; }
   .offer-text .btn-primary { transform: scale(0.9); }

@@ -87,26 +87,26 @@
 
 .card-price-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  margin-top: auto;
+  margin-top: auto; flex-wrap: nowrap;
 }
-.card-price { font-size: 17px; font-weight: 700; color: var(--charcoal); }
-.card-price s { font-size: 13px; font-weight: 500; color: var(--gray); margin-left: 6px; }
+.card-price { font-size: 16px; font-weight: 700; color: var(--charcoal); flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+.card-price s { font-size: 12px; font-weight: 500; color: var(--gray); margin-left: 0; }
 
 .card-add {
-  padding: 9px 16px; border: 1.5px solid var(--charcoal);
+  padding: 9px 14px; border: 1.5px solid var(--charcoal);
   border-radius: var(--radius-md);
   background: var(--charcoal); color: var(--warm-white);
-  font-size: 13px; font-weight: 600;
+  font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
   transition: background 0.25s ease, transform 0.2s ease;
 }
 .card-add:hover { background: var(--sage); }
 .card-add:active { transform: translateY(1px); }
 
 .card-added {
-  padding: 9px 16px; border: 1.5px solid var(--sage-dark);
+  padding: 9px 14px; border: 1.5px solid var(--sage-dark);
   border-radius: var(--radius-md);
   background: var(--sage); color: var(--warm-white);
-  font-size: 13px; font-weight: 600;
+  font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
 }
 .card-added:hover { background: var(--sage-dark); }
 
