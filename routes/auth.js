@@ -8,7 +8,7 @@ const db = require('../db');
 const { authenticateToken } = require('../middleware/auth');
 const { JWT_SECRET, JWT_EXPIRES } = require('../config');
 
-const router = express.Router();
+const router = express.Router(); //including is using express(random comment just to commit lol it will be deleted later)
 
 // POST /api/auth/login — Admin submits email + password, gets a token back.
 // async/await used because bcrypt.compare is non-blocking (doesn't freeze
