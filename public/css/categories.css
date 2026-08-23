@@ -142,10 +142,15 @@
   background: var(--wood);
   margin-bottom: 4px;
 }
+.card-badge.new {
+  background: var(--sage);
+  color: var(--warm-white);
+}
 .card-badge:not(.sale) {
   position: absolute; right: 12px; left: auto; bottom: 12px; top: auto;
-  background: #9aa0a6;
 }
+
+.discount{display:inline-flex;align-items:center;padding:3px 9px;border-radius:var(--radius-pill);background:rgba(179,83,46,.1);color:var(--danger);font-size:12px;font-weight:700;font-family:'Inter',sans-serif}
 
 .card-body { padding: 16px 18px 20px; display: flex; flex-direction: column; flex: 1; }
 .card-category {

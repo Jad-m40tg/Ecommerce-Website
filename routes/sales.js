@@ -79,26 +79,19 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/sales/candidates — Products eligible for a new sale:
-// status = 'active' AND no sale that is currently active (isLiveAt).
-// Upcoming sales (not yet started) do not block — eligibility is checked
-// again at POST /bulk time for the chosen date range to prevent overlaps.
+// Returns ALL active products (including those already on sale).
+// The wizard shows every active product with already-added items
+// appearing as checked so the user can deselect them — so we do NOT
+// filter here. Sale-range overlap is still enforced at POST /bulk time.
 router.get('/candidates', (req, res) => {
-  const now = Date.now();
   const products = db.prepare("SELECT id, name, price_cents, images FROM products WHERE status = 'active'").all();
-  const sales = db.prepare('SELECT product_id, start_at, end_at FROM sales').all();
-  const blocked = new Set();
-  for (const s of sales) {
-    if (isLiveAt(s, now)) blocked.add(s.product_id);
-  }
-  const candidates = products
-    .filter((p) => !blocked.has(p.id))
-    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  const candidates = products.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   res.json({ products: candidates });
 });
 
 // POST /api/sales — Create a sale for a single product (Manual Price mode).
 router.post('/', (req, res) => {
-  const { product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url } = req.body;
+  const { product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url, title } = req.body;
 
   if (!product_id) return res.status(400).json({ error: 'product_id is required' });
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(product_id);
@@ -129,10 +122,11 @@ router.post('/', (req, res) => {
   });
   if (overlaps) return res.status(409).json({ error: 'Product already has a sale in this date range' });
 
+  const saleTitle = typeof title === 'string' ? title.trim().slice(0, 120) : '';
   const result = db.prepare(`
-    INSERT INTO sales (product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run(product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url || '');
+    INSERT INTO sales (product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url, title)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url || '', saleTitle);
 
   res.status(201).json({ id: result.lastInsertRowid, success: true });
 });
@@ -142,7 +136,7 @@ router.post('/', (req, res) => {
 // 10 DA (1000 cents). If that rounding makes the price invalid (>= original or
 // <= 0), falls back to the nearest whole DA (100 cents).
 router.post('/bulk', (req, res) => {
-  const { product_ids, discount_pct, start_at, end_at, banner_image_url } = req.body;
+  const { product_ids, discount_pct, start_at, end_at, banner_image_url, title } = req.body;
 
   if (!Array.isArray(product_ids) || product_ids.length === 0) {
     return res.status(400).json({ error: 'product_ids must be a non-empty array' });
@@ -188,16 +182,17 @@ router.post('/bulk', (req, res) => {
     return sale;
   }
 
+  const saleTitle = typeof title === 'string' ? title.trim().slice(0, 120) : '';
   const insert = db.prepare(`
-    INSERT INTO sales (product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO sales (product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url, title)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   const created = [];
   const tx = db.transaction(() => {
     for (const p of products) {
       const sale = computeSaleCents(p.price_cents, discount_pct);
       if (sale <= 0 || sale >= p.price_cents) continue;
-      const r = insert.run(p.id, p.price_cents, sale, start_at, end_at, banner_image_url || '');
+      const r = insert.run(p.id, p.price_cents, sale, start_at, end_at, banner_image_url || '', saleTitle);
       created.push({ id: r.lastInsertRowid, product_id: p.id, sale_price_cents: sale });
     }
   });
@@ -212,7 +207,7 @@ router.put('/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM sales WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Sale not found' });
 
-  const { product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url } = req.body;
+  const { product_id, original_price_cents, sale_price_cents, start_at, end_at, banner_image_url, title } = req.body;
   const nextProductId = product_id !== undefined ? product_id : existing.product_id;
 
   if (!Number.isInteger(nextProductId)) return res.status(400).json({ error: 'product_id is required' });
@@ -241,12 +236,13 @@ router.put('/:id', (req, res) => {
   if (overlaps) return res.status(409).json({ error: 'Product already has a sale in this date range' });
 
   const nextBanner = banner_image_url !== undefined ? banner_image_url : existing.banner_image_url;
+  const nextTitle = title !== undefined ? String(title).trim().slice(0, 120) : (existing.title || '');
   db.prepare(`
     UPDATE sales
     SET product_id = ?, original_price_cents = ?, sale_price_cents = ?,
-        start_at = ?, end_at = ?, banner_image_url = ?, updated_at = CURRENT_TIMESTAMP
+        start_at = ?, end_at = ?, banner_image_url = ?, title = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
-  `).run(nextProductId, nextOrig, nextSale, toLocalInput(nextStart), toLocalInput(nextEnd), nextBanner || '', existing.id);
+  `).run(nextProductId, nextOrig, nextSale, toLocalInput(nextStart), toLocalInput(nextEnd), nextBanner || '', nextTitle, existing.id);
 
   const updated = db.prepare(`
     SELECT s.*, p.name AS product_name, p.status AS product_status

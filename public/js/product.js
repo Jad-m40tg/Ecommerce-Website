@@ -37,7 +37,7 @@ function getCategoryLabel(slug) {
 fetch('/api/categories').then(function (r) { return r.json(); }).then(function (data) {
   var cats = data.categories || data;
   if (Array.isArray(cats)) {
-    cats.forEach(function (c) { CATEGORY_LABELS[c.slug] = c.name; });
+    cats.filter(function(c){ return (c.status||'active')==='active'; }).forEach(function (c) { CATEGORY_LABELS[c.slug] = c.name; });
   }
 }).catch(function () {});
 
@@ -349,16 +349,36 @@ function renderProduct(p) {
     }).join('');
   }
 
+  var perksThresholdCents = (storeSettings.free_delivery_threshold_cents != null && !isNaN(Number(storeSettings.free_delivery_threshold_cents))) ? Number(storeSettings.free_delivery_threshold_cents) : 6670000;
+  var perksThresholdText = price(perksThresholdCents);
+  var perksHasThreshold = storeSettings.free_delivery_threshold_cents != null && !isNaN(Number(storeSettings.free_delivery_threshold_cents)) && Number(storeSettings.free_delivery_threshold_cents) > 0;
   var shippingText = (p.shipping_info && p.shipping_info.trim()) ? p.shipping_info
     : (storeSettings.shipping_policy && storeSettings.shipping_policy.trim()) ? storeSettings.shipping_policy
-    : 'Free delivery on orders over 66,700 DA. Standard delivery takes 2-4 business days; larger pieces are scheduled with a two-hour window.';
+    : 'Free delivery on orders over ' + perksThresholdText + '. Standard delivery takes 2-4 business days; larger pieces are scheduled with a two-hour window.';
   var returnsText = (p.returns_info && p.returns_info.trim()) ? p.returns_info
     : (storeSettings.returns_policy && storeSettings.returns_policy.trim()) ? storeSettings.returns_policy
     : 'Not the right fit? Send it back within 30 days for a full refund - we will even collect it from your door.';
 
-  var perksFreeDelivery = p.free_delivery ? true : !!(storeSettings.perks_free_delivery);
+  var hasProductFree = !!p.free_delivery;
+  var hasStoreFree = !!(storeSettings.perks_free_delivery);
+  var perksFreeDelivery = hasProductFree || hasStoreFree;
   var perksWarrantyMonths = (p.warranty_months && p.warranty_months > 0) ? p.warranty_months : ((storeSettings.perks_warranty_months && storeSettings.perks_warranty_months > 0) ? storeSettings.perks_warranty_months : 12);
   var perksReturnsDays = (storeSettings.perks_returns_days && storeSettings.perks_returns_days > 0) ? storeSettings.perks_returns_days : 30;
+  var perksDeliveryTitle;
+  var perksDeliveryDesc;
+  if (hasProductFree) {
+    perksDeliveryTitle = 'Free Delivery';
+    perksDeliveryDesc = 'Only on this product';
+  } else if (hasStoreFree) {
+    perksDeliveryTitle = 'Free Delivery';
+    perksDeliveryDesc = 'On every order';
+  } else if (perksHasThreshold) {
+    perksDeliveryTitle = 'Free Delivery';
+    perksDeliveryDesc = 'On orders over ' + perksThresholdText;
+  } else {
+    perksDeliveryTitle = 'Nationwide Delivery';
+    perksDeliveryDesc = '<span style="font-size:11px;color:var(--gray);display:block;margin-top:2px">69 wilayas available</span>';
+  }
 
   document.getElementById('productRoot').innerHTML =
     '<div class="product-detail">' +
@@ -396,7 +416,10 @@ function renderProduct(p) {
           '<div class="size-list" id="sizeList">' + sizePills + '</div>' +
         '</div>' +
         '<div class="option-block">' +
-          '<label>Quantity</label>' +
+          '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
+            '<label style="margin:0">Quantity : </label>' +
+            '<div class="stock-note qty-stock-note" id="qtyStockNote" style="display:none"></div>' +
+          '</div>' +
           '<div class="buy-row">' +
             '<div class="qty">' +
               '<button type="button" data-qty="-1" aria-label="Decrease quantity"' + (outOfStock ? ' disabled' : '') + '>&minus;</button>' +
@@ -406,11 +429,10 @@ function renderProduct(p) {
             '<button type="button" class="btn btn-primary" id="addToCartBtn"' + (outOfStock ? ' disabled style="opacity:0.5;pointer-events:none;"' : '') + '>Add to Cart</button>' +
             '<button type="button" class="btn-icon" id="wishlistBtn" aria-label="Add to wishlist" title="Add to wishlist"><span class="material-symbols-outlined">favorite_border</span></button>' +
           '</div>' +
-          '<div class="stock-note qty-stock-note" id="qtyStockNote" style="display:none"></div>' +
         '</div>' +
 
         '<div class="perks">' +
-          '<div><b>Free Delivery</b>' + (perksFreeDelivery ? 'On every order' : 'On orders over 66,700 DA') + '</div>' +
+          '<div><b>' + perksDeliveryTitle + '</b>' + perksDeliveryDesc + '</div>' +
           '<div><b>' + perksWarrantyMonths + '-Month Warranty</b>On every frame</div>' +
           '<div><b>' + perksReturnsDays + '-Day Returns</b>Hassle-free</div>' +
         '</div>' +
@@ -465,14 +487,14 @@ function updateQtyStockNote(p) {
   if (!note) return;
   var stock = p.stock || 0;
   if (stock <= 0) {
-    note.textContent = 'This item is out of stock';
-    note.style.display = '';
+    note.textContent = 'Product unavailable';
+    note.style.display = 'inline-flex';
     return;
   }
   var maxQty = Math.min(stock || 99, 99);
   if (stock > 0 && stock <= 99 && selection.qty >= maxQty) {
     note.textContent = 'Only ' + maxQty + ' in stock';
-    note.style.display = '';
+    note.style.display = 'inline-flex';
   } else {
     note.style.display = 'none';
   }
@@ -637,7 +659,7 @@ function wireUpDetail(p, colors) {
   }
 
   document.getElementById('addToCartBtn').addEventListener('click', function () {
-    if (p.stock <= 0) { showToast('This item is out of stock'); return; }
+    if (p.stock <= 0) { showToast('Product unavailable'); return; }
     if (isInCart(p.id, selection.color, selection.size)) {
       updateQty(buildCartKey(p.id, selection.color, selection.size), selection.qty);
       window.location.href = 'cart.html';
@@ -823,7 +845,7 @@ document.getElementById('orderForm').addEventListener('submit', function (event)
 
   if (!currentProduct) { showToast('Product not loaded yet'); return; }
 
-  if (currentProduct.stock <= 0) { showToast('This item is out of stock'); return; }
+  if (currentProduct.stock <= 0) { showToast('Product unavailable'); return; }
 
   addToCart(currentProduct, { qty: selection.qty, color: selection.color, size: selection.size });
   showToast('Added to cart! Redirecting to checkout...');
@@ -847,7 +869,7 @@ function relatedProductCard(p) {
   if (p.on_sale) badge = '<span class="card-badge sale">Sale</span>';
   else if (p.featured) badge = '<span class="card-badge">New</span>';
   if (!(p.stock > 0)) {
-    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">unavailable</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;
   }
   var oldPriceHTML = p.old_price_cents ? '<s>' + price(p.old_price_cents) + '</s>' : '';

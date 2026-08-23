@@ -71,9 +71,8 @@ function productCardHTML(product) {
   var oldPrice = product.old_price_cents ? product.old_price_cents : null;
   var badge = '';
   if (isSale && oldPrice) badge = '<span class="card-badge sale">Sale</span>';
-  else if (product.featured) badge = '<span class="card-badge">Featured</span>';
   if (!(product.stock > 0)) {
-    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">unavailable</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;
   }
   var oldPriceHTML = oldPrice ? '<s>' + price(oldPrice) + '</s>' : '';
@@ -301,7 +300,8 @@ updateCartCount();
     var cats = Array.isArray(categoryData) ? categoryData : (categoryData.categories || categoryData.data || []);
     if (Array.isArray(cats)) {
       CATEGORY_LABELS = { all: 'All Products' };
-      cats.forEach(function (c) {
+      var filtered = cats.filter(function(c){return (c.status||'active')==='active'});
+      filtered.forEach(function (c) {
         var slug = (c.slug || c.name || '').toLowerCase();
         if (slug) CATEGORY_LABELS[slug] = c.name || slug;
       });

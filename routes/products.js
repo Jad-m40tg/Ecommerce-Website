@@ -24,6 +24,39 @@ function escapeLike(str) {
   return String(str).replace(/%/g, '\\%').replace(/_/g, '\\_');
 }
 
+function normalizeDisplaySection(value) {
+  if (value === undefined || value === null) return undefined;
+  if (Array.isArray(value)) {
+    const arr = [...new Set(value.map((v) => String(v).trim()).filter(Boolean))];
+    if (arr.length === 0) return '';
+    if (arr.length === 1) return arr[0];
+    return JSON.stringify(arr);
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return '';
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          const a = [...new Set(parsed.map((v) => String(v).trim()).filter(Boolean))];
+          if (a.length === 0) return '';
+          if (a.length === 1) return a[0];
+          return JSON.stringify(a);
+        }
+      } catch (e) {}
+    }
+    if (trimmed.includes(',')) {
+      const parts = [...new Set(trimmed.split(',').map((v) => v.trim()).filter(Boolean))];
+      if (parts.length === 0) return '';
+      if (parts.length === 1) return parts[0];
+      return JSON.stringify(parts);
+    }
+    return trimmed;
+  }
+  return String(value);
+}
+
 // ============================================================
 // Sales-aware pricing (STEP 4)
 // Products with a currently-active sale record (now within
@@ -76,20 +109,18 @@ router.get('/browse/featured', (req, res) => {
 });
 
 // GET /api/products/browse/on-sale — Returns on-sale active products with pagination.
-// Includes both the legacy on_sale column and products with an active sales record.
+// Now strictly sales-table driven — legacy on_sale column is ignored to prevent hardcoded sales.
 router.get('/browse/on-sale', (req, res) => {
   const { page = 1, limit = 20 } = req.query;
   const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   const offset = (Number(page) - 1) * safeLimit;
   const saleMap = activeSalesMap();
   const saleIds = Object.keys(saleMap).map(Number);
-  let where = "status = 'active' AND (on_sale = 1";
-  const params = [];
-  if (saleIds.length) {
-    where += ' OR id IN (' + saleIds.map(() => '?').join(',') + ')';
-    params.push(...saleIds);
+  if (saleIds.length === 0) {
+    return res.json({ products: [], total: 0, page: Number(page), limit: safeLimit });
   }
-  where += ')';
+  const where = "status = 'active' AND id IN (" + saleIds.map(() => '?').join(',') + ")";
+  const params = [...saleIds];
   const products = db.prepare(`SELECT *, (SELECT COALESCE(ROUND(AVG(rating),1),0) FROM reviews WHERE product_id = products.id) AS rating, (SELECT COUNT(*) FROM reviews WHERE product_id = products.id) AS reviews FROM products WHERE ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`).all(...params, safeLimit, offset)
     .map((p) => withSalePrice(p, saleMap));
   const { count } = db.prepare(`SELECT COUNT(*) as count FROM products WHERE ${where}`).get(...params);
@@ -122,12 +153,14 @@ router.get('/browse', (req, res) => {
     params.push(`%${safeSearch}%`, `%${safeSearch}%`);
     countParams.push(`%${safeSearch}%`, `%${safeSearch}%`);
   }
-  // Add display_section filter if provided
+  // Add display_section filter if provided (supports legacy single value and new JSON-array storage)
   if (display_section) {
-    sql += ' AND display_section = ?';
-    countSql += ' AND display_section = ?';
-    params.push(display_section);
-    countParams.push(display_section);
+    const safeDs = String(display_section).trim();
+    sql += " AND (display_section = ? OR display_section LIKE ? ESCAPE '\\')";
+    countSql += " AND (display_section = ? OR display_section LIKE ? ESCAPE '\\')";
+    const likePattern = '%"' + escapeLike(safeDs) + '"%';
+    params.push(safeDs, likePattern);
+    countParams.push(safeDs, likePattern);
   }
 
   // Add sorting and pagination
@@ -189,23 +222,41 @@ router.get('/:id', (req, res) => {
 // Database auto-generates the ID (client cannot supply one).
 // Validates that price is a non-negative number.
 router.post('/', (req, res, next) => {
-  const { name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status, display_section, free_delivery, warranty_months } = req.body;
+  const { name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status, display_section, free_delivery, warranty_months, new_arrival_days, new_arrival_until } = req.body;
   if (!name || price_cents === undefined) return res.status(400).json({ error: 'name, price_cents required' });
   if (typeof price_cents !== 'number' || price_cents < 0) return res.status(400).json({ error: 'price_cents must be a non-negative number' });
   if (stock !== undefined && (typeof stock !== 'number' || stock < 0)) return res.status(400).json({ error: 'stock must be a non-negative number' });
   if (warranty_months !== undefined && warranty_months !== null && (typeof warranty_months !== 'number' || !Number.isInteger(warranty_months) || warranty_months < 0)) return res.status(400).json({ error: 'warranty_months must be a non-negative integer or null' });
+  // Validate new_arrival_days: integer 0..90, default 3
+  let arrivalDays = new_arrival_days;
+  if (arrivalDays === undefined || arrivalDays === null || arrivalDays === '') arrivalDays = 3;
+  arrivalDays = Number(arrivalDays);
+  if (!Number.isInteger(arrivalDays) || arrivalDays < 0 || arrivalDays > 90) return res.status(400).json({ error: 'new_arrival_days must be an integer between 0 and 90' });
+  // Compute new_arrival_until if not explicitly provided
+  let arrivalUntil = new_arrival_until || null;
+  if (arrivalDays > 0 && !arrivalUntil) {
+    arrivalUntil = new Date(Date.now() + arrivalDays * 86400000).toISOString();
+  } else if (arrivalDays === 0) {
+    arrivalUntil = null;
+  } else if (arrivalUntil) {
+    const t = new Date(arrivalUntil).getTime();
+    if (isNaN(t)) return res.status(400).json({ error: 'new_arrival_until must be a valid ISO date string' });
+    // normalize to ISO
+    arrivalUntil = new Date(t).toISOString();
+  }
 
   const stmt = db.prepare(`
-    INSERT INTO products (name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status, display_section, free_delivery, warranty_months)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO products (name, description, price_cents, old_price_cents, category, brand, sku, stock, colors, sizes, tags, images, specifications, shipping_info, returns_info, featured, on_sale, status, display_section, free_delivery, warranty_months, new_arrival_days, new_arrival_until)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   try {
+    const normalizedDisplaySection = normalizeDisplaySection(display_section);
     // Array/object fields (colors, sizes, tags, images, specifications) are stored as JSON strings in SQLite
     const result = stmt.run(name, description || '', price_cents, old_price_cents || null, category || '', brand || '', sku || null, stock || 0,
       JSON.stringify(colors || []), JSON.stringify(sizes || []), JSON.stringify(tags || []), JSON.stringify(images || []), JSON.stringify(specifications || []),
       shipping_info || '', returns_info || '',
-      featured ? 1 : 0, on_sale ? 1 : 0, status || 'active', display_section || '',
-      free_delivery ? 1 : 0, warranty_months == null ? null : warranty_months);
+      featured ? 1 : 0, on_sale ? 1 : 0, status || 'active', normalizedDisplaySection !== undefined ? normalizedDisplaySection : '',
+      free_delivery ? 1 : 0, warranty_months == null ? null : warranty_months, arrivalDays, arrivalUntil);
     res.status(201).json({ id: result.lastInsertRowid });
   } catch (e) {
     if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') return res.status(409).json({ error: 'SKU already exists' });
@@ -219,7 +270,7 @@ router.put('/:id', (req, res, next) => {
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
   if (!product) return res.status(404).json({ error: 'Product not found' });
 
-  const fields = ['name', 'description', 'price_cents', 'old_price_cents', 'category', 'brand', 'sku', 'stock', 'colors', 'sizes', 'tags', 'images', 'specifications', 'shipping_info', 'returns_info', 'featured', 'on_sale', 'status', 'display_section', 'free_delivery', 'warranty_months'];
+  const fields = ['name', 'description', 'price_cents', 'old_price_cents', 'category', 'brand', 'sku', 'stock', 'colors', 'sizes', 'tags', 'images', 'specifications', 'shipping_info', 'returns_info', 'featured', 'on_sale', 'status', 'display_section', 'free_delivery', 'warranty_months', 'new_arrival_days', 'new_arrival_until'];
   const updates = [];
   const values = [];
 
@@ -246,14 +297,36 @@ router.put('/:id', (req, res, next) => {
         const allowed = ['active', 'draft'];
         if (!allowed.includes(req.body[field])) return res.status(400).json({ error: 'status must be active or draft' });
       }
+      if (field === 'new_arrival_days') {
+        const v = req.body[field];
+        if (v === null || v === '') return res.status(400).json({ error: 'new_arrival_days must be an integer between 0 and 90' });
+        const num = Number(v);
+        if (!Number.isInteger(num) || num < 0 || num > 90) return res.status(400).json({ error: 'new_arrival_days must be an integer between 0 and 90' });
+      }
+      if (field === 'new_arrival_until') {
+        const v = req.body[field];
+        if (v !== null && v !== '' ) {
+          const t = new Date(v).getTime();
+          if (isNaN(t)) return res.status(400).json({ error: 'new_arrival_until must be a valid ISO date string or null' });
+        }
+      }
       updates.push(`${field} = ?`);
       // Array/object fields need to be stringified before saving
       if (['colors', 'sizes', 'tags', 'images', 'specifications'].includes(field)) {
         values.push(JSON.stringify(req.body[field]));
+      } else if (field === 'display_section') {
+        const norm = normalizeDisplaySection(req.body[field]);
+        values.push(norm !== undefined ? norm : '');
       } else if (field === 'free_delivery') {
         values.push(req.body[field] ? 1 : 0);
       } else if (field === 'warranty_months') {
         values.push(req.body[field] == null ? null : req.body[field]);
+      } else if (field === 'new_arrival_days') {
+        values.push(Number(req.body[field]));
+      } else if (field === 'new_arrival_until') {
+        const v = req.body[field];
+        if (v === null || v === '') values.push(null);
+        else values.push(new Date(v).toISOString());
       } else if (field === 'sku' && !String(req.body[field] || '').trim()) {
         // Empty SKU must be NULL, not '', so the UNIQUE constraint allows multiple products without one.
         values.push(null);
@@ -261,6 +334,24 @@ router.put('/:id', (req, res, next) => {
         values.push(req.body[field]);
       }
     }
+  }
+  // Auto-manage new_arrival_until when new_arrival_days is updated but until is not explicitly provided
+  const hasDays = req.body.new_arrival_days !== undefined;
+  const hasUntil = req.body.new_arrival_until !== undefined;
+  if (hasDays && !hasUntil) {
+    const days = Number(req.body.new_arrival_days);
+    if (days === 0) {
+      updates.push('new_arrival_until = ?');
+      values.push(null);
+    } else if (days > 0) {
+      updates.push('new_arrival_until = ?');
+      values.push(new Date(Date.now() + days * 86400000).toISOString());
+    }
+  }
+  // If days is 0 but client also sent an explicit until, force until to null (disabled)
+  if (hasDays && hasUntil && Number(req.body.new_arrival_days) === 0) {
+    const idx = updates.indexOf('new_arrival_until = ?');
+    if (idx !== -1) values[idx] = null;
   }
   if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
 

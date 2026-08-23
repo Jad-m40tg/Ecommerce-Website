@@ -72,6 +72,9 @@ try {
       on_sale INTEGER DEFAULT 0,
       free_delivery INTEGER DEFAULT 0,
       warranty_months INTEGER,
+      display_section TEXT DEFAULT '',
+      new_arrival_days INTEGER DEFAULT 3,
+      new_arrival_until TEXT,
       status TEXT DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -129,6 +132,7 @@ try {
       start_at TEXT NOT NULL,
       end_at TEXT NOT NULL,
       banner_image_url TEXT DEFAULT '',
+      title TEXT DEFAULT '',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );

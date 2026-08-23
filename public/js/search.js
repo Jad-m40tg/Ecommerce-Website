@@ -27,9 +27,8 @@ function productCardHTML(product) {
   var oldPrice = product.old_price_cents ? product.old_price_cents : null;
   var badge = '';
   if (isSale && oldPrice) badge = '<span class="card-badge sale">Sale</span>';
-  else if (product.featured) badge = '<span class="card-badge">Featured</span>';
   if (!(product.stock > 0)) {
-    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">unavailable</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;
   }
   var oldPriceHTML = oldPrice ? '<s>' + price(oldPrice) + '</s>' : '';

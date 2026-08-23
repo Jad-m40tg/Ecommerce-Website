@@ -22,7 +22,9 @@ const columnMigrations = {
   returns_info: "ALTER TABLE products ADD COLUMN returns_info TEXT DEFAULT ''",
   display_section: "ALTER TABLE products ADD COLUMN display_section TEXT DEFAULT ''",
   free_delivery: 'ALTER TABLE products ADD COLUMN free_delivery INTEGER DEFAULT 0',
-  warranty_months: 'ALTER TABLE products ADD COLUMN warranty_months INTEGER'
+  warranty_months: 'ALTER TABLE products ADD COLUMN warranty_months INTEGER',
+  new_arrival_days: 'ALTER TABLE products ADD COLUMN new_arrival_days INTEGER DEFAULT 3',
+  new_arrival_until: 'ALTER TABLE products ADD COLUMN new_arrival_until TEXT'
 };
 for (const [name, sql] of Object.entries(columnMigrations)) {
   if (!productColumns.includes(name)) {
@@ -85,14 +87,16 @@ db.exec(`CREATE TABLE IF NOT EXISTS sales (
   start_at TEXT NOT NULL,
   end_at TEXT NOT NULL,
   banner_image_url TEXT DEFAULT '',
+  title TEXT DEFAULT '',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)`);
+ )`);
 
 // Idempotent migration — adds columns to sales tables that predate later steps.
 const salesColumns = db.pragma('table_info(sales)').map((col) => col.name);
 const salesMigrations = {
-  banner_image_url: "ALTER TABLE sales ADD COLUMN banner_image_url TEXT DEFAULT ''"
+  banner_image_url: "ALTER TABLE sales ADD COLUMN banner_image_url TEXT DEFAULT ''",
+  title: "ALTER TABLE sales ADD COLUMN title TEXT DEFAULT ''"
 };
 for (const [name, sql] of Object.entries(salesMigrations)) {
   if (!salesColumns.includes(name)) {

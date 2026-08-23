@@ -19,6 +19,7 @@ router.get('/', (req, res) => {
     SELECT c.*, COUNT(p.id) AS product_count
     FROM categories c
     LEFT JOIN products p ON p.category = c.slug
+    WHERE (c.status = 'active' OR c.status IS NULL)
     GROUP BY c.id
     ORDER BY c.sort_order ASC, c.name ASC
   `).all();
@@ -94,6 +95,25 @@ router.post('/:slug/products', (req, res) => {
   const placeholders = ids.map(() => '?').join(',');
   db.prepare('UPDATE products SET category = ?, updated_at = CURRENT_TIMESTAMP WHERE id IN (' + placeholders + ')').run(cat.slug, ...ids);
   res.json({ success: true, assigned: ids.length });
+});
+
+// DELETE /api/categories/:slug/products — Admin only. Remove products from a category.
+router.delete('/:slug/products', (req, res) => {
+  const cat = db.prepare('SELECT * FROM categories WHERE slug = ?').get(req.params.slug);
+  if (!cat) return res.status(404).json({ error: 'Category not found' });
+  const { product_ids } = req.body;
+  if (!Array.isArray(product_ids) || product_ids.length === 0) {
+    return res.status(400).json({ error: 'product_ids must be a non-empty array' });
+  }
+  const ids = [...new Set(product_ids.map(Number))];
+  for (const id of ids) {
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid product id: ' + id });
+    const exists = db.prepare('SELECT id FROM products WHERE id = ?').get(id);
+    if (!exists) return res.status(404).json({ error: 'Product not found: ' + id });
+  }
+  const placeholders = ids.map(() => '?').join(',');
+  db.prepare('UPDATE products SET category = \'\', updated_at = CURRENT_TIMESTAMP WHERE id IN (' + placeholders + ') AND category = ?').run(...ids, cat.slug);
+  res.json({ success: true, removed: ids.length });
 });
 
 module.exports = router;

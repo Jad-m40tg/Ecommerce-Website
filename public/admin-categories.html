@@ -51,7 +51,7 @@
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=14" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=22" />
 </head>
 <body>
 
@@ -128,9 +128,9 @@
     </div>
   </div>
 
-  <script src="utils.js?v=14"></script>
-  <script src="js/admin-topbar.js?v=14"></script>
-  <script src="js/admin-mobile-nav.js?v=14"></script>
+  <script src="utils.js?v=22"></script>
+  <script src="js/admin-topbar.js?v=22"></script>
+  <script src="js/admin-mobile-nav.js?v=22"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');
@@ -280,7 +280,7 @@
         pickerCat = cat;
         pickerProducts = [];
         pickerSearch.value = '';
-        document.getElementById('pickerTitle').textContent = 'Add products to ' + (cat.name || cat.slug);
+        document.getElementById('pickerTitle').textContent = 'Manage products in ' + cat.name;
         renderPicker();
         pickerModal.classList.add('open');
         apiFetch('/api/products?limit=9999').then(function (data) {
@@ -296,16 +296,16 @@
       function renderPicker() {
         if (!pickerCat) return;
         var q = pickerSearch.value.trim().toLowerCase();
+        if (!pickerProducts.length) { pickerList.innerHTML = '<div class="picker-empty">Loading products…</div>'; return; }
         var list = pickerProducts.filter(function (p) {
-          if ((p.category || '') === pickerCat.slug) return false;
           return !q || (p.name || '').toLowerCase().includes(q);
         });
-        if (!pickerProducts.length) { pickerList.innerHTML = '<div class="picker-empty">Loading products…</div>'; return; }
-        if (!list.length) { pickerList.innerHTML = '<div class="picker-empty">No products to add</div>'; return; }
+        if (!list.length) { pickerList.innerHTML = '<div class="picker-empty">No products found</div>'; return; }
         pickerList.innerHTML = list.map(function (p) {
           var imgs = []; try { imgs = p.images ? (typeof p.images === 'string' ? JSON.parse(p.images) : p.images) : []; } catch (e) { imgs = []; }
           var img = imgs[0] || '';
-          return '<label class="picker-item"><input type="checkbox" value="' + p.id + '" /><span class="picker-thumb"><img src="' + escapeHtml(img || '') + '" alt="" onerror="handleImageError(this)" /></span><span class="pi-name">' + escapeHtml(p.name || '') + '</span><span class="pi-price">' + priceFull(p.price_cents) + '</span></label>';
+          var checked = (p.category || '') === pickerCat.slug ? ' checked' : '';
+          return '<label class="picker-item"><input type="checkbox" value="' + p.id + '"' + checked + ' /><span class="picker-thumb"><img src="' + escapeHtml(img || '') + '" alt="" onerror="handleImageError(this)" /></span><span class="pi-name">' + escapeHtml(p.name || '') + '</span><span class="pi-price">' + priceFull(p.price_cents) + '</span></label>';
         }).join('');
       }
 
@@ -316,22 +316,30 @@
 
       document.getElementById('pickerSave').addEventListener('click', function () {
         if (!pickerCat) return;
-        var checked = [];
-        pickerList.querySelectorAll('input[type="checkbox"]:checked').forEach(function (cb) { checked.push(Number(cb.value)); });
-        if (!checked.length) { toast('Select at least one product'); return; }
+        var assignedIds = pickerProducts.filter(function (p) { return (p.category || '') === pickerCat.slug; }).map(function (p) { return p.id; });
+        var checkedIds = [];
+        pickerList.querySelectorAll('input[type="checkbox"]:checked').forEach(function (cb) { checkedIds.push(Number(cb.value)); });
+        var toAdd = checkedIds.filter(function (id) { return assignedIds.indexOf(id) === -1; });
+        var toRemove = assignedIds.filter(function (id) { return checkedIds.indexOf(id) === -1; });
+        if (!toAdd.length && !toRemove.length) { toast('No changes'); return; }
         var saveBtn = document.getElementById('pickerSave');
         saveBtn.disabled = true;
-        apiFetch('/api/categories/' + encodeURIComponent(pickerCat.slug) + '/products', { method: 'POST', body: JSON.stringify({ product_ids: checked }) })
-          .then(function (data) {
-            if (data.error) throw new Error(data.error);
-            closePicker();
-            toast('Products added to category');
-            apiFetch('/api/categories').then(function (data) {
-              categories = data.categories || data || [];
-              render();
-            }).catch(function () { render(); });
-          })
-          .catch(function (err) { toast(err.message || 'Failed to add products'); })
+        var slugEnc = encodeURIComponent(pickerCat.slug);
+        var chain = Promise.resolve();
+        if (toAdd.length) {
+          chain = chain.then(function () { return apiFetch('/api/categories/' + slugEnc + '/products', { method: 'POST', body: JSON.stringify({ product_ids: toAdd }) }); }).then(function (data) { if (data.error) throw new Error(data.error); });
+        }
+        if (toRemove.length) {
+          chain = chain.then(function () { return apiFetch('/api/categories/' + slugEnc + '/products', { method: 'DELETE', body: JSON.stringify({ product_ids: toRemove }) }); }).then(function (data) { if (data.error) throw new Error(data.error); });
+        }
+        chain.then(function () {
+          closePicker();
+          toast('Category updated');
+          return apiFetch('/api/categories');
+        }).then(function (data) {
+          categories = data.categories || data || [];
+          render();
+        }).catch(function (err) { toast(err.message || 'Failed to update category'); })
           .finally(function () { saveBtn.disabled = false; });
       });
 

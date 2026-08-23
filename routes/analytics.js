@@ -86,7 +86,7 @@ router.get('/top-products', (req, res) => {
       WHERE orders.payment_status = 'paid'
     )
     GROUP BY product_id
-    ORDER BY total_quantity DESC
+    ORDER BY total_revenue_cents DESC
     LIMIT ?
   `).all(Number(limit));
 

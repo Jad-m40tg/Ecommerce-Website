@@ -26,6 +26,7 @@
     .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--radius-pill);font-size:12px;font-weight:600}.badge.up{background:rgba(107,127,94,.14);color:var(--sage-dark)}.badge.down{background:rgba(179,83,46,.14);color:var(--danger)}
     .top-list{list-style:none;display:flex;flex-direction:column;gap:14px}.top-item{display:flex;flex-direction:column;gap:6px}.top-row{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--charcoal)}.top-row .name{display:flex;align-items:center;gap:10px;font-weight:600}.rank{width:24px;height:24px;border-radius:50%;background:var(--cream);color:var(--charcoal);display:grid;place-items:center;font-size:12px;font-weight:700}.top-item:nth-child(1) .rank{background:var(--sage);color:var(--white)}.top-item:nth-child(2) .rank{background:var(--wood);color:var(--white)}.top-item:nth-child(3) .rank{background:var(--charcoal);color:var(--warm-white)}
     .top-row .value{color:var(--gray);font-size:13px}.top-row .value strong{color:var(--charcoal);font-weight:700;margin-right:4px}
+    /* Progress bar: width = revenue relative to #1 (top seller = 100%), not share of total revenue */
     .bar-track{width:100%;height:8px;background:var(--cream);border-radius:var(--radius-pill);overflow:hidden}.bar-fill{height:100%;border-radius:var(--radius-pill);background:linear-gradient(90deg,var(--sage),var(--sage-dark));width:0;transition:width 1s cubic-bezier(.2,.9,.3,1)}.top-item:nth-child(2) .bar-fill{background:linear-gradient(90deg,var(--wood),#8a6540)}.top-item:nth-child(3) .bar-fill{background:linear-gradient(90deg,var(--charcoal),#4a4642)}
     @media(max-width:1080px){.grid-2,.grid-eq{grid-template-columns:1fr}.grid-2>*,.grid-eq>*{min-width:0}}@media(max-width:860px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.side-nav{flex-direction:row;overflow-x:auto;gap:6px}.side-nav a{white-space:nowrap}.nav-label,.sidebar-foot{display:none}.sidebar .brand{border-bottom:none;padding-bottom:12px;margin-bottom:8px}.topbar{padding:0 20px;gap:10px}.admin-chip .who{display:none}.content{padding:20px}.stat-grid{grid-template-columns:repeat(2,1fr)!important}}
     .notif-panel{position:absolute;top:52px;right:0;width:320px;max-height:400px;background:var(--white);border:1.5px solid var(--beige);border-radius:var(--radius-lg);box-shadow:var(--shadow-lift);z-index:200;display:flex;flex-direction:column;overflow:hidden}
@@ -43,7 +44,7 @@
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=14" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=22" />
 </head>
 <body>
 
@@ -103,16 +104,16 @@
         </section>
 
         <section class="panel">
-          <div class="panel-head"><div><h2>Top Selling Products</h2><span class="muted">Ranked by revenue</span></div></div>
+          <div class="panel-head"><div><h2>Top Selling Products</h2><span class="muted" title="Sorted by total revenue (highest first); bar length is revenue relative to the #1 product (top = 100%), not share of total">Ranked by revenue — bar = % of top seller</span></div></div>
           <ul class="top-list" id="topList"></ul>
         </section>
       </main>
     </div>
   </div>
 
-  <script src="utils.js?v=14"></script>
-  <script src="js/admin-topbar.js?v=14"></script>
-  <script src="js/admin-mobile-nav.js?v=14"></script>
+  <script src="utils.js?v=22"></script>
+  <script src="js/admin-topbar.js?v=22"></script>
+  <script src="js/admin-mobile-nav.js?v=22"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');
@@ -184,11 +185,13 @@
       }
 
       function renderTopProducts(products) {
+        // Ranked by total_revenue_cents (backend ORDER BY total_revenue_cents DESC).
+        // Bar width = revenue relative to #1 (top seller = 100%), not share of total store revenue.
         var max = products.length ? products[0].total_revenue_cents || 1 : 1;
         var list = document.getElementById('topList');
         list.innerHTML = products.map(function (p, i) {
           var pct = ((p.total_revenue_cents || 0) / max * 100).toFixed(1);
-          return '<li class="top-item"><div class="top-row"><span class="name"><span class="rank">' + (i + 1) + '</span> ' + escapeHtml(p.name || 'Unknown') + '</span><span class="value"><strong>' + price(p.total_revenue_cents || 0) + '</strong> revenue</span></div><div class="bar-track"><div class="bar-fill" data-pct="' + pct + '"></div></div></li>';
+          return '<li class="top-item"><div class="top-row"><span class="name"><span class="rank">' + (i + 1) + '</span> ' + escapeHtml(p.name || 'Unknown') + '</span><span class="value"><strong>' + price(p.total_revenue_cents || 0) + '</strong> revenue</span></div><div class="bar-track" title="' + pct + '% of top seller"><div class="bar-fill" data-pct="' + pct + '" title="' + pct + '% of top seller"></div></div></li>';
         }).join('') || '<li style="text-align:center;padding:24px;color:var(--gray)">No order data yet</li>';
         requestAnimationFrame(function () {
           setTimeout(function () {

@@ -2,6 +2,19 @@
 
 var _allProducts = [];
 
+/* ---------- HIDE DRAFT CATEGORY TILES ---------- */
+fetch('/api/categories').then(function(r){ return r.json(); }).then(function(data){
+  var cats = data.categories || data || [];
+  if (!Array.isArray(cats)) cats = [];
+  var active = new Set(cats.filter(function(c){ return (c.status||'active')==='active'; }).map(function(c){ return c.slug; }));
+  if (active.size === 0) return;
+  document.querySelectorAll('.category-card, a[href*="products.html?category="]').forEach(function(el){
+    var href = el.getAttribute('href');
+    var m = href && href.match(/category=([^&"]+)/);
+    if (m && !active.has(decodeURIComponent(m[1]))) el.style.display='none';
+  });
+}).catch(function(){});
+
 /* ---------- TOAST ---------- */
 var toastTimer = null;
 function showToast(msg) {
@@ -13,6 +26,14 @@ function showToast(msg) {
   toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2200);
 }
 
+function isNewBadge(p){
+  if(!p || !p.featured) return false;
+  if(!p.created_at) return true;
+  var t = new Date(p.created_at).getTime();
+  if(isNaN(t)) t = new Date(String(p.created_at).replace(' ','T')).getTime();
+  if(isNaN(t)) return false;
+  return Date.now() - t <= 7*86400000;
+}
 /* ---------- PRODUCT CARD HTML ---------- */
 function productCardHTML(product) {
   var rating = product.rating || 0;
@@ -22,9 +43,9 @@ function productCardHTML(product) {
 
   var badge = '';
   if (product.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
-  if (product.badge === 'new')  badge = '<span class="card-badge">New</span>';
+  else if (product.badge === 'new' && isNewBadge(product)) badge = '<span class="card-badge new">New</span>';
   if (!(product.stock > 0)) {
-    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">unavailable</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;
   }
 
@@ -79,17 +100,55 @@ function loadHomeProducts() {
 
     _allProducts = products;
 
-    /* Group by display_section with fallback */
+    /* Group by display_section with fallback - supports JSON array, comma-separated, or single string (backward compat) */
+    function parseDisplay(p) {
+      var ds = p.display_section;
+      if (!ds) return [];
+      if (Array.isArray(ds)) return ds;
+      if (typeof ds === 'string') {
+        var t = ds.trim();
+        if (!t) return [];
+        if (t.charAt(0) === '[') {
+          try { var arr = JSON.parse(t); if (Array.isArray(arr)) return arr; } catch (e) {}
+        }
+        if (t.indexOf(',') !== -1) return t.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        return [t];
+      }
+      return [String(ds)];
+    }
     var bestSellers = products.filter(function (p) {
-      return p.display_section === 'best_sellers' || (!p.display_section && p.featured);
+      var disp = parseDisplay(p);
+      if (disp.length) return disp.indexOf('best_sellers') !== -1;
+      return !!p.featured;
     }).slice(0, 8);
 
     var popular = products.filter(function (p) {
-      return p.display_section === 'popular' || (!p.display_section && p.on_sale);
+      var disp = parseDisplay(p);
+      if (disp.length) return disp.indexOf('popular') !== -1;
+      return !!p.on_sale;
     }).slice(0, 8);
+    function isNewProduct(p) {
+      // Prefer explicit new_arrival_until if present
+      if (p.new_arrival_until) {
+        var until = new Date(p.new_arrival_until).getTime();
+        if (!isNaN(until)) return Date.now() <= until;
+      }
+      var days = parseInt(p.new_arrival_days, 10);
+      if (isNaN(days)) days = 3; // default at least 3 days
+      if (days <= 0) return false;
+      if (!p.created_at) return false;
+      var created = new Date(p.created_at).getTime();
+      if (isNaN(created)) return false;
+      return (Date.now() - created) <= days * 86400000;
+    }
 
     var newArrivals = products.filter(function (p) {
-      return p.display_section === 'new_arrivals';
+      var disp = parseDisplay(p);
+      var isManualNew = disp.indexOf('new_arrivals') !== -1;
+      var isAutoNew = isNewProduct(p);
+      return isManualNew || isAutoNew;
+    }).sort(function (a, b) {
+      return (b.created_at || '').localeCompare(a.created_at || '');
     }).slice(0, 8);
 
     /* If display_section groups are empty, fall back to newest products */
@@ -277,7 +336,12 @@ function loadActiveSale() {
     var sales = saleData.sales || [];
     if (sales.length === 0) return;
     var sale = sales[0];
-    var end = new Date(sale.end_at).getTime();
+    var titleSale = null;
+    for (var ti = 0; ti < sales.length; ti++) {
+      if (sales[ti].title && sales[ti].title.trim()) { titleSale = sales[ti]; break; }
+    }
+    var effectiveSale = titleSale || sale;
+    var end = new Date(effectiveSale.end_at).getTime();
     if (isNaN(end)) return;
     saleEnd = end;
     updateCountdown();
@@ -289,10 +353,10 @@ function loadActiveSale() {
     for (var i = 0; i < sales.length; i++) {
       if ((sales[i].discount_percent || 0) > maxPct) maxPct = sales[i].discount_percent;
     }
-    if (titleEl) titleEl.textContent = 'On Sale Now: Save up to ' + maxPct + '%';
+    if (titleEl) titleEl.textContent = (effectiveSale.title && effectiveSale.title.trim()) ? effectiveSale.title.trim() : ('On Sale Now: Save up to ' + maxPct + '%');
     if (descEl) descEl.textContent = 'Shop selected products while stock lasts. The deal ends when the timer runs out.';
-    if (shopEl) shopEl.href = 'products.html?sale=' + (sale.id || 1);
-    var banner = campaignBanner || sale.banner_image_url;
+    if (shopEl) shopEl.href = 'products.html?sale=' + (effectiveSale.id || 1);
+    var banner = campaignBanner || effectiveSale.banner_image_url || sale.banner_image_url;
     if (imgEl && banner) imgEl.src = banner;
   }
 

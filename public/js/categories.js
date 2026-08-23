@@ -177,7 +177,7 @@ function productCardHTML(product) {
   if (product.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
   if (product.badge === 'new')  badge = '<span class="card-badge">New</span>';
   if (!(product.stock > 0)) {
-    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">unavailable</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;
   }
   var oldPrice = product.price_cents && product.old_price_cents

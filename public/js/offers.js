@@ -36,7 +36,7 @@ function productCardHTML(product) {
   if (product.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
   if (product.badge === 'new')  badge = '<span class="card-badge">New</span>';
   if (!(product.stock > 0)) {
-    var outBadge = '<span class="card-badge" style="background:#9aa0a6;">Out of stock</span>';
+    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">unavailable</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;
   }
   var oldPrice = product.price_cents && product.old_price_cents
@@ -150,7 +150,12 @@ function loadActiveSale() {
     var sales = saleData.sales || [];
     if (sales.length === 0) return;
     var sale = sales[0];
-    var end = new Date(sale.end_at).getTime();
+    var titleSale = null;
+    for (var ti = 0; ti < sales.length; ti++) {
+      if (sales[ti].title && sales[ti].title.trim()) { titleSale = sales[ti]; break; }
+    }
+    var effectiveSale = titleSale || sale;
+    var end = new Date(effectiveSale.end_at).getTime();
     if (isNaN(end)) return;
     saleEnd = end;
     updateCountdown();
@@ -162,11 +167,11 @@ function loadActiveSale() {
     for (var i = 0; i < sales.length; i++) {
       if ((sales[i].discount_percent || 0) > maxPct) maxPct = sales[i].discount_percent;
     }
-    if (titleEl) titleEl.textContent = 'On Sale Now: Save up to ' + maxPct + '%';
+    if (titleEl) titleEl.textContent = (effectiveSale.title && effectiveSale.title.trim()) ? effectiveSale.title.trim() : ('On Sale Now: Save up to ' + maxPct + '%');
     if (descEl) descEl.textContent = 'Shop selected products while stock lasts. The deal ends when the timer runs out.';
-    var banner = campaignBanner || sale.banner_image_url;
+    var banner = campaignBanner || effectiveSale.banner_image_url || sale.banner_image_url;
     if (imgEl && banner) imgEl.src = banner;
-    if (shopEl) shopEl.href = 'products.html?sale=' + sale.id;
+    if (shopEl) shopEl.href = 'products.html?sale=' + (effectiveSale.id || sale.id);
   }
 
   fetch('/api/sales/active').then(function (r) { return r.json(); }).then(function (data) {
