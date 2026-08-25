@@ -33,11 +33,28 @@ function withSalePrice(product, saleMap) {
   });
 }
 
+// First configured option of a variant list, or null. Lists may be stored as
+// JSON strings or arrays; entries may be plain strings or {name, hex} objects.
+function firstVariant(raw) {
+  let arr = [];
+  try { arr = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { arr = []; }
+  if (!Array.isArray(arr) || arr.length === 0) return null;
+  const v = arr[0];
+  if (v && typeof v === 'object') return v.name || null;
+  return String(v);
+}
+
+function sanitizeVariant(v) {
+  return typeof v === 'string' && v.trim() ? v.trim().slice(0, 100) : null;
+}
+
 // Pure, DB-free order pricing. Resolves each cart item through dbGetProduct,
 // applies the saleMap unit price, and throws the exact error messages the
 // orders route already catches ('Product <id> not found or inactive',
 // 'Insufficient stock for <name>'). The saleMap is trusted — it must only
-// contain live sales (see activeSalesMap).
+// contain live sales (see activeSalesMap). Legacy cart lines whose color/size
+// are empty (pre-variant-era localStorage entries) inherit the product's
+// first configured variant, matching what addToCart would assign today.
 function buildOrderItems({ items, dbGetProduct, saleMap }) {
   let subtotal_cents = 0;
   const resolvedItems = [];
@@ -54,8 +71,8 @@ function buildOrderItems({ items, dbGetProduct, saleMap }) {
       price_cents: unit,
       original_price_cents: sale ? sale.original_price_cents : null,
       quantity: item.quantity,
-      color: typeof item.color === 'string' && item.color.trim() ? item.color.trim().slice(0, 100) : null,
-      size: typeof item.size === 'string' && item.size.trim() ? item.size.trim().slice(0, 100) : null
+      color: sanitizeVariant(item.color) || firstVariant(product.colors),
+      size: sanitizeVariant(item.size) || firstVariant(product.sizes)
     });
   }
   return { resolvedItems, subtotal_cents };

@@ -310,8 +310,24 @@ var revealObserver = new IntersectionObserver(function (entries) {
 
 document.querySelectorAll('.reveal').forEach(function (el) { revealObserver.observe(el); });
 
-/* Countdown timer (defaults to 3 days from load, driven by the active sale when one exists) */
-var saleEnd = Date.now() + 3 * 24 * 60 * 60 * 1000;
+/* Countdown timer + offer banner state machine.
+   Empty state is the default; sale content only appears when a live sale
+   is confirmed. Ticker runs only while a sale is shown. */
+var saleEnd = null;
+var tickHandle = null;
+var recheckedOnExpiry = false;
+
+function showEmptyState() {
+  document.getElementById('offerSale').hidden = true;
+  document.getElementById('offerEmpty').hidden = false;
+  if (tickHandle) { clearInterval(tickHandle); tickHandle = null; }
+}
+
+function showSaleState() {
+  document.getElementById('offerEmpty').hidden = true;
+  document.getElementById('offerSale').hidden = false;
+}
+
 function updateCountdown() {
   var remaining = Math.max(0, saleEnd - Date.now());
   var days  = Math.floor(remaining / 86400000);
@@ -322,19 +338,27 @@ function updateCountdown() {
   document.getElementById('cdHours').textContent = hours;
   document.getElementById('cdMins').textContent  = mins;
   document.getElementById('cdSecs').textContent  = secs;
+  if (remaining <= 0 && !recheckedOnExpiry) {
+    recheckedOnExpiry = true;
+    loadActiveSale(); // one re-fetch, in case a new sale just started
+  }
 }
-updateCountdown();
-setInterval(updateCountdown, 1000);
 
 /* Load the active sale into the LIMITED OFFER banner (soonest end date wins). */
 function loadActiveSale() {
   var saleData = null;
+  var saleFailed = false;
   var campaignBanner = '';
+  var settingsFailed = false;
+
+  function settle() {
+    if (saleFailed && settingsFailed) showEmptyState();
+  }
 
   function apply() {
     if (!saleData) return;
     var sales = saleData.sales || [];
-    if (sales.length === 0) return;
+    if (sales.length === 0) { showEmptyState(); return; }
     var sale = sales[0];
     var titleSale = null;
     for (var ti = 0; ti < sales.length; ti++) {
@@ -342,9 +366,10 @@ function loadActiveSale() {
     }
     var effectiveSale = titleSale || sale;
     var end = new Date(effectiveSale.end_at).getTime();
-    if (isNaN(end)) return;
+    if (isNaN(end)) { showEmptyState(); return; }
+    showSaleState();
     saleEnd = end;
-    updateCountdown();
+    recheckedOnExpiry = false;
     var titleEl = document.getElementById('offerTitle');
     var descEl  = document.getElementById('offerDesc');
     var shopEl  = document.getElementById('offerShop');
@@ -358,16 +383,18 @@ function loadActiveSale() {
     if (shopEl) shopEl.href = 'products.html?sale=' + (effectiveSale.id || 1);
     var banner = campaignBanner || effectiveSale.banner_image_url || sale.banner_image_url;
     if (imgEl && banner) imgEl.src = banner;
+    updateCountdown();
+    if (!tickHandle) tickHandle = setInterval(updateCountdown, 1000);
   }
 
   fetch('/api/sales/active').then(function (r) { return r.json(); }).then(function (data) {
     saleData = data;
     apply();
-  }).catch(function () {});
+  }).catch(function () { saleFailed = true; settle(); });
   fetch('/api/settings').then(function (r) { return r.json(); }).then(function (data) {
     campaignBanner = data.offer_banner_url || '';
     apply();
-  }).catch(function () {});
+  }).catch(function () { settingsFailed = true; settle(); });
 }
 loadActiveSale();
 

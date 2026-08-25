@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Boularas | Modern Furniture &amp; Home</title>
-  <meta name="description" content="Boularas: premium modern furniture and home d�cor. Sofas, chairs, tables, lighting and more, crafted for beautiful living." />
+  <meta name="description" content="Boularas: premium modern furniture and home décor. Sofas, chairs, tables, lighting and more, crafted for beautiful living." />
   <meta property="og:title" content="Boularas | Modern Furniture &amp; Home" />
-  <meta property="og:description" content="Boularas: premium modern furniture and home d�cor. Sofas, chairs, tables, lighting and more, crafted for beautiful living." />
+  <meta property="og:description" content="Boularas: premium modern furniture and home décor. Sofas, chairs, tables, lighting and more, crafted for beautiful living." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/assets/Boularas_Logo.png" />
   <meta name="twitter:card" content="summary" />
@@ -32,10 +32,10 @@
   <link rel="stylesheet" href="css/toast.css?v=22" />
   <link rel="stylesheet" href="css/skeleton.css?v=22" />
   <link rel="stylesheet" href="css/shared-responsive.css?v=22" />
-  <link rel="stylesheet" href="css/home.css?v=22" />
+  <link rel="stylesheet" href="css/home.css?v=23" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=22" />
   <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Organization","name":"Boularas","description":"Boularas � premium furniture & home decor.","logo":"/assets/Boularas_Logo.png"}
+{"@context":"https://schema.org","@type":"Organization","name":"Boularas","description":"Boularas — premium furniture & home decor.","logo":"/assets/Boularas_Logo.png"}
 </script>
 </head>
 
@@ -169,16 +169,29 @@
       <div class="container">
         <div class="offer reveal">
           <div class="offer-text">
-            <span class="eyebrow">Limited time</span>
-            <h2 id="offerTitle">The Autumn Comfort Sale: up to 30% off seating</h2>
-            <p id="offerDesc">Sink into something softer. Selected sofas and armchairs are on sale until the timer runs out.</p>
-            <div class="countdown" aria-label="Sale countdown">
-              <div class="count-box"><b id="cdDays">0</b><small>Days</small></div>
-              <div class="count-box"><b id="cdHours">0</b><small>Hours</small></div>
-              <div class="count-box"><b id="cdMins">0</b><small>Mins</small></div>
-              <div class="count-box"><b id="cdSecs">0</b><small>Secs</small></div>
+            <div class="offer-sale" id="offerSale" hidden>
+              <span class="eyebrow">Limited time</span>
+              <h2 id="offerTitle">The Autumn Comfort Sale: up to 30% off seating</h2>
+              <p id="offerDesc">Sink into something softer. Selected sofas and armchairs are on sale until the timer runs out.</p>
+              <div class="countdown" aria-label="Sale countdown">
+                <div class="count-box"><b id="cdDays">0</b><small>Days</small></div>
+                <div class="count-box"><b id="cdHours">0</b><small>Hours</small></div>
+                <div class="count-box"><b id="cdMins">0</b><small>Mins</small></div>
+                <div class="count-box"><b id="cdSecs">0</b><small>Secs</small></div>
+              </div>
+              <a href="products.html?sale=1" id="offerShop" class="btn btn-primary">Shop the Sale</a>
             </div>
-            <a href="products.html?sale=1" id="offerShop" class="btn btn-primary">Shop the Sale</a>
+
+            <div class="offer-empty" id="offerEmpty">
+              <div class="offer-empty-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m3 11 18-5v12L3 14v-3z"/>
+                  <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
+                </svg>
+              </div>
+              <h2>No Sales Currently Available</h2>
+              <p>Check back later for our exclusive deals and special offers.</p>
+            </div>
           </div>
           <div class="offer-media">
             <img src="/assets/furn-offer.jpg" id="offerImg" alt="Cozy reading corner with sage green armchair and warm lamp light" />
@@ -297,7 +310,7 @@
   <script src="utils.js?v=22"></script>
   <script src="js/cart-utils.js?v=22"></script>
   <script src="js/footer.js?v=22"></script>
-  <script src="js/home.js?v=22"></script>
+  <script src="js/home.js?v=23"></script>
   <script src="js/language.js?v=22"></script>
 </body>
 </html>

@@ -9,8 +9,9 @@ const { activeSalesMap, buildOrderItems, computeTotals } = require('../services/
 // Fake product catalog (mirrors the bug report scenario):
 // Sofa costs 19,000 DA normally; live sale drops it to 7,600 DA.
 const CATALOG = {
-  1: { id: 1, name: 'Oslo Velvet Sofa', price_cents: 1900000, stock: 10 },
-  2: { id: 2, name: 'Bergen Oak Table', price_cents: 90000, stock: 0 }
+  1: { id: 1, name: 'Oslo Velvet Sofa', price_cents: 1900000, stock: 10, colors: ['Emerald Green', 'Dusty Rose', 'Charcoal', 'Navy'], sizes: ['2-Seater', '3-Seater', 'L-Shape'] },
+  2: { id: 2, name: 'Bergen Oak Table', price_cents: 90000, stock: 0 },
+  3: { id: 3, name: 'Plain Mug', price_cents: 50000, stock: 5, colors: '[]', sizes: '[]' }
 };
 const dbGetProduct = (id) => CATALOG[id] || null;
 
@@ -95,22 +96,32 @@ test('buildOrderItems throws the exact errors the orders route catches', () => {
   );
 });
 
-test('variant passthrough: color/size reach resolvedItems; blank or junk values become null', () => {
+test('variant passthrough: explicit color/size survive; junk on a variant-free product becomes null', () => {
   const { resolvedItems } = buildOrderItems({
     items: [
       { product_id: 1, quantity: 1, color: 'red', size: '40cm' },
-      { product_id: 1, quantity: 1, color: '', size: '   ' },
-      { product_id: 1, quantity: 1, color: 123, size: null, missing: true }
+      { product_id: 3, quantity: 1, color: '', size: '   ' },
+      { product_id: 3, quantity: 1, color: 123, size: null }
     ],
     dbGetProduct,
     saleMap: {}
   });
   assert.strictEqual(resolvedItems[0].color, 'red');
   assert.strictEqual(resolvedItems[0].size, '40cm');
-  assert.strictEqual(resolvedItems[1].color, null, 'empty string -> null');
-  assert.strictEqual(resolvedItems[1].size, null, 'whitespace-only -> null');
+  assert.strictEqual(resolvedItems[1].color, null, 'variant-free product keeps color null');
+  assert.strictEqual(resolvedItems[1].size, null, 'variant-free product keeps size null');
   assert.strictEqual(resolvedItems[2].color, null, 'non-string -> null');
   assert.strictEqual(resolvedItems[2].size, null, 'null -> null');
+});
+
+test('legacy cart line (empty color/size) inherits the product default variants', () => {
+  const { resolvedItems } = buildOrderItems({
+    items: [{ product_id: 1, quantity: 1, color: '', size: '' }],
+    dbGetProduct,
+    saleMap: {}
+  });
+  assert.strictEqual(resolvedItems[0].color, 'Emerald Green', 'first configured color');
+  assert.strictEqual(resolvedItems[0].size, '2-Seater', 'first configured size');
 });
 
 test('activeSalesMap: only live windows are returned (generic property check)', () => {

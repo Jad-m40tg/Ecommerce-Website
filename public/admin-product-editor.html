@@ -362,6 +362,7 @@
           if (p.category) document.getElementById('pCategory').value = p.category;
           try { imageUrls = Array.isArray(p.images) ? p.images : typeof p.images === 'string' ? JSON.parse(p.images || '[]') : []; } catch (e) { imageUrls = []; }
           renderImages();
+          peSyncSaveBtn();
         }).catch(function () { showToast('Failed to load product'); });
       }
 
@@ -494,6 +495,11 @@
         el.addEventListener('change', function(){ peValidateField(id); peSyncSaveBtn(); });
         el.addEventListener('blur', function(){ peValidateField(id); peSyncSaveBtn(); });
       });
+      /* Non-validated controls (checkbox toggles like "Show on Home", free delivery,
+         new-arrival preset, spec rows) must still wake the save button on change. */
+      document.querySelectorAll('#pDisplaySectionGroup input[type="checkbox"], #pFreeDelivery, #pNewArrivalDaysPreset, #pNewArrivalDays')
+        .forEach(function (el) { el.addEventListener('change', peSyncSaveBtn); });
+      document.getElementById('specRows').addEventListener('change', peSyncSaveBtn);
       peSyncSaveBtn();
 
       document.getElementById('imgGrid').addEventListener('click', function (e) {

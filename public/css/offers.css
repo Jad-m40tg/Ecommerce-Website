@@ -57,6 +57,22 @@
 .count-box b { display: block; font-size: 22px; }
 .count-box small { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #b6b0a6; }
 
+/* Sale wrapper mirrors .offer-text's flex spacing so wrapped sale content
+   lays out identically; guards keep author display:flex from beating [hidden] */
+.offer-sale { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; width: 100%; }
+.offer-sale[hidden], .offer-empty[hidden] { display: none; }
+
+/* Empty state (default until a live sale is confirmed) */
+.offer-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.offer-empty-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,253,249,0.08);
+  border: 1px solid rgba(255,253,249,0.15);
+  color: var(--wood);
+}
+.offer-empty-icon svg { width: 28px; height: 28px; }
+
 /* ============================================================
    3. PROMOTIONS GRID
    ============================================================ */
@@ -236,6 +252,8 @@
   .count-box { min-width: 56px; padding: 8px 6px; }
   .count-box b { font-size: 18px; }
   .count-box small { font-size: 10px; }
+  .offer-empty-icon { width: 56px; height: 56px; }
+  .offer-empty-icon svg { width: 24px; height: 24px; }
 }
 
 @media (max-width: 700px) {
@@ -244,6 +262,8 @@
   .count-box { min-width: 48px; padding: 6px 4px; }
   .count-box b { font-size: 16px; }
   .count-box small { font-size: 9px; }
+  .offer-empty-icon { width: 48px; height: 48px; }
+  .offer-empty-icon svg { width: 20px; height: 20px; }
 }
 
 @media (max-width: 520px) {
@@ -266,6 +286,9 @@
   .offer-text .countdown,
   .offer-text .btn-primary { align-self: center; }
   .offer-text .btn-primary { transform: scale(0.9); }
+  .offer-empty { align-items: center; text-align: center; }
+  .offer-empty-icon { width: 44px; height: 44px; }
+  .offer-empty-icon svg { width: 18px; height: 18px; }
   .product-row .product-card {
     flex: 0 0 260px;
     transform: none;
@@ -298,5 +321,7 @@
   .count-box { min-width: 36px; padding: 4px 2px; }
   .count-box b { font-size: 12px; }
   .count-box small { font-size: 7px; }
+  .offer-empty-icon { width: 40px; height: 40px; }
+  .offer-empty-icon svg { width: 18px; height: 18px; }
   .offer-media img { height: 180px; }
 }

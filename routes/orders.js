@@ -182,7 +182,7 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
       const saleMap = activeSalesMap(now);
       const { resolvedItems, subtotal_cents } = buildOrderItems({
         items,
-        dbGetProduct: (id) => db.prepare("SELECT id, name, price_cents, stock, status FROM products WHERE id = ? AND status = 'active'").get(id),
+        dbGetProduct: (id) => db.prepare("SELECT id, name, price_cents, stock, status, colors, sizes FROM products WHERE id = ? AND status = 'active'").get(id),
         saleMap
       });
 

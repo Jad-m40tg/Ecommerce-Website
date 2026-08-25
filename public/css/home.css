@@ -169,6 +169,22 @@
 .count-box b { display: block; font-size: 22px; }
 .count-box small { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #b6b0a6; }
 
+/* Sale wrapper mirrors .offer-text's flex spacing so wrapped sale content
+   lays out identically; guards keep author display:flex from beating [hidden] */
+.offer-sale { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; width: 100%; }
+.offer-sale[hidden], .offer-empty[hidden] { display: none; }
+
+/* Empty state (default until a live sale is confirmed) */
+.offer-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.offer-empty-icon {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,253,249,0.08);
+  border: 1px solid rgba(255,253,249,0.15);
+  color: var(--wood);
+}
+.offer-empty-icon svg { width: 28px; height: 28px; }
+
 .offer-media img { width: 100%; height: 100%; object-fit: cover; }
 .offer > * { min-width: 0; }
 
@@ -357,6 +373,9 @@
   .offer-text .countdown,
   .offer-text .btn-primary { align-self: center; }
   .offer-text .btn-primary { transform: scale(0.9); }
+  .offer-empty { align-items: center; text-align: center; }
+  .offer-empty-icon { width: 44px; height: 44px; }
+  .offer-empty-icon svg { width: 20px; height: 20px; }
   .count-box { min-width: 42px; padding: 5px 3px; }
   .count-box b { font-size: 14px; }
   .count-box small { font-size: 8px; letter-spacing: 0.05em; }
