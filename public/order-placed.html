@@ -139,7 +139,7 @@
           } else if (noestArrived) {
             clearInterval(pollInterval);
             content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Order Confirmed</h1><p>Thank you! Your order has been placed and is being processed.</p>' +
-              '<div class="tracking-code">' + surfaced + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code: use it to follow your order.</p>' +
+              '<div class="tracking-code">' + escapeHtml(surfaced) + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code: use it to follow your order.</p>' +
               (storePhone ? '<div class="call-note">Questions about your order? Call us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
               '<div class="success-actions"><a href="track.html?code=' + encodeURIComponent(surfaced) + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
           } else if (noestCancelled) {

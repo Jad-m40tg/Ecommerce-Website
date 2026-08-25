@@ -5,6 +5,7 @@
 const express = require('express');
 const db = require('../db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { activeSalesMap, withSalePrice } = require('../services/pricing');
 
 const router = express.Router();
 
@@ -58,7 +59,7 @@ function normalizeDisplaySection(value) {
 }
 
 // ============================================================
-// Sales-aware pricing (STEP 4)
+// Sales-aware pricing (STEP 4) — logic lives in services/pricing.js.
 // Products with a currently-active sale record (now within
 // [start_at, end_at]) are returned to customers with:
 //   price_cents        -> sale price (what customers pay)
@@ -66,31 +67,6 @@ function normalizeDisplaySection(value) {
 //   on_sale            -> 1 (drives the "Sale" badge)
 // Admin listings (GET /api/products) still show stored prices.
 // ============================================================
-
-function activeSalesMap() {
-  const now = Date.now();
-  const rows = db.prepare('SELECT product_id, original_price_cents, sale_price_cents, start_at, end_at FROM sales').all();
-  const map = {};
-  for (const s of rows) {
-    const start = new Date(s.start_at).getTime();
-    const end = new Date(s.end_at).getTime();
-    if (!isNaN(start) && !isNaN(end) && now >= start && now <= end) {
-      map[s.product_id] = s;
-    }
-  }
-  return map;
-}
-
-function withSalePrice(product, saleMap) {
-  const sale = saleMap && saleMap[product.id];
-  if (!sale) return product;
-  return Object.assign({}, product, {
-    price_cents: sale.sale_price_cents,
-    old_price_cents: sale.original_price_cents,
-    compare_at_price_cents: sale.original_price_cents,
-    on_sale: 1
-  });
-}
 
 // ============================================================
 // PUBLIC endpoints — no authentication required
@@ -101,7 +77,7 @@ router.get('/browse/featured', (req, res) => {
   const { page = 1, limit = 20 } = req.query;
   const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   const offset = (Number(page) - 1) * safeLimit;
-  const saleMap = activeSalesMap();
+  const saleMap = activeSalesMap(Date.now());
   const products = db.prepare("SELECT *, (SELECT COALESCE(ROUND(AVG(rating),1),0) FROM reviews WHERE product_id = products.id) AS rating, (SELECT COUNT(*) FROM reviews WHERE product_id = products.id) AS reviews FROM products WHERE status = 'active' AND featured = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?").all(safeLimit, offset)
     .map((p) => withSalePrice(p, saleMap));
   const { count } = db.prepare("SELECT COUNT(*) as count FROM products WHERE status = 'active' AND featured = 1").get();
@@ -114,7 +90,7 @@ router.get('/browse/on-sale', (req, res) => {
   const { page = 1, limit = 20 } = req.query;
   const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 9999);
   const offset = (Number(page) - 1) * safeLimit;
-  const saleMap = activeSalesMap();
+  const saleMap = activeSalesMap(Date.now());
   const saleIds = Object.keys(saleMap).map(Number);
   if (saleIds.length === 0) {
     return res.json({ products: [], total: 0, page: Number(page), limit: safeLimit });
@@ -168,7 +144,7 @@ router.get('/browse', (req, res) => {
   sql += ` ORDER BY ${orderClause} LIMIT ? OFFSET ?`;
   params.push(safeLimit, (Number(page) - 1) * safeLimit);
 
-  const saleMap = activeSalesMap();
+  const saleMap = activeSalesMap(Date.now());
   const products = db.prepare(sql).all(...params).map((p) => withSalePrice(p, saleMap));
   const { count } = db.prepare(countSql).get(...countParams);
 
@@ -179,7 +155,7 @@ router.get('/browse', (req, res) => {
 router.get('/browse/:id', (req, res) => {
   const product = db.prepare("SELECT *, (SELECT COALESCE(ROUND(AVG(rating),1),0) FROM reviews WHERE product_id = products.id) AS rating, (SELECT COUNT(*) FROM reviews WHERE product_id = products.id) AS reviews FROM products WHERE id = ? AND status = 'active'").get(req.params.id);
   if (!product) return res.status(404).json({ error: 'Product not found' });
-  res.json(withSalePrice(product, activeSalesMap()));
+  res.json(withSalePrice(product, activeSalesMap(Date.now())));
 });
 
 // ============================================================

@@ -225,7 +225,7 @@ document.addEventListener('click', function (event) {
     customer_phone: document.getElementById('phone').value || '',
     customer_address: [document.getElementById('address').value, document.getElementById('apt').value].filter(Boolean).join(', '),
     customer_city: document.getElementById('city').value || '',
-    items: cart.map(function (item) { return { product_id: Number(item.id), quantity: item.qty }; }),
+    items: cart.map(function (item) { return { product_id: Number(item.id), quantity: item.qty, color: item.color || null, size: item.size || null }; }),
     notes: '',
     payment_method: paymentMethod,
     promo_code: appliedPromo ? appliedPromo.code : null,

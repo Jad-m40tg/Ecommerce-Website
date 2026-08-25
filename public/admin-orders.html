@@ -299,7 +299,7 @@
         html += '<div class="modal-section"><h3>Items</h3><div class="items-list">';
         if (items.length) {
           items.forEach(function (item) {
-            html += '<div class="item-row"><div class="item-info"><div class="item-name">' + escapeHtml(item.name || 'Product') + '</div><div class="item-meta">Qty: ' + (item.quantity || 1) + ' &middot; ' + priceFull(item.price_cents || 0) + ' each</div></div><div class="item-price">' + priceFull((item.price_cents || 0) * (item.quantity || 1)) + '</div></div>';
+            html += '<div class="item-row"><div class="item-info"><div class="item-name">' + escapeHtml(item.name || 'Product') + '</div><div class="item-meta">Qty: ' + (item.quantity || 1) + ' &middot; ' + priceFull(item.price_cents || 0) + ' each' + (item.color ? '<span style="margin-left:16px;color:var(--charcoal)">color: ' + escapeHtml(item.color) + '</span>' : '') + (item.size ? '<span style="margin-left:16px;color:var(--charcoal)">size: ' + escapeHtml(item.size) + '</span>' : '') + '</div></div><div class="item-price">' + priceFull((item.price_cents || 0) * (item.quantity || 1)) + '</div></div>';
           });
         }
         html += '</div></div>';

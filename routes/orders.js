@@ -3,6 +3,7 @@ const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { createCheckout, getCheckout } = require('../services/payment');
+const { activeSalesMap, buildOrderItems, computeTotals } = require('../services/pricing');
 
 const router = express.Router();
 
@@ -35,13 +36,18 @@ function generateTrackingCode() {
   return code;
 }
 
+// Accepts either an internal tracking code (8 chars A-Z/0-9) or a NOEST code
+// (WPY-XX-XXXXXXXX shape). Deliberately prefix-agnostic so a future NOEST
+// prefix change can never block customer tracking.
+const TRACKING_CODE_PATTERN = /^([A-Z0-9]{8}|[A-Z0-9]{2,4}-[A-Z0-9]{2,4}-\d{6,10})$/i;
+
 // GET /api/orders/track?code=XXXX — Public order tracking by tracking code.
 router.get('/track', (req, res) => {
   const { code } = req.query;
-  if (!code || code.length < 4) {
+  if (!code || typeof code !== 'string' || !TRACKING_CODE_PATTERN.test(code.trim())) {
     return res.status(400).json({ error: 'Please provide a valid tracking code' });
   }
-  const codeU = code.toUpperCase();
+  const codeU = code.trim().toUpperCase();
   const order = db.prepare('SELECT id, order_status, payment_status, payment_method, tracking_number, carrier, tracking_url, tracking_code, noest_tracking, noest_status, created_at, updated_at, items, total_cents FROM orders WHERE tracking_code = ? OR noest_tracking = ?').get(codeU, codeU);
   if (!order) return res.status(404).json({ error: 'Order not found. Please check your tracking code.' });
   // Surface the real carrier tracking code once the order is shipped
@@ -170,28 +176,29 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
     const orderStatus = isOnlinePayment ? 'processing' : 'pending';
 
     const createOrder = db.transaction(() => {
-      let subtotal_cents = 0;
-      const resolvedItems = [];
+      // One timestamp for the whole order — every line item is priced
+      // against the same sale-active snapshot (services/pricing.js).
+      const now = Date.now();
+      const saleMap = activeSalesMap(now);
+      const { resolvedItems, subtotal_cents } = buildOrderItems({
+        items,
+        dbGetProduct: (id) => db.prepare("SELECT id, name, price_cents, stock, status FROM products WHERE id = ? AND status = 'active'").get(id),
+        saleMap
+      });
 
-      for (const item of items) {
-        const product = db.prepare("SELECT id, name, price_cents, stock, status FROM products WHERE id = ? AND status = 'active'").get(item.product_id);
-        if (!product) throw new Error(`Product ${item.product_id} not found or inactive`);
-        if (product.stock < item.quantity) throw new Error(`Insufficient stock for ${product.name}`);
-
-        subtotal_cents += product.price_cents * item.quantity;
-        resolvedItems.push({ product_id: product.id, name: product.name, price_cents: product.price_cents, quantity: item.quantity });
-      }
-
-      const discount_cents = appliedPromo ? Math.round(subtotal_cents * appliedPromo.pct) : 0;
-      const actual_shipping = subtotal_cents >= free_delivery_threshold ? 0 : delivery_fee;
-      const total_cents = subtotal_cents - discount_cents + actual_shipping;
+      const { discount_cents, shipping_cents, total_cents } = computeTotals({
+        subtotal_cents,
+        appliedPromo,
+        deliveryFeeCents: delivery_fee,
+        freeDeliveryThresholdCents: free_delivery_threshold
+      });
 
       const stmt = db.prepare(`
         INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, customer_city, items, subtotal_cents, delivery_fee_cents, total_cents, payment_method, payment_status, order_status, notes, tracking_code, nonce)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
       `);
       const result = stmt.run(customer_name, customer_email, customer_phone, customer_address, customer_city,
-        JSON.stringify(resolvedItems), subtotal_cents, actual_shipping, total_cents,
+        JSON.stringify(resolvedItems), subtotal_cents, shipping_cents, total_cents,
         payment_method || 'cash_on_delivery', orderStatus, notes || '', trackingCode, nonce || null);
 
       const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
@@ -199,7 +206,7 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
         stockStmt.run(item.quantity, item.product_id);
       }
 
-      return { id: result.lastInsertRowid, resolvedItems, subtotal_cents, actual_shipping, total_cents };
+      return { id: result.lastInsertRowid, resolvedItems, subtotal_cents, actual_shipping: shipping_cents, total_cents };
     });
 
     const { id, resolvedItems, subtotal_cents, actual_shipping, total_cents } = createOrder();
