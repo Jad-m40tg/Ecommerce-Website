@@ -261,11 +261,16 @@ renderPromotions();
 document.querySelectorAll('.promo-card.reveal').forEach(function (el) { revealObserver.observe(el); });
 
 /* ---------- API DATA ---------- */
+function renderSaleEmpty() {
+  var row = document.getElementById('saleRow');
+  if (row) row.innerHTML = '<div style="width:100%;padding:36px 24px;text-align:center;color:var(--gray);font-size:14px">Nothing on sale right now, check back soon.</div>';
+}
+
 fetch('/api/products/browse/on-sale')
   .then(function (r) { return r.json(); })
   .then(function (data) {
     var items = data.products || data.data || data;
-    if (!Array.isArray(items) || !items.length) return;
+    if (!Array.isArray(items) || !items.length) { renderSaleEmpty(); return; }
     PRODUCTS = items.map(function (p) {
       var imgs = []; try { imgs = JSON.parse(p.images || '[]'); } catch(e) { imgs = []; }
       var img = imgs[0] || p.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg';
