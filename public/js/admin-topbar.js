@@ -42,6 +42,12 @@
 
   if (!notifBtn || !notifPanel) return;
 
+  // Accessibility: expose the panel toggle state to assistive tech.
+  notifBtn.setAttribute('aria-expanded', 'false');
+  notifBtn.setAttribute('aria-controls', notifPanel.id || 'notifPanel');
+  notifPanel.setAttribute('role', 'region');
+  notifPanel.setAttribute('aria-label', 'Notifications');
+
   var seenNotifs = JSON.parse(localStorage.getItem('seen_notifs') || '[]');
 
   var DISMISS_KEY = 'boularas-dismissed-notifs';
@@ -110,6 +116,7 @@
     e.stopPropagation();
     var isOpen = notifPanel.style.display !== 'none';
     notifPanel.style.display = isOpen ? 'none' : 'flex';
+    notifBtn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
     if (!isOpen) {
       notifBody.querySelectorAll('.notif-item').forEach(function (item) {
         var key = item.getAttribute('data-key');
@@ -160,7 +167,7 @@
     });
   }
 
-  document.addEventListener('click', function () { notifPanel.style.display = 'none'; });
+  document.addEventListener('click', function () { notifPanel.style.display = 'none'; notifBtn.setAttribute('aria-expanded', 'false'); });
   notifPanel.addEventListener('click', function (e) { e.stopPropagation(); });
 
   loadNotifications();

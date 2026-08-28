@@ -114,9 +114,14 @@ function validateField(id, errorId, test) {
   var result = test ? test(input.value) : input.value.trim().length > 0;
   var valid = result === true || result === null || result === undefined;
   var message = typeof result === 'string' ? result : '';
+  // Accessibility: expose the invalid state and link the field to its error text.
+  if (error && !input.getAttribute('aria-describedby')) {
+    input.setAttribute('aria-describedby', errorId);
+  }
   if (!valid) {
     input.classList.add('error', 'invalid');
     input.classList.remove('valid');
+    input.setAttribute('aria-invalid', 'true');
     if (error) {
       if (message) error.textContent = message;
       error.classList.add('show');
@@ -124,6 +129,7 @@ function validateField(id, errorId, test) {
   } else {
     input.classList.remove('error', 'invalid');
     input.classList.add('valid');
+    input.removeAttribute('aria-invalid');
     if (error) error.classList.remove('show');
   }
   return valid;
@@ -191,6 +197,7 @@ document.addEventListener('focusin', function (event) {
   var input = event.target.closest('.field input, .field select');
   if (!input) return;
   input.classList.remove('error', 'invalid');
+  input.removeAttribute('aria-invalid');
   var error = input.parentNode.querySelector('.error-msg');
   if (error) error.classList.remove('show');
 });

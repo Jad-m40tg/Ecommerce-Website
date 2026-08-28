@@ -1,7 +1,22 @@
 User-agent: *
 Allow: /
-Disallow: /admin-
-Disallow: /uploads/
-Disallow: /payment-
-Disallow: /track.html
-Disallow: /order-placed.html
+Disallow: /admin
+Disallow: /admin-login.html
+Disallow: /admin-dashboard.html
+Disallow: /admin-products.html
+Disallow: /admin-product-editor.html
+Disallow: /admin-orders.html
+Disallow: /admin-customers.html
+Disallow: /admin-categories.html
+Disallow: /admin-analytics.html
+Disallow: /admin-settings.html
+Disallow: /admin-sales.html
+Disallow: /admin-profile.html
+Disallow: /api/
+
+# Transactional / user-state pages are excluded from the index via their own
+# <meta name="robots" content="noindex, nofollow"> tags (robots.txt is NOT used
+# to block them, so crawlers can still read the noindex tags). No Disallow here
+# for those pages — that would prevent Google from ever seeing the noindex.
+
+Sitemap: /sitemap.xml

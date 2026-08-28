@@ -9,6 +9,7 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { PORT, CORS_ORIGIN } = require('./config');
 const ordersRouter = require('./routes/orders');
+const { sendProductPage } = require('./services/seo');
 
 const app = express();
 
@@ -64,6 +65,17 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   immutable: true,
   setHeaders: (res) => res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
 }));
+
+// SEO: serve a dynamic XML sitemap and a static robots.txt.
+// robots.txt lives in public/ and is served by the static handler below;
+// we only mount the dynamic sitemap route here (it must precede the wildcard).
+app.use(require('./routes/sitemap'));
+
+// SEO: product pages are a single static template (product.html?id=...) with
+// per-product <head> metadata injected server-side before static serving.
+// Handles the canonical, title/description, Open Graph, and JSON-LD for real
+// ids, and returns a genuine 404 for nonexistent/inactive product ids.
+app.get(['/product.html', '/product'], sendProductPage);
 
 // Serves all frontend HTML pages and assets from the public/ directory.
 // 'index: false' prevents serving index.html at '/' (we handle that via SPA fallback).
@@ -130,7 +142,15 @@ app.get('*path', (req, res) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
     return res.status(404).json({ error: 'Endpoint not found' });
   }
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  // Serve the storefront shell only for the root path (the home page).
+  // The static middleware above already resolves every known page, both with
+  // and without the .html suffix (extensions:['html']), so the only requests
+  // that legitimately reach here are the bare root and genuinely dead URLs.
+  // Returning a genuine 404 for the latter removes soft-404 signals.
+  if (req.path === '/' || req.path === '') {
+    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 // Global error handler — catches unhandled errors from all routes.

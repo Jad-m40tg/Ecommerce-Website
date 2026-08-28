@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
   <title>Payment Failed | Boularas</title>
   <meta name="description" content="Payment was not completed — please try again." />
   <meta property="og:title" content="Payment Failed | Boularas" />
@@ -69,9 +70,14 @@
   <script src="js/cart-utils.js?v=22"></script>
   <script>
     (function () {
-      document.getElementById('menuToggle').addEventListener('click', function () {
-        document.getElementById('navLinks').classList.toggle('open');
+      var toggle = document.getElementById('menuToggle');
+      toggle.addEventListener('click', function () {
+        var navLinks = document.getElementById('navLinks');
+        navLinks.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', navLinks.classList.contains('open') ? 'true' : 'false');
       });
+      toggle.setAttribute('aria-controls', 'navLinks');
+      toggle.setAttribute('aria-expanded', 'false');
       updateCartCount();
     })();
   </script>

@@ -301,10 +301,10 @@ function renderProduct(p) {
   var thumbs;
   if (galleryImages.length > 0) {
     thumbs = galleryImages.map(function (img, i) {
-      return '<button type="button" class="' + (i === 0 ? 'active' : '') + '" data-thumb="' + i + '" aria-label="View image ' + (i + 1) + '"><img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
+      return '<button type="button" class="' + (i === 0 ? 'active' : '') + '" data-thumb="' + i + '" aria-label="View image ' + (i + 1) + '"><img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(p.name) + ' thumbnail ' + (i + 1) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
     }).join('');
   } else {
-    thumbs = '<button type="button" class="active" data-thumb="0" aria-label="View image 1"><img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + p.image + '" alt="" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
+    thumbs = '<button type="button" class="active" data-thumb="0" aria-label="View image 1"><img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + p.image + '" alt="' + escapeHtml(p.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></button>';
   }
 
   var swatches;
@@ -542,6 +542,7 @@ function updateLightbox() {
   var main = document.getElementById('galleryMainImg');
   var img = document.getElementById('lightboxImg');
   img.src = src;
+  img.alt = currentProduct ? (currentProduct.name || 'Product') + ' enlarged view' : 'Enlarged product image';
   img.setAttribute('data-category', main ? (main.getAttribute('data-category') || '') : '');
   img.setAttribute('onerror', 'handleImageError(this)');
   img.removeAttribute('data-fallback');
@@ -803,11 +804,16 @@ var formRules = {
 function setFieldError(name, message) {
   var input = document.getElementById(name);
   var msg = document.querySelector('[data-msg-for="' + name + '"]');
+  // Accessibility: give the error element a stable id and link the field to it.
+  if (msg && !msg.id) msg.id = name + 'Msg';
+  if (input && msg && !input.getAttribute('aria-describedby')) {
+    input.setAttribute('aria-describedby', msg.id);
+  }
   if (message) {
-    if (input) { input.classList.add('error', 'invalid'); input.classList.remove('valid'); }
+    if (input) { input.classList.add('error', 'invalid'); input.classList.remove('valid'); input.setAttribute('aria-invalid', 'true'); }
     if (msg) msg.textContent = message;
   } else {
-    if (input) { input.classList.remove('error', 'invalid'); input.classList.add('valid'); }
+    if (input) { input.classList.remove('error', 'invalid'); input.classList.add('valid'); input.removeAttribute('aria-invalid'); }
     if (msg) msg.textContent = '';
   }
 }
