@@ -341,12 +341,52 @@
   pointer-events: none;
 }
 
-.review-delete-btn {
+.review-head-right { display: flex; align-items: center; gap: 8px; }
+
+/* Review "..." action menu */
+.review-menu { position: relative; display: inline-flex; }
+.review-menu-btn {
   background: none; border: none; color: var(--gray);
-  font-size: 16px; cursor: pointer; margin-left: 6px;
-  transition: color 0.2s ease;
+  font-size: 18px; line-height: 1; cursor: pointer; padding: 2px 4px;
+  border-radius: var(--radius-md);
+  transition: color 0.2s ease, background 0.2s ease;
 }
-.review-delete-btn:hover { color: var(--wood); }
+.review-menu-btn:hover { color: var(--charcoal); background: var(--beige); }
+.review-menu-pop {
+  position: absolute; right: 0; top: 100%; margin-top: 4px;
+  background: var(--white);
+  border: 1px solid var(--beige); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lift);
+  padding: 4px; min-width: 110px; z-index: 20;
+  display: flex; flex-direction: column;
+}
+.review-menu-pop[hidden] { display: none; }
+.review-menu-item {
+  background: none; border: none; text-align: left;
+  padding: 8px 12px; border-radius: var(--radius-sm, 6px);
+  font-size: 14px; font-weight: 500; color: var(--charcoal);
+  cursor: pointer; width: 100%;
+  transition: background 0.15s ease;
+}
+.review-menu-item:hover { background: var(--beige); }
+.review-menu-item:disabled { opacity: 0.45; cursor: not-allowed; }
+.review-menu-item.danger { color: var(--wood); }
+.review-menu-item.danger:hover { background: rgba(201,138,58,.12); }
+
+/* Inline edit editor */
+.review-editor { margin-top: 4px; }
+.review-editor textarea.review-edit-textarea {
+  width: 100%; padding: 12px 14px;
+  background: var(--warm-white);
+  border: 1.5px solid var(--beige); border-radius: var(--radius-md);
+  font-family: inherit; font-size: 14px; color: var(--charcoal);
+  resize: vertical; min-height: 70px;
+}
+.review-editor textarea.review-edit-textarea:focus {
+  outline: none; border-color: var(--sage);
+}
+.review-editor-actions { display: flex; gap: 10px; margin-top: 10px; }
+.review-editor-actions .btn { padding: 8px 16px; font-size: 13px; }
 
 /* ============================================================
    5. ORDER FORM
@@ -497,6 +537,7 @@
    ============================================================ */
 .product-card {
   flex: 0 0 260px;
+  position: relative;
   display: flex; flex-direction: column;
   background: var(--white);
   border: 1px solid var(--beige);
@@ -508,8 +549,18 @@
 }
 .product-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
 
+.product-card .card-hit {
+  display: block; flex: 1;
+  text-decoration: none; color: inherit;
+}
+.product-card .card-hit:hover { color: inherit; }
+.product-card:has(.card-hit:focus-visible) {
+  outline: 2px solid var(--sage); outline-offset: 2px; border-radius: var(--radius-lg);
+  transform: translateY(-6px); box-shadow: var(--shadow-lift);
+}
+
 .card-media { position: relative; display: block; background: var(--cream); }
-.card-media img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.card-media img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
 
 .card-badge {
   position: absolute; top: 12px; left: 12px;
@@ -534,41 +585,38 @@
 
 .discount{display:inline-flex;align-items:center;padding:3px 9px;border-radius:var(--radius-pill);background:rgba(179,83,46,.1);color:var(--danger);font-size:12px;font-weight:700;font-family:'Inter',sans-serif}
 
-.card-body { padding: 16px 18px 20px; display: flex; flex-direction: column; flex: 1; }
+.card-body { padding: 16px 18px 10px; display: flex; flex-direction: column; flex: 1; }
 .card-category {
   font-size: 12px; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray);
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--sage-light);
 }
-.card-body h3 {
+.card-body .card-title {
+  display: block;
   font-family: 'Inter', sans-serif;
-  font-size: 15.5px; font-weight: 600; margin: 6px 0 8px;
+  font-size: 15.5px; font-weight: 600; margin: 6px 0 8px; color: var(--charcoal);
+  line-height: 1.3;
 }
-.card-body h3 a { color: var(--charcoal); }
-.card-body h3 a:hover { color: var(--sage); }
 
 .card-rating { font-size: 13px; color: var(--wood); margin-bottom: 10px; }
 .card-rating span { color: var(--gray); margin-left: 4px; }
 
 .card-price-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   margin-top: auto; flex-wrap: nowrap;
+  padding: 8px 18px 18px;
 }
-.card-price { font-size: 16px; font-weight: 700; color: var(--charcoal); flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+.card-price { font-size: 16px; font-weight: 700; color: var(--charcoal); flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; white-space: nowrap; }
 .card-price s { font-size: 12px; font-weight: 500; color: var(--gray); margin-left: 0; }
 
-.card-add {
+.card-add,
+.card-added {
   padding: 9px 14px; border: none; border-radius: var(--radius-md);
-  background: var(--charcoal); color: var(--warm-white);
   font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
   transition: background 0.25s ease;
 }
+.card-add { background: var(--charcoal); color: var(--warm-white); }
 .card-add:hover { background: var(--sage); }
-
-.card-added {
-  padding: 9px 14px; border: none; border-radius: var(--radius-md);
-  background: var(--sage); color: var(--warm-white);
-  font-size: 13px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
-}
+.card-added { background: var(--sage); color: var(--warm-white); }
 .card-added:hover { background: var(--sage-dark); }
 
 /* ============================================================
@@ -622,7 +670,7 @@
     margin-right: 0;
   }
   .product-row .product-card:hover { transform: translateY(-6px); }
-  .product-card .card-body h3 { font-size: 16px; }
+  .product-card .card-body .card-title { font-size: 16px; }
   .product-card .card-price { font-size: 18px; }
   .product-card .card-price s { font-size: 14px; }
   .product-card .card-add,

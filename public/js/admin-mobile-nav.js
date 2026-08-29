@@ -12,6 +12,9 @@
     document.body.classList.add('drawer-open');
     toggle.setAttribute('aria-expanded', 'true');
     toggle.setAttribute('aria-label', 'Close menu');
+    // Move focus into the drawer so keyboard users can Tab through the nav.
+    var firstLink = sidebar.querySelector('.side-nav a');
+    if (firstLink) firstLink.focus();
   }
 
   function close() {
@@ -20,6 +23,10 @@
     document.body.classList.remove('drawer-open');
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-label', 'Open menu');
+    // Return focus to the trigger (no-op when the toggle is hidden on desktop).
+    if (document.activeElement === document.body || sidebar.contains(document.activeElement)) {
+      toggle.focus();
+    }
   }
 
   toggle.addEventListener('click', function () {

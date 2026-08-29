@@ -82,3 +82,14 @@
   .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .stat-grid .stat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
+
+/* ---- Keyboard focus (shared admin chrome) ----
+   Per-page a/button/input/select/textarea rules exist; these cover the
+   focusable-but-not-native elements (role="button" divs, drawer, upload zones). */
+.admin-drawer-toggle:focus-visible,
+.sidebar .side-nav a:focus-visible,
+.sidebar a:focus-visible,
+[role="button"]:focus-visible,
+.banner-drop:focus-visible,
+.campaign-banner-drop:focus-visible,
+.dropzone:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }

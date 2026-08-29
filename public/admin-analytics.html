@@ -45,7 +45,7 @@
     .notif-empty{text-align:center;padding:28px 16px;color:var(--gray);font-size:13px}
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=22" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=23" />
 </head>
 <body>
 
@@ -72,6 +72,7 @@
       <header class="topbar">
         <button class="admin-drawer-toggle" type="button" aria-label="Open menu" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg></button>
         <div class="top-actions">
+          <button type="button" class="icon-btn admin-lang-mobile" id="adminLangMobile">EN</button>
           <button class="icon-btn" id="notifBtn" aria-label="Notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot" id="notifDot"></span></button>
           <div id="notifPanel" class="notif-panel" style="display:none;">
             <div class="notif-header"><h4>Notifications</h4><button type="button" class="notif-clear" id="notifClear">Clear all</button></div>
@@ -113,8 +114,29 @@
   </div>
 
   <script src="utils.js?v=22"></script>
-  <script src="js/admin-topbar.js?v=23"></script>
-  <script src="js/admin-mobile-nav.js?v=22"></script>
+    <script src="js/language.js?v=23"></script>
+  <script>
+    (function () {
+      var i18n = window.BoularasI18n;
+      if (!i18n) return;
+      var btn = document.getElementById('adminLangMobile');
+      if (!btn) return;
+      var cycle = ['en', 'ar', 'fr'];
+      function sync(code) {
+        btn.textContent = code.toUpperCase();
+      }
+      sync(i18n.getLang());
+      i18n.onChange(sync);
+      btn.addEventListener('click', function () {
+        var cur = i18n.getLang();
+        var next = cycle[(cycle.indexOf(cur) + 1) % cycle.length];
+        i18n.setLang(next);
+      });
+    })();
+  </script>
+
+  <script src="js/admin-topbar.js?v=24"></script>
+  <script src="js/admin-mobile-nav.js?v=23"></script>
   <script>
     (function () {
       var token = localStorage.getItem('admin_token');

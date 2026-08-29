@@ -61,7 +61,6 @@ function showNotFound() {
 if (!requestedId) {
   showNotFound();
 } else {
-  document.getElementById('breadcrumb').innerHTML = '<span style="color:var(--gray)">Loading...</span>';
   document.getElementById('productRoot').innerHTML =
     '<div class="product-detail">' +
       '<div>' +
@@ -154,8 +153,28 @@ if (!requestedId) {
 /* ---------- REVIEWS ---------- */
 var currentReviews = [];
 
+function formatRelativeDate(createdAt) {
+  if (!createdAt) return '';
+  var date = new Date(String(createdAt).replace(' ', 'T') + 'Z');
+  if (isNaN(date.getTime())) return '';
+  var seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  var minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return minutes === 1 ? '1 minute ago' : minutes + ' minutes ago';
+  var hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours === 1 ? '1 hour ago' : hours + ' hours ago';
+  var days = Math.floor(hours / 24);
+  if (days < 30) return days === 1 ? '1 day ago' : days + ' days ago';
+  var months = Math.floor(days / 30);
+  if (months < 12) return months === 1 ? '1 month ago' : months + ' months ago';
+  var years = Math.floor(days / 365);
+  return years === 1 ? '1 year ago' : years + ' years ago';
+}
+
 function fetchReviewsAndRender(product) {
-  fetch('/api/reviews?product_id=' + product.id)
+  var reviewEmail = localStorage.getItem('boularas_review_email') || '';
+  var queryEmail = reviewEmail ? '&email=' + encodeURIComponent(reviewEmail) : '';
+  fetch('/api/reviews?product_id=' + product.id + queryEmail)
     .then(function (r) { return r.json(); })
     .then(function (data) {
       currentReviews = data.reviews || [];
@@ -186,19 +205,32 @@ function renderReviews(productId) {
   if (currentReviews.length === 0) {
     return '<div class="reviews-empty">No reviews yet. Be the first to share your thoughts!</div>';
   }
+  var isAdmin = !!localStorage.getItem('admin_token');
   var cards = currentReviews.map(function (review) {
     var stars = '';
     for (var i = 0; i < 5; i++) {
       stars += i < review.rating ? '&#9733;' : '&#9734;';
     }
-    var date = review.created_at ? new Date(review.created_at.replace(' ', 'T') + 'Z').toLocaleDateString() : '';
-    var deleteBtn = localStorage.getItem('admin_token')
-      ? '<button type="button" class="review-delete-btn" data-review-id="' + review.id + '" aria-label="Delete review" title="Delete review">&#10005;</button>'
-      : '';
-    return '<div class="review-card">' +
+    var date = formatRelativeDate(review.created_at);
+
+    var menuHTML = '';
+    if (isAdmin || review.is_mine === true) {
+      var editDisabled = (!isAdmin && review.is_expired === true) ? ' disabled' : '';
+      var delDisabled = (!isAdmin && review.is_expired === true) ? ' disabled' : '';
+      menuHTML =
+        '<div class="review-menu">' +
+          '<button type="button" class="review-menu-btn" aria-haspopup="true" aria-expanded="false" aria-label="Review options">&#8942;</button>' +
+          '<div class="review-menu-pop" hidden>' +
+            '<button type="button" class="review-menu-item" data-edit-review="' + review.id + '"' + editDisabled + '>Edit</button>' +
+            '<button type="button" class="review-menu-item danger" data-delete-review="' + review.id + '"' + delDisabled + '>Delete</button>' +
+          '</div>' +
+        '</div>';
+    }
+
+    return '<div class="review-card" data-review-id="' + review.id + '">' +
       '<div class="review-head">' +
         '<div><span class="review-name">' + escapeHtml(review.customer_name) + '</span> <span class="review-stars">' + stars + '</span></div>' +
-        '<div><span class="review-date">' + date + '</span> ' + deleteBtn + '</div>' +
+        '<div class="review-head-right"><span class="review-date">' + date + '</span>' + menuHTML + '</div>' +
       '</div>' +
       '<p class="review-text">' + escapeHtml(review.comment) + '</p>' +
     '</div>';
@@ -212,24 +244,143 @@ function renderReviews(productId) {
   return wrap;
 }
 
+function closeAllReviewMenus() {
+  document.querySelectorAll('.review-menu').forEach(function (menu) {
+    var pop = menu.querySelector('.review-menu-pop');
+    var btn = menu.querySelector('.review-menu-btn');
+    if (pop) pop.hidden = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function toggleReviewMenu(btn) {
+  closeAllReviewMenus();
+  var menu = btn.closest('.review-menu');
+  if (!menu) return;
+  var pop = menu.querySelector('.review-menu-pop');
+  var willOpen = !pop || pop.hidden;
+  if (pop) pop.hidden = !willOpen;
+  btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+}
+
 function wireUpReviewDeleteButtons() {
-  document.querySelectorAll('[data-review-id]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var reviewId = btn.getAttribute('data-review-id');
-      if (!confirm('Delete this review?')) return;
-      var headers = {};
-      var adminToken = localStorage.getItem('admin_token');
-      if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
-      fetch('/api/reviews/' + reviewId, { method: 'DELETE', headers: headers })
-        .then(function (r) { return r.json(); })
-        .then(function () {
-          currentReviews = currentReviews.filter(function (r) { return String(r.id) !== String(reviewId); });
-          var list = document.getElementById('reviewsList');
-          if (list) list.innerHTML = renderReviews(currentProduct ? currentProduct.id : 0);
-          showToast('Review deleted');
-        })
-        .catch(function () { showToast('Could not delete review'); });
+  if (wireUpReviewDeleteButtons._done) return;
+  wireUpReviewDeleteButtons._done = true;
+
+  document.addEventListener('click', function (event) {
+    var menuBtn = event.target.closest('.review-menu-btn');
+    if (menuBtn) { event.stopPropagation(); toggleReviewMenu(menuBtn); return; }
+
+    var delBtn = event.target.closest('[data-delete-review]');
+    if (delBtn) { event.stopPropagation(); if (confirm('Delete this review?')) deleteReview(delBtn.getAttribute('data-delete-review')); return; }
+
+    var editBtn = event.target.closest('[data-edit-review]');
+    if (editBtn) {
+      event.stopPropagation();
+      var card = editBtn.closest('.review-card');
+      if (card) startInlineEdit(card, editBtn.getAttribute('data-edit-review'));
+    }
+  });
+}
+
+function deleteReview(reviewId) {
+  var options = { method: 'DELETE' };
+  var adminToken = localStorage.getItem('admin_token');
+  var headers = {};
+  var body = null;
+  if (adminToken) {
+    headers['Authorization'] = 'Bearer ' + adminToken;
+  } else {
+    var email = localStorage.getItem('boularas_review_email') || '';
+    body = JSON.stringify({ email: email });
+    headers['Content-Type'] = 'application/json';
+  }
+  if (Object.keys(headers).length) options.headers = headers;
+  if (body) options.body = body;
+
+  fetch('/api/reviews/' + reviewId, options)
+    .then(function (r) {
+      return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+    })
+    .then(function (res) {
+      if (!res.ok) {
+        showToast((res.data && res.data.error) || 'Could not delete review');
+        currentReviews = currentReviews.filter(function (r) { return String(r.id) !== String(reviewId); });
+        var list = document.getElementById('reviewsList');
+        if (list) list.innerHTML = renderReviews(currentProduct ? currentProduct.id : 0);
+        return;
+      }
+      currentReviews = currentReviews.filter(function (r) { return String(r.id) !== String(reviewId); });
+      var list2 = document.getElementById('reviewsList');
+      if (list2) list2.innerHTML = renderReviews(currentProduct ? currentProduct.id : 0);
+      showToast('Review deleted');
+    })
+    .catch(function () {
+      showToast('Could not delete review');
     });
+}
+
+function startInlineEdit(card, reviewId) {
+  closeAllReviewMenus();
+  var review = null;
+  for (var i = 0; i < currentReviews.length; i++) {
+    if (String(currentReviews[i].id) === String(reviewId)) { review = currentReviews[i]; break; }
+  }
+  if (!review) return;
+
+  var textEl = card.querySelector('.review-text');
+  var editor = document.createElement('div');
+  editor.className = 'review-editor';
+  editor.innerHTML =
+    '<textarea class="review-edit-textarea" maxlength="2000">' + escapeHtml(review.comment || '') + '</textarea>' +
+    '<div class="review-editor-actions">' +
+      '<button type="button" class="btn btn-primary review-save-btn">Save</button>' +
+      '<button type="button" class="btn btn-outline review-cancel-btn">Cancel</button>' +
+    '</div>';
+  if (textEl) {
+    textEl.replaceWith(editor);
+  }
+
+  var cancelBtn = editor.querySelector('.review-cancel-btn');
+  var saveBtn = editor.querySelector('.review-save-btn');
+  cancelBtn.addEventListener('click', function () {
+    var p = document.createElement('p');
+    p.className = 'review-text';
+    p.innerHTML = escapeHtml(review.comment || '');
+    editor.replaceWith(p);
+  });
+  saveBtn.addEventListener('click', function () {
+    var value = editor.querySelector('.review-edit-textarea').value.trim();
+    if (value.length === 0) { showToast('Comment cannot be empty'); return; }
+    saveBtn.disabled = true;
+    var payload = { comment: value };
+    var options = { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) };
+    var adminToken = localStorage.getItem('admin_token');
+    if (adminToken) {
+      options.headers['Authorization'] = 'Bearer ' + adminToken;
+    } else {
+      payload.email = localStorage.getItem('boularas_review_email') || '';
+      options.body = JSON.stringify(payload);
+    }
+    fetch('/api/reviews/' + reviewId, options)
+      .then(function (r) {
+        return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+      })
+      .then(function (res) {
+        saveBtn.disabled = false;
+        if (!res.ok) {
+          showToast((res.data && res.data.error) || 'Could not save review');
+          return;
+        }
+        review.comment = res.data.comment;
+        var list = document.getElementById('reviewsList');
+        if (list) list.innerHTML = renderReviews(currentProduct ? currentProduct.id : 0);
+        showToast('Review updated');
+      })
+      .catch(function () {
+        saveBtn.disabled = false;
+        showToast('Could not save review');
+      });
   });
 }
 
@@ -242,6 +393,14 @@ function wireUpViewAllButton() {
     });
   }
 }
+
+/* Close review "..." menus on outside click and Escape */
+document.addEventListener('click', function (event) {
+  if (!event.target.closest('.review-menu')) closeAllReviewMenus();
+});
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'Escape') closeAllReviewMenus();
+});
 
 /* Hide the review form once a customer has reviewed (once per product, per browser) */
 function markReviewFormDone(productId, message) {
@@ -469,6 +628,7 @@ function renderProduct(p) {
     '</div>';
 
   wireUpDetail(p, colors);
+  document.querySelectorAll('#productRoot .reveal').forEach(function (el) { el.classList.add('visible'); });
   updateOrderSummary(p);
   updateQtyStockNote(p);
   var cBtn = document.getElementById('confirmOrderBtn');
@@ -760,6 +920,9 @@ function wireUpDetail(p, colors) {
           return;
         }
         localStorage.setItem('boularas_reviewed_' + p.id, '1');
+        if (emailInput) localStorage.setItem('boularas_review_email', emailValue.toLowerCase());
+        newReview.is_mine = true;
+        newReview.is_expired = false;
         currentReviews.unshift(newReview);
         var list = document.getElementById('reviewsList');
         if (list) list.innerHTML = renderReviews(p.id);
@@ -884,17 +1047,20 @@ function relatedProductCard(p) {
   var btnClass = inCart ? 'card-added' : 'card-add';
   var btnText = inCart ? 'In Cart' : 'Add';
   var btnDisabled = !(p.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
-  return '<article class="product-card">' +
-    '<a href="product.html?id=' + p.id + '" class="card-media">' + badge +
-    '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(p.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" /></a>' +
-    '<div class="card-body">' +
-      '<div class="card-category">' + escapeHtml(getCategoryLabel(p.category)) + '</div>' +
-      '<h3><a href="product.html?id=' + p.id + '">' + escapeHtml(p.name) + '</a></h3>' +
-      '<div class="card-price-row">' +
-        '<div class="card-price">' + price(p.price_cents) + oldPriceHTML + '</div>' +
-        '<button class="' + btnClass + '" type="button" data-add="' + p.id + '"' + btnDisabled + '>' + btnText + '</button>' +
-      '</div>' +
-    '</div>' +
+  return '<article class="product-card" data-category="' + (p.category || '') + '">' +
+    '<a class="card-hit" href="product.html?id=' + p.id + '" aria-label="View ' + escapeHtml(p.name) + '">' +
+      '<span class="card-media">' + badge +
+        '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(p.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (p.category || '') + '" />' +
+      '</span>' +
+      '<span class="card-body">' +
+        '<span class="card-category">' + escapeHtml(getCategoryLabel(p.category)) + '</span>' +
+        '<span class="card-title">' + escapeHtml(p.name) + '</span>' +
+      '</span>' +
+    '</a>' +
+    '<span class="card-price-row">' +
+      '<span class="card-price">' + price(p.price_cents) + oldPriceHTML + '</span>' +
+      '<button class="' + btnClass + '" type="button" data-add="' + p.id + '"' + btnDisabled + '>' + btnText + '</button>' +
+    '</span>' +
   '</article>';
 }
 

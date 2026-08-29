@@ -13,6 +13,7 @@
   --wood:       #a67c52;   /* warm wood accent                */
   --sage:       #6b7f5e;   /* muted green accent (primary)    */
   --sage-dark:  #576a4c;   /* sage hover state                */
+  --sage-light: #97a98a;   /* light sage for category labels  */
   --danger:     #e4320e;   /* red for errors / cancelled       */
   --warning:    #f1ca1c;   /* amber for pending               */
   --white:      #fffdf9;   /* card surfaces                   */

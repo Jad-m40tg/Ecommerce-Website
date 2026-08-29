@@ -364,14 +364,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 38px;                 /* slightly smaller, comfortable tap target */
-    padding: 8px 18px;
-    border-radius: 6px;               /* small radius = more square than pill */
-    font-size: 13.5px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+    border-radius: 8px;               /* small radius = more square than pill */
+    font-size: 12.5px;
     font-weight: 600;
-    background: var(--charcoal);
-    color: var(--warm-white);
-    border-color: var(--charcoal);
+    background: var(--white);
+    color: var(--charcoal);
+    border-color: var(--beige);
   }
 }
 

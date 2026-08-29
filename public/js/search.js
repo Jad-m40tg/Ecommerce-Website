@@ -37,20 +37,23 @@ function productCardHTML(product) {
   var btnText = inCart ? 'In Cart' : 'Add';
   var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
+  var nameEscaped = escapeHtml(product.name);
   return (
     '<article class="product-card reveal">' +
-      '<a href="product.html?id=' + product.id + '" class="card-media">' +
-        badge +
-        '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+      '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="View ' + nameEscaped + '">' +
+        '<span class="card-media">' +
+          badge +
+          '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + nameEscaped + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+        '</span>' +
+        '<span class="card-body">' +
+          '<span class="card-category">' + escapeHtml(cat) + '</span>' +
+          '<span class="card-title">' + nameEscaped + '</span>' +
+        '</span>' +
       '</a>' +
-      '<div class="card-body">' +
-        '<div class="card-category">' + escapeHtml(cat) + '</div>' +
-        '<h3><a href="product.html?id=' + product.id + '">' + escapeHtml(product.name) + '</a></h3>' +
-        '<div class="card-price-row">' +
-          '<div class="card-price">' + price(product.price_cents || 0) + oldPriceHTML + '</div>' +
-          '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
-        '</div>' +
-      '</div>' +
+      '<span class="card-price-row">' +
+        '<span class="card-price">' + price(product.price_cents || 0) + oldPriceHTML + '</span>' +
+        '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
+      '</span>' +
     '</article>'
   );
 }

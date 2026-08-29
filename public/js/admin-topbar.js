@@ -33,6 +33,16 @@
     }
   }).catch(function () {});
 
+  /* --- Keyboard operability: .admin-chip is a role="button" div --- */
+  var chipEl = document.querySelector('.admin-chip');
+  if (chipEl) {
+    chipEl.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      chipEl.click();
+    });
+  }
+
   /* --- Notifications --- */
   var notifPanel = document.getElementById('notifPanel');
   var notifBtn = document.getElementById('notifBtn');
@@ -106,7 +116,7 @@
         notifBody.innerHTML = '<div class="notif-empty">No notifications yet</div>';
       } else {
         notifBody.innerHTML = visible.map(function (n) {
-          return '<div class="notif-item" data-key="' + n.key + '" data-id="' + n.orderId + '" style="cursor:pointer" title="Open order"><div class="notif-icon">' + n.icon + '</div><div><div class="notif-text">' + n.text + '</div><div class="notif-time">' + timeAgo(n.time) + '</div></div><button type="button" class="notif-dismiss" data-dismiss="' + n.key + '" title="Dismiss notification" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;line-height:1;padding:2px 6px;margin-left:auto;align-self:flex-start">&times;</button></div>';
+          return '<div class="notif-item" role="button" tabindex="0" data-key="' + n.key + '" data-id="' + n.orderId + '" style="cursor:pointer" title="Open order"><div class="notif-icon">' + n.icon + '</div><div><div class="notif-text">' + n.text + '</div><div class="notif-time">' + timeAgo(n.time) + '</div></div><button type="button" class="notif-dismiss" data-dismiss="' + n.key + '" title="Dismiss notification" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;line-height:1;padding:2px 6px;margin-left:auto;align-self:flex-start">&times;</button></div>';
         }).join('');
       }
     }).catch(function () {});
@@ -124,6 +134,11 @@
       });
       localStorage.setItem('seen_notifs', JSON.stringify(seenNotifs));
       if (notifDot) notifDot.style.display = 'none';
+      // Keyboard activation (detail === 0): move focus into the panel
+      if (e.detail === 0) {
+        var firstFocusable = notifBody.querySelector('.notif-item') || notifClear;
+        if (firstFocusable) firstFocusable.focus();
+      }
     }
   });
 
@@ -152,6 +167,16 @@
     }
   });
 
+  notifBody.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (e.target.closest('.notif-dismiss')) return; // real button handles its own keys
+    var item = e.target.closest('.notif-item');
+    if (!item) return;
+    e.preventDefault();
+    var id = item.getAttribute('data-id');
+    if (id) window.location.href = 'admin-orders.html?order=' + id;
+  });
+
   if (notifClear) {
     notifClear.addEventListener('click', function () {
       var dismissed = loadDismissed();
@@ -169,6 +194,15 @@
 
   document.addEventListener('click', function () { notifPanel.style.display = 'none'; notifBtn.setAttribute('aria-expanded', 'false'); });
   notifPanel.addEventListener('click', function (e) { e.stopPropagation(); });
+
+  // Escape closes the notif panel and returns focus to the trigger.
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && notifPanel.style.display !== 'none') {
+      notifPanel.style.display = 'none';
+      notifBtn.setAttribute('aria-expanded', 'false');
+      notifBtn.focus();
+    }
+  });
 
   loadNotifications();
 })();

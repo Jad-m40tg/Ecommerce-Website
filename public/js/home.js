@@ -55,22 +55,25 @@ function productCardHTML(product) {
   var btnText = inCart ? 'In Cart' : 'Add';
   var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
+  var nameEscaped = escapeHtml(product.name);
   return (
-    '<article class="product-card">' +
-      '<a href="product.html?id=' + product.id + '" class="card-media">' +
-        badge +
-        '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + product._image + '" alt="' + escapeHtml(product.name) + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+    '<div class="product-card">' +
+      '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="View ' + nameEscaped + '">' +
+        '<span class="card-media">' +
+          badge +
+          '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + product._image + '" alt="' + nameEscaped + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
+        '</span>' +
+        '<span class="card-body">' +
+          '<span class="card-category">' + escapeHtml(product.category) + '</span>' +
+          '<span class="card-title">' + nameEscaped + '</span>' +
+          '<span class="card-rating">' + stars + '<span>(' + reviews + ')</span></span>' +
+        '</span>' +
       '</a>' +
-      '<div class="card-body">' +
-        '<div class="card-category">' + escapeHtml(product.category) + '</div>' +
-        '<h3><a href="product.html?id=' + product.id + '">' + escapeHtml(product.name) + '</a></h3>' +
-        '<div class="card-rating">' + stars + '<span>(' + reviews + ')</span></div>' +
-        '<div class="card-price-row">' +
-          '<div class="card-price">' + price(product.price_cents) + oldPrice + '</div>' +
-          '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
-        '</div>' +
-      '</div>' +
-    '</article>'
+      '<span class="card-price-row">' +
+        '<span class="card-price">' + price(product.price_cents) + oldPrice + '</span>' +
+        '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
+      '</span>' +
+    '</div>'
   );
 }
 
@@ -222,12 +225,13 @@ function loadTestimonials() {
   fetch('/api/reviews/recent').then(function (r) { return r.json(); }).then(function (data) {
     var reviews = data.reviews || [];
     var grid = document.getElementById('testimonialGrid');
-    if (!grid) return;
+    var section = document.getElementById('testimonials');
+    if (!grid || !section) return;
     if (reviews.length === 0) {
-      var section = document.getElementById('testimonials');
-      if (section) section.style.display = 'none';
+      section.style.display = 'none';
       return;
     }
+    section.style.display = '';
     grid.innerHTML = reviews.slice(0, 3).map(testimonialCardHTML).join('');
     document.querySelectorAll('#testimonialGrid .reveal').forEach(function (el) { revealObserver.observe(el); });
   }).catch(function () {

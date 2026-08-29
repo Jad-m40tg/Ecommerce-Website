@@ -22,6 +22,55 @@ change, the same way the original was maintained.
   made unauthorized changes that had to be reverted via git. Treat that
   section as non-negotiable, not boilerplate.
 
+## Confirmed by recon (2026-08-29) — overrides assumptions below where they overlap
+- 25 pages total: 14 customer (index, products, product, categories, offers,
+  search-results, cart, checkout, wishlist, track, order-placed,
+  payment-success, payment-failed, 404) + 11 admin (admin-login,
+  admin-dashboard, admin-products, admin-product-editor, admin-orders,
+  admin-customers, admin-categories, admin-analytics, admin-sales,
+  admin-settings, admin-profile). No shared partial/template system — head,
+  nav, and footer markup is duplicated per file, so any static markup change
+  (fonts, vendor script tags) touches all 25 files individually.
+- Two exceptions to that duplication, and they matter: `footer.js` builds the
+  footer via `innerHTML` (one file, not 25), and `admin-topbar.js` builds the
+  admin notification menu the same way (one file, not 11). Translating those
+  is a single-file edit, not a per-page one.
+- The language switcher (`language.js`) is already fully real, not a
+  placeholder — `setLang()` already updates `localStorage['boularas_lang']`,
+  `<html lang>`, active-state classes, and fires `onChange` callbacks. B3 no
+  longer needs to build any switching logic — see the rewritten B3 below.
+- The site has **zero cookies anywhere** (pure JWT-in-localStorage auth,
+  nothing else uses `document.cookie`). Persisting language to a cookie for
+  a hypothetical future backend would be new infrastructure this codebase
+  doesn't otherwise use, for a backend feature that's explicitly out of
+  scope — dropped, see Locked decisions.
+- No build step/bundler — `server.js` serves `public/` directly via
+  `express.static`, so `public/locales/**` and `public/js/vendor/**` need no
+  registration anywhere, they just work once the files exist.
+- `.json` responses get no explicit `Cache-Control` today. The codebase
+  already has an established `?v=N` cache-busting convention for CSS/JS
+  (used in the recent language-button commit) — reuse that same convention
+  for the locale fetch URLs instead of inventing a caching strategy.
+- Fonts load via a per-page Google Fonts `<link>`/`css2` URL, ~39 occurrences
+  across the 25 files (some pages carry two). Adding Cairo is a pure
+  find-and-replace across those 39 occurrences — see the efficiency section;
+  this does not need agent judgment.
+- Translatable JS-built text is real and non-trivial: `product.js` (15
+  `innerHTML` sites), `categories.js`, `search.js`, `checkout.js`,
+  `home.js`, `cart.js`, `offers.js`, `products.js` (3–5 each), plus inline
+  `<script>` blocks inside several HTML files (`track.html`,
+  `order-placed.html`, `payment-success.html`, `wishlist.html`,
+  `admin-dashboard.html`, and others — all 11 admin pages have at least one).
+  A plain HTML-text scan will miss all of this — see updated scan scope
+  below.
+- No hardcoded secrets, no obviously outdated dependencies. `npm audit`
+  itself wasn't run — do that yourself once, it's a two-second check, before
+  handing the repo broad agent access for the next few phases.
+- Two guide files exist in the repo: this one and the original
+  `I18N-GUIDE.md`. Delete the original or mark it superseded at the top —
+  an agent that stumbles onto it mid-session will find the old RTL
+  instructions this file cancels.
+
 ## Assumptions — fix these if wrong, otherwise proceed
 - Currency label stays **"DA"** in all three languages.
 - Dates and numbers keep their current format and digits in all three
@@ -33,10 +82,15 @@ change, the same way the original was maintained.
 
 ## Locked decisions
 - i18next core only — no framework binding (vanilla JS + Node.js backend).
-- Frontend plugins: i18next-http-backend + i18next-browser-languagedetector,
-  vendored locally in `public/js/vendor/` — no CDN.
-- **NO backend i18n** (unchanged) — lang still persisted to a cookie for
-  possible future backend use.
+- Frontend plugins: i18next-http-backend only, vendored locally in
+  `public/js/vendor/` — no CDN. **Drop i18next-browser-languagedetector**:
+  `language.js` already owns detection + persistence via `boularas_lang`;
+  init i18next with `lng` read from the existing `getLang()` instead of
+  adding a second system that could disagree with the first.
+- **NO backend i18n** (unchanged). **No cookie** — the site has zero cookie
+  usage anywhere (JWT-in-localStorage auth only); keep persisting language
+  in the existing `boularas_lang` localStorage key, don't add a new
+  mechanism for a hypothetical future backend.
 - Three locales, in priority order: **en** (already live, source of truth,
   `fallbackLng`) → **ar** (full migration + translation, both surfaces) →
   **fr** (translation-only, reusing ar's keys).
@@ -52,9 +106,11 @@ change, the same way the original was maintained.
   letterforms at all, so Cairo is still required. During the French pass,
   spot-check Playfair Display's accented-character coverage (é, è, ê, ç, œ...)
   on headings; fall back that specific string to Inter if a glyph looks off.
-- Language switcher: reuse the existing buttons. Wire `changeLanguage` +
-  `localStorage` + cookie + `<html lang>` update. **No dir flip.** Keep the
-  pre-paint bootstrap so the page doesn't flash the wrong language on load.
+- Language switcher: reuse the existing buttons — `language.js`'s
+  `setLang()`/`onChange` API is already real, not a placeholder. Register
+  `i18next.changeLanguage()` as one of its `onChange` callbacks; keep using
+  `boularas_lang`, no cookie. **No dir flip.** Keep the pre-paint bootstrap
+  so the page doesn't flash the wrong language on load.
 - Pace: same phased cadence with review stops. Before touching more than 3
   files in a step, list them and wait for go-ahead — this rule is doing more
   work now than it did in v1 (see Guardrails).
@@ -89,7 +145,7 @@ public/
     ar/  common.json  customer.json  admin.json
     fr/  common.json  customer.json  admin.json
   js/
-    vendor/  i18next.min.js  i18next-http-backend.min.js  i18next-browser-languagedetector.min.js
+    vendor/  i18next.min.js  i18next-http-backend.min.js
     i18n-init.js      (bootstrap: pre-paint lang + init + apply; dir always "ltr")
     i18n-helper.js    (data-i18n scan + data-i18n-attr="placeholder:key" / "aria-label:key")
 ```
@@ -112,30 +168,46 @@ surface. `rtl.css` is gone from this structure — there's nothing for it to do.
 - DB enum values that are UI vocabulary (order/payment status badges) stay in
   scope: `order.status.pending`, etc. Product names/descriptions and other DB
   content stay out of scope — flag, don't translate, if found hardcoded.
+- The switcher's own EN/AR/FR labels stay as literal language names, never
+  translated (already how `language.js` renders them).
 - No unrelated refactors/renames/cleanup while in a file for i18n reasons.
 - Never regenerate a locale JSON wholesale once it has content — add/edit
   keys only.
 
 ## Phase plan (in order, stop for review between phases)
-- **B0** — Setup: vendor the 3 i18next files, create `en`/`ar`/`fr` locale
-  folders with one placeholder key per file to confirm loading. No behavior
-  changes. Show diff.
-- **B1** — Frontend init: i18next init (http-backend + languagedetector) with
-  all three locales configured, the data-i18n helper, pre-paint bootstrap
-  (sets `lang` from saved preference; `dir` is hardcoded `"ltr"` and never
-  touched again). Add the optional debug inspector here too (see "Fixing a
-  translation later" below). List files touched.
+- **B0** — Setup: vendor the 2 i18next files (http-backend only), create
+  `en`/`ar`/`fr` locale folders with one placeholder key per file to confirm
+  loading. No behavior changes. Show diff.
+- **B1** — Frontend init: i18next init (http-backend only, no detector) with
+  all three locales configured, `lng` read from the existing `getLang()`,
+  the data-i18n helper, pre-paint bootstrap (`dir` hardcoded `"ltr"`, never
+  touched again). Write `scripts/i18n-scan.js` here too, scoped to the three
+  text surfaces recon confirmed: static HTML text, `innerHTML`
+  string-concatenation in `.js` files (this codebase uses
+  `'...' + var + '...'`, no template literals — match that pattern), and
+  inline `<script>` blocks inside HTML files. Add the optional debug
+  inspector too (see "Fixing a translation later" below). List files
+  touched.
 - **B2** — still skipped (backend i18n, owner decision).
-- **B3** — Switcher: inspect the existing buttons/markup first, then wire
-  `changeLanguage` + persist (localStorage + cookie) + flip `<html lang>`
-  only. No dir logic exists to write.
-- **B4 — Customer pages, Arabic only:** hardcoded strings → data-i18n /
-  `t('key')`. English text in the JSON stays identical to what's already on
-  the page; Arabic translations added alongside. Grouped diffs (3–4 pages),
-  wait for go-ahead between groups. Flag out-of-scope product/DB content.
-  Flag (don't fix) any spot where the Arabic string looks like it'll overflow
-  on mobile widths.
-- **B5 — Admin pages, Arabic only:** same rules as B4.
+- **B3** — Switcher: `language.js` is already fully wired and real — no
+  placeholder logic to remove. Register `i18next.changeLanguage()` (which
+  triggers the actual text swap) as an `onChange` callback of the existing
+  `setLang()`/`BoularasI18n` API. Don't touch persistence or the `<html
+  lang>` update — `setLang()` already does both correctly. No dir logic
+  exists or should be added. This phase should be small.
+- **B4 — Customer pages, Arabic only:** 14 pages, no shared partials, so
+  expect ~4 groups of 3–4 (e.g. cart/checkout/wishlist together;
+  product/products/categories/search-results together). Hardcoded strings →
+  data-i18n / `t('key')`, including the `.js` files that build markup via
+  `innerHTML` (`product.js` is heaviest at 15 sites) and any inline
+  `<script>` blocks. English text in the JSON stays identical to what's
+  already on the page; Arabic translations added alongside. Wait for
+  go-ahead between groups. Flag out-of-scope product/DB content. Flag
+  (don't fix) any spot where the Arabic string looks like it'll overflow on
+  mobile widths.
+- **B5 — Admin pages, Arabic only:** 11 pages, same rules as B4, ~3 groups of
+  3–4. `footer.js` and `admin-topbar.js` are single files shared across
+  every page that includes them — translate those once, not per-page.
 - **B4F / B5F — French, translation-only:** reuse the exact key set B4/B5
   already created. No template edits — the `data-i18n`/`t()` calls are
   already in place. Only `fr/*.json` values get added. This phase should be
@@ -154,10 +226,12 @@ The real lever here isn't "faster prompting," it's not paying LLM tokens for
 work that's actually mechanical:
 1. **Separate deterministic scanning from judgment calls.** Have the agent
    write a small script once (`scripts/i18n-scan.js`, in B0/B1) that walks
-   the customer/admin templates and lists un-wrapped English-looking strings
-   with file:line references. That script is free to re-run — use it to
-   generate each phase's work queue *and* as B6's "missed literals" check, so
-   it pays for itself once instead of costing LLM time every phase.
+   the customer/admin templates *and* the `.js` files *and* inline
+   `<script>` blocks (all three surfaces confirmed by recon) and lists
+   un-wrapped English-looking strings with file:line references. That
+   script is free to re-run — use it to generate each phase's work queue
+   *and* as B6's "missed literals" check, so it pays for itself once instead
+   of costing LLM time every phase.
 2. **Feed the agent the scan output, not whole files**, for the judgment
    calls it actually needs to make: what key name fits, which namespace,
    in/out of scope. Small, focused context per phase.
@@ -177,6 +251,11 @@ work that's actually mechanical:
    and do the mechanical B6 checks.
 6. Arabic-then-French is itself the biggest cost saver on the board: the
    French pass touches zero templates.
+7. **The Cairo font addition is a pure find-and-replace, not an LLM task.**
+   All 25 files load fonts via the same Google Fonts `css2` URL pattern
+   (~39 occurrences total). Do this with a plain script/codemod that appends
+   `&family=Cairo:wght@...` wherever that URL appears, in one pass across
+   all 25 files — don't spend agent judgment re-deciding this file by file.
 
 ## Guardrails — read this given what happened last time
 - Work in a dedicated git branch for the whole effort; **commit after every
@@ -192,13 +271,20 @@ work that's actually mechanical:
   stop and ask why *before* allowing it, not after.
 - Small phases + frequent commits mean a bad phase costs you `git revert` of
   one commit, not a lost afternoon of uncommitted work.
+- Delete `I18N-GUIDE.md` (the original v1) from the repo, or add a one-line
+  "superseded, see I18N-GUIDE-v2.md" note at its top — don't leave two
+  spec files in the repo, one of them still describing RTL, for an agent to
+  stumble on mid-session.
 
 ## Fixing a translation you don't like, later
 Because `i18next-http-backend` fetches `locales/{lng}/{ns}.json` at runtime,
 changing a translation is: open the file, find the key, edit the string,
-save, refresh. No rebuild, no agent required, ever, for a wording fix. If an
-edit doesn't seem to show up, it's browser caching of the JSON — hard-refresh
-or add a `queryStringParams: { v: ... }` cache-buster to the loadPath config.
+save, refresh. No rebuild, no agent required, ever, for a wording fix.
+`server.js` sets no explicit `Cache-Control` for `.json` today, and this
+codebase already has its own `?v=N` cache-busting convention for CSS/JS —
+configure the http-backend `loadPath` to use that same convention (e.g.
+`/locales/{{lng}}/{{ns}}.json?v=1`, bump the number if an edit doesn't show
+up) instead of inventing a different caching strategy.
 
 To find which key backs a piece of visible text without grepping every file,
 have the agent add a small debug mode to `i18n-helper.js` in B1: gated behind
@@ -226,6 +312,9 @@ on every single wording tweak as you notice it.
 - Switcher cycles EN→AR→FR→EN and persists across reload/navigation.
 - Screenshots at 375/768/1280px in EN/AR/FR (Playwright).
 - Mobile text-overflow spots flagged during B4/B5 — checked and fixed by you.
+- No cookie introduced anywhere, and no `i18next-browser-languagedetector`
+  vendored or referenced — both are dropped per the recon-confirmed
+  decisions above.
 - Explicitly still out of scope, unchanged from v1: backend-rendered
   strings, transactional emails. Not covered by either guide, worth a note
   if you ever revisit: per-locale meta tags/OG data for SEO.

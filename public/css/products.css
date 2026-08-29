@@ -176,6 +176,7 @@
 
 /* Grid variant of product card (stretches to fill cell) */
 .product-grid .product-card {
+  position: relative;
   background: var(--white);
   border: 1px solid var(--beige);
   border-radius: var(--radius-lg);
@@ -185,10 +186,27 @@
   display: flex; flex-direction: column;
 }
 .product-grid .product-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
+.product-grid .product-card:focus-within { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
+.product-grid .product-card > .card-hit {
+  display: flex; flex-direction: column; flex: 1;
+  text-decoration: none; color: inherit;
+}
+.product-grid .product-card:has(.card-hit:focus-visible) {
+  outline: 2px solid var(--sage); outline-offset: 2px;
+  border-radius: var(--radius-lg);
+}
 .product-grid .product-card .card-media {
   position: relative; display: block; background: var(--cream);
 }
-.product-grid .product-card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.product-grid .product-card .card-hit img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.product-grid .product-card .card-title {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 15.5px; font-weight: 600; margin: 6px 0 8px;
+  color: var(--charcoal);
+}
+.product-grid .product-card .card-category { display: block; }
+.product-grid .product-card .card-rating { display: block; }
 
 .card-badge {
   position: absolute; top: 12px; left: 12px;
@@ -214,12 +232,12 @@
 .discount{display:inline-flex;align-items:center;padding:3px 9px;border-radius:var(--radius-pill);background:rgba(179,83,46,.1);color:var(--danger);font-size:12px;font-weight:700;font-family:'Inter',sans-serif}
 
 .product-grid .product-card .card-body {
-  padding: 16px 18px 20px;
+  padding: 16px 18px 10px;
   display: flex; flex-direction: column; flex: 1;
 }
 .product-grid .product-card .card-category {
   font-size: 12px; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray);
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--sage);
 }
 .product-grid .product-card h3 {
   font-family: 'Inter', sans-serif;
@@ -230,9 +248,10 @@
 
 .card-price-row {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; margin-top: auto; flex-wrap: nowrap;
+  gap: 12px; margin-top: auto; flex-wrap: nowrap;
+  padding: 8px 18px 18px;
 }
-.card-price { font-size: 16px; font-weight: 700; color: var(--charcoal); flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+.card-price { font-size: 16px; font-weight: 700; color: var(--charcoal); flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; white-space: nowrap; }
 .card-price s { font-size: 12px; font-weight: 500; color: var(--gray); margin-left: 0; }
 
 .card-add {
@@ -317,22 +336,22 @@
 
 @media (max-width: 520px) {
   .product-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .product-grid .product-card .card-body { padding: 12px 14px 14px; }
-  .product-grid .product-card h3 { font-size: 15px; }
+  .product-grid .product-card .card-body { padding: 12px 14px 8px; }
+  .product-grid .product-card .card-title { font-size: 15px; }
   .card-price { font-size: 16px; }
-  .card-add { padding: 8px 12px; font-size: 12px; }
-  .card-added { padding: 8px 12px; font-size: 12px; }
-  .card-price-row { gap: 6px; }
+  .card-add { padding: 8px 10px; font-size: 12px; }
+  .card-added { padding: 8px 10px; font-size: 12px; }
+  .card-price-row { gap: 8px; padding: 6px 14px 14px; }
 }
 
 @media (max-width: 380px) {
   .product-grid { grid-template-columns: 1fr; gap: 18px; }
-  .product-grid .product-card .card-body { padding: 16px 18px 20px; }
-  .product-grid .product-card h3 { font-size: 15.5px; }
+  .product-grid .product-card .card-body { padding: 16px 18px 10px; }
+  .product-grid .product-card .card-title { font-size: 15.5px; }
   .card-price { font-size: 17px; }
   .card-add { padding: 9px 16px; font-size: 13px; }
   .card-added { padding: 9px 16px; font-size: 13px; }
-  .card-price-row { gap: 10px; }
+  .card-price-row { gap: 12px; padding: 8px 18px 18px; }
 }
 
 @media (max-width: 500px) {

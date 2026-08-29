@@ -114,6 +114,7 @@
    4. PRODUCT CARD (row context)
    ============================================================ */
 .product-card {
+  position: relative;
   flex: 0 0 260px;
   display: flex; flex-direction: column;
   background: var(--white);
@@ -125,9 +126,18 @@
   scroll-snap-align: start;
 }
 .product-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
+.product-card:focus-within { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
+.product-card > .card-hit {
+  display: flex; flex-direction: column; flex: 1;
+  text-decoration: none; color: inherit;
+}
+.product-card:has(.card-hit:focus-visible) {
+  outline: 2px solid var(--sage); outline-offset: 2px;
+  border-radius: var(--radius-lg);
+}
 
 .card-media { position: relative; display: block; background: var(--cream); }
-.card-media img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.card-hit .card-media img { width: 100%; aspect-ratio: 1; object-fit: cover; }
 
 .card-badge {
   position: absolute; top: 12px; left: 12px;
@@ -152,26 +162,28 @@
 
 .discount{display:inline-flex;align-items:center;padding:3px 9px;border-radius:var(--radius-pill);background:rgba(179,83,46,.1);color:var(--danger);font-size:12px;font-weight:700;font-family:'Inter',sans-serif}
 
-.card-body { padding: 16px 18px 20px; display: flex; flex-direction: column; flex: 1; }
+.card-body { padding: 16px 18px 10px; display: flex; flex-direction: column; flex: 1; }
 .card-category {
+  display: block;
   font-size: 12px; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray);
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--sage-light);
 }
-.card-body h3 {
+.card-title {
+  display: block;
   font-family: 'Inter', sans-serif;
   font-size: 15.5px; font-weight: 600; margin: 6px 0 8px;
+  color: var(--charcoal);
 }
-.card-body h3 a { color: var(--charcoal); }
-.card-body h3 a:hover { color: var(--sage); }
 
-.card-rating { font-size: 13px; color: var(--wood); margin-bottom: 10px; }
+.card-rating { display: block; font-size: 13px; color: var(--wood); margin-bottom: 10px; }
 .card-rating span { color: var(--gray); margin-left: 4px; }
 
 .card-price-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   margin-top: auto; flex-wrap: nowrap;
+  padding: 8px 18px 18px;
 }
-.card-price { font-size: 16px; font-weight: 700; color: var(--charcoal); flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+.card-price { font-size: 16px; font-weight: 700; color: var(--charcoal); flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; white-space: nowrap; }
 .card-price s { font-size: 12px; font-weight: 500; color: var(--gray); margin-left: 0; }
 
 .card-add {

@@ -38,8 +38,6 @@
     .sidebar .brand{font-family:'Playfair Display',serif; font-size:24px; font-weight:700; padding:4px 8px 22px; border-bottom:1px solid var(--beige); margin-bottom:18px}
     .sidebar .brand span{color:var(--sage)}
     .sidebar .brand{display:flex; align-items:center; justify-content:space-between; gap:10px}
-    .admin-lang{flex-shrink:0; font-family:'Inter',sans-serif; min-width:34px; height:34px; padding:0 8px; border:1.5px solid var(--beige); border-radius:var(--radius-sm); background:var(--white); color:var(--charcoal); font-size:12.5px; font-weight:600; cursor:pointer; transition:background .2s ease, border-color .2s ease}
-    .admin-lang:hover{background:var(--cream); border-color:var(--charcoal)}
     .admin-lang-mobile{display:none}
     .nav-label{font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--gray); padding:6px 10px; margin-top:6px}
     .side-nav{list-style:none; display:flex; flex-direction:column; gap:2px}
@@ -144,18 +142,17 @@
       .topbar{padding:0 20px; gap:10px}
       .admin-chip .who{display:none}
       .content{padding:20px}
-      .admin-lang{display:none}
       .admin-lang-mobile{display:grid}
     }
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
   </style>
-  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=22" />
+  <link rel="stylesheet" href="css/admin-mobile-nav.css?v=23" />
 </head>
 <body>
 
   <div class="app">
     <aside class="sidebar">
-      <div class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" style="height:36px;width:auto;max-width:170px;object-fit:contain" /><button type="button" class="admin-lang" id="adminLangDesktop">EN</button></div>
+      <div class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" style="height:36px;width:auto;max-width:170px;object-fit:contain" /></div>
 
       <span class="nav-label">Main</span>
       <ul class="side-nav">
@@ -284,31 +281,25 @@
 
 <script src="utils.js?v=22"></script>
 <script src="js/language.js?v=23"></script>
-<script src="js/admin-topbar.js?v=23"></script>
-  <script src="js/admin-mobile-nav.js?v=22"></script>
+<script src="js/admin-topbar.js?v=24"></script>
+  <script src="js/admin-mobile-nav.js?v=23"></script>
   <script>
     (function () {
       var i18n = window.BoularasI18n;
       if (!i18n) return;
-      var desktopBtn = document.getElementById('adminLangDesktop');
-      var mobileBtn = document.getElementById('adminLangMobile');
-      var btn = desktopBtn || mobileBtn;
+      var btn = document.getElementById('adminLangMobile');
       if (!btn) return;
       var cycle = ['en', 'ar', 'fr'];
       function sync(code) {
-        var label = code.toUpperCase();
-        if (desktopBtn) desktopBtn.textContent = label;
-        if (mobileBtn) mobileBtn.textContent = label;
+        btn.textContent = code.toUpperCase();
       }
       sync(i18n.getLang());
       i18n.onChange(sync);
-      function onTap() {
+      btn.addEventListener('click', function () {
         var cur = i18n.getLang();
         var next = cycle[(cycle.indexOf(cur) + 1) % cycle.length];
         i18n.setLang(next);
-      }
-      if (desktopBtn) desktopBtn.addEventListener('click', onTap);
-      if (mobileBtn) mobileBtn.addEventListener('click', onTap);
+      });
     })();
   </script>
   <script>
