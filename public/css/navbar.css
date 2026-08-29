@@ -354,6 +354,25 @@
 @media (max-width: 900px) {
   .lang-switcher { display: none; }
   .lang-switcher-mobile { display: flex; }
+
+  /* Mobile single-language toggle: keep all three pills in the DOM, but
+     show only the currently-active one and draw it as one centered button.
+     The visible button always shows its own code, which is the active one
+     (the .active class is maintained by language.js). */
+  .lang-switcher-mobile .lang-mobile-btn { display: none; }
+  .lang-switcher-mobile .lang-mobile-btn.active {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;                 /* slightly smaller, comfortable tap target */
+    padding: 8px 18px;
+    border-radius: 6px;               /* small radius = more square than pill */
+    font-size: 13.5px;
+    font-weight: 600;
+    background: var(--charcoal);
+    color: var(--warm-white);
+    border-color: var(--charcoal);
+  }
 }
 
 @media (max-width: 480px) {

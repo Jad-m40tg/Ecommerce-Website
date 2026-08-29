@@ -96,7 +96,19 @@
       return '<button type="button" class="lang-mobile-btn" data-lang="' + code + '">' + code.toUpperCase() + '</button>';
     }).join('');
     li.querySelectorAll('.lang-mobile-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () { setLang(btn.getAttribute('data-lang')); });
+      btn.addEventListener('click', function () {
+        // On mobile only the currently-active pill is visible; tapping it
+        // advances to the next language in the fixed cycle EN -> AR -> FR.
+        // We reuse the same setLang() the existing pills call — no new logic.
+        if (btn.classList.contains('active')) {
+          var cycle = ['en', 'ar', 'fr'];
+          var next = cycle[(cycle.indexOf(current) + 1) % cycle.length];
+          setLang(next);
+        } else {
+          // Any non-active pill (not visible on mobile) keeps the old behavior.
+          setLang(btn.getAttribute('data-lang'));
+        }
+      });
     });
     navLinks.appendChild(li);
   }
