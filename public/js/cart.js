@@ -177,11 +177,11 @@ function renderSummary() {
       '<span>Promo code</span>' +
     '</div>' +
     '<div class="promo">' +
-      '<input type="text" id="promoInput" placeholder="e.g. BOUL10" ' +
+      '<input type="text" id="promoInput" aria-label="Promo code" placeholder="e.g. BOUL10" ' +
         (appliedPromo ? 'value="' + escapeHtml(appliedPromo.code) + '" disabled' : '') + ' />' +
       '<button type="button" id="promoBtn">' + (appliedPromo ? 'Remove' : 'Apply') + '</button>' +
     '</div>' +
-    '<div class="promo-msg" id="promoMsg">' +
+    '<div class="promo-msg" id="promoMsg" role="status" aria-live="polite">' +
       (appliedPromo ? '&#10003; ' + escapeHtml(appliedPromo.label) + ' applied.' : 'Try BOUL10 or WELCOME5.') +
     '</div>' +
 

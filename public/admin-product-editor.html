@@ -73,7 +73,7 @@
     .qa-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:var(--radius-pill);border:1.5px solid var(--charcoal);background:transparent;color:var(--charcoal);font-size:13.5px;font-weight:600;cursor:pointer;transition:background .25s ease,color .25s ease}
     .qa-btn:hover{background:var(--charcoal);color:var(--warm-white)}.qa-btn.primary{background:var(--sage);border-color:var(--sage);color:var(--white)}.qa-btn.primary:hover{background:var(--sage-dark);border-color:var(--sage-dark)}
 
-    .toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);background:var(--charcoal);color:var(--warm-white);padding:13px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:500;box-shadow:var(--shadow-lift);opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s ease;z-index:90}
+    .toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);background:var(--charcoal);color:var(--warm-white);padding:13px 22px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:var(--shadow-lift);opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s ease;z-index:90}
     .toast.show{opacity:1;transform:translate(-50%,0)}
 
     .color-chips{display:flex;flex-wrap:wrap;gap:8px;min-height:38px;margin-bottom:12px}
@@ -112,13 +112,15 @@
 </head>
 <body>
 
+  <a class="skip-link" href="#mainContent">Skip to main content</a>
+
   <div class="app">
-    <aside class="sidebar">
+    <aside class="sidebar" role="navigation" aria-label="Admin navigation">
       <div class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" style="height:36px;width:auto;max-width:170px;object-fit:contain" /></div>
       <span class="nav-label">Main</span>
       <ul class="side-nav">
         <li><a href="admin-dashboard.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a></li>
-        <li><a class="active" href="admin-products.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Products</a></li>
+        <li><a class="active" href="admin-products.html" aria-current="page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Products</a></li>
         <li><a href="admin-sales.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><path d="M7 7h.01"/></svg>Sales</a></li>
         <li><a href="admin-orders.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Orders</a></li>
         <li><a href="admin-customers.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Customers</a></li>
@@ -135,7 +137,7 @@
       <header class="topbar">
         <button class="admin-drawer-toggle" type="button" aria-label="Open menu" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg></button>
         <div class="top-actions">
-          <button type="button" class="icon-btn admin-lang-mobile" id="adminLangMobile">EN</button>
+          <button type="button" class="icon-btn admin-lang-mobile" id="adminLangMobile" aria-pressed="false">EN</button>
           <button class="icon-btn" id="notifBtn" aria-label="Notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot" id="notifDot"></span></button>
           <div id="notifPanel" class="notif-panel" style="display:none;">
             <div class="notif-header"><h4>Notifications</h4><button type="button" class="notif-clear" id="notifClear">Clear all</button></div>
@@ -145,7 +147,7 @@
         </div>
       </header>
 
-      <main class="content">
+      <main class="content" id="mainContent" tabindex="-1">
         <section class="page-head">
           <div><h1 id="pageTitle">New Product</h1><p id="pageSubtitle">Add a new item to your catalog.</p></div>
         </section>
@@ -179,7 +181,7 @@
             <div class="form-grid">
               <div class="field"><label for="pSizes">Sizes <span class="hint">(comma-separated)</span></label><input class="input" type="text" id="pSizes" placeholder="S, M, L, XL" /></div>
               <div class="field full">
-                <label>Colors <span class="hint">click a swatch to pick, or type a custom name + Add</span></label>
+                <label for="colorInput">Colors <span class="hint">click a swatch to pick, or type a custom name + Add</span></label>
                 <div class="color-chips" id="colorChips"></div>
                 <div class="color-input-row">
                   <input class="input" type="text" id="colorInput" placeholder="Type a color name, e.g. Slate" />
@@ -240,6 +242,7 @@
       var cycle = ['en', 'ar', 'fr'];
       function sync(code) {
         btn.textContent = code.toUpperCase();
+        btn.setAttribute('aria-pressed', code === 'en' ? 'false' : 'true');
       }
       sync(i18n.getLang());
       i18n.onChange(sync);
@@ -392,8 +395,8 @@
       function renderImages() {
         var grid = document.getElementById('imgGrid');
         if (imageUrls.length === 0) { grid.innerHTML = ''; return; }
-        var main = '<div class="img-main"><img src="' + escapeHtml(imageUrls[0]) + '" alt="Main product image" onerror="handleImageError(this)" /><button type="button" class="rm" data-idx="0" title="Remove main image">&times;</button><div class="main-label">Main Image</div></div>';
-        var thumbs = imageUrls.slice(1).map(function (url, i) { return '<div class="img-preview"><img src="' + escapeHtml(url) + '" alt="Product image ' + (i + 2) + '" onerror="handleImageError(this)" /><button type="button" class="rm" data-idx="' + (i + 1) + '">&times;</button></div>'; }).join('');
+        var main = '<div class="img-main"><img src="' + escapeHtml(imageUrls[0]) + '" alt="Main product image" onerror="handleImageError(this)" /><button type="button" class="rm" data-idx="0" title="Remove main image" aria-label="Remove main image">&times;</button><div class="main-label">Main Image</div></div>';
+        var thumbs = imageUrls.slice(1).map(function (url, i) { return '<div class="img-preview"><img src="' + escapeHtml(url) + '" alt="Product image ' + (i + 2) + '" onerror="handleImageError(this)" /><button type="button" class="rm" data-idx="' + (i + 1) + '" aria-label="Remove image ' + (i + 2) + '">&times;</button></div>'; }).join('');
         grid.innerHTML = main + '<div class="img-thumbs">' + thumbs + '</div>';
       }
 
@@ -403,7 +406,7 @@
         row.style.display = 'grid';
         row.style.gridTemplateColumns = '1fr 1fr 32px';
         row.style.gap = '10px';
-        row.innerHTML = '<input class="input" type="text" placeholder="Material" value="' + escapeHtml(label || '') + '" /><input class="input" type="text" placeholder="Solid white oak" value="' + escapeHtml(value || '') + '" /><button type="button" title="Remove specification" style="width:32px;height:32px;border-radius:50%;background:var(--danger);color:var(--white);border:none;cursor:pointer;font-size:16px;line-height:1;justify-self:end;align-self:center">&times;</button>';
+        row.innerHTML = '<input class="input" type="text" placeholder="Material" aria-label="Specification name" value="' + escapeHtml(label || '') + '" /><input class="input" type="text" placeholder="Solid white oak" aria-label="Specification value" value="' + escapeHtml(value || '') + '" /><button type="button" title="Remove specification" style="width:32px;height:32px;border-radius:50%;background:var(--danger);color:var(--white);border:none;cursor:pointer;font-size:16px;line-height:1;justify-self:end;align-self:center" aria-label="Remove specification">&times;</button>';
         row.querySelector('button').addEventListener('click', function () { row.remove(); });
         document.getElementById('specRows').appendChild(row);
       }
@@ -437,7 +440,7 @@
         if (!el) return;
         el.innerHTML = Object.keys(COLOR_HEX).map(function (name) {
           var active = selectedColors.some(function (c) { return c.toLowerCase() === name.toLowerCase(); });
-          return '<button type="button" class="palette-swatch ' + (active ? 'active' : '') + '" data-name="' + escapeHtml(name) + '" title="' + escapeHtml(name) + '"><span class="dot" style="background:' + COLOR_HEX[name] + '"></span><span class="pname">' + escapeHtml(name) + '</span></button>';
+          return '<button type="button" class="palette-swatch ' + (active ? 'active' : '') + '" data-name="' + escapeHtml(name) + '" title="' + escapeHtml(name) + '" aria-pressed="' + (active ? 'true' : 'false') + '"><span class="dot" style="background:' + COLOR_HEX[name] + '"></span><span class="pname">' + escapeHtml(name) + '</span></button>';
         }).join('');
       }
 

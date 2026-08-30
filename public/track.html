@@ -113,14 +113,15 @@
 
     <div class="track-input-group">
       <div class="track-input-wrap">
-        <input type="text" id="trackInput" placeholder="e.g. WPY-XX-XXXXXXXX" maxlength="30" autocomplete="off" />
+        <label for="trackInput" class="sr-only">Tracking number or order reference</label>
+        <input type="text" id="trackInput" placeholder="e.g. WPY-XX-XXXXXXXX" maxlength="30" autocomplete="off" aria-describedby="trackError" />
         <i class="fa-solid fa-circle-check validation-icon"></i>
       </div>
       <button type="button" class="btn btn-primary" id="trackBtn">Track</button>
     </div>
     <div class="error-msg" id="trackError" role="alert"></div>
 
-    <div class="track-result" id="trackResult">
+    <div class="track-result" id="trackResult" role="status" aria-live="polite">
       <div class="order-info" id="orderInfo"></div>
       <div class="auto-update-hint" id="autoUpdateHint" style="display:none"><i class="fa-solid fa-rotate"></i> Updates automatically</div>
       <div class="timeline" id="timeline"></div>
@@ -194,6 +195,7 @@
         }
         input.classList.remove('invalid');
         input.classList.add('valid');
+        input.setAttribute('aria-invalid', 'false');
         document.getElementById('trackError').classList.remove('visible');
         return true;
       }

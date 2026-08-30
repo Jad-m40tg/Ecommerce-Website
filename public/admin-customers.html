@@ -23,7 +23,7 @@
     .customer-cell{display:flex;align-items:center;gap:10px}.avatar-sm{width:34px;height:34px;border-radius:50%;background:var(--cream);color:var(--sage);display:grid;place-items:center;font-weight:600;font-size:12px;flex-shrink:0}.cust-name{font-weight:600}.cust-email{font-size:12.5px;color:var(--gray)}.price{font-weight:600;color:var(--charcoal)}.muted{color:var(--gray);font-size:13px}
     .row-actions{display:flex;gap:6px}.row-actions button{width:32px;height:32px;border-radius:var(--radius-sm);border:1.5px solid var(--beige);background:var(--white);color:var(--charcoal);display:grid;place-items:center;cursor:pointer;transition:background .2s ease,border-color .2s ease,color .2s ease}.row-actions button:hover{background:var(--cream);border-color:var(--charcoal)}.row-actions button.view:hover{background:rgba(107,127,94,.1);border-color:var(--sage);color:var(--sage-dark)}.row-actions button.edit:hover{background:rgba(166,124,82,.1);border-color:var(--wood);color:var(--wood)}    .row-actions button.danger:hover{background:rgba(179,83,46,.1);border-color:var(--danger);color:var(--danger)}.row-actions button.restore-cust:hover{background:rgba(107,127,94,.1);border-color:var(--sage);color:var(--sage-dark)}
     .table-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:18px}.pager{display:flex;align-items:center;gap:6px}.pager button{min-width:36px;height:36px;padding:0 10px;border-radius:var(--radius-sm);border:1.5px solid var(--beige);background:var(--white);color:var(--charcoal);font-size:13.5px;font-weight:600;cursor:pointer;transition:background .2s ease,border-color .2s ease}.pager button:hover{background:var(--cream);border-color:var(--charcoal)}.pager button.active{background:var(--charcoal);border-color:var(--charcoal);color:var(--warm-white)}.pager button:disabled{opacity:.45;cursor:not-allowed}
-    .toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);background:var(--charcoal);color:var(--warm-white);padding:13px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:500;box-shadow:var(--shadow-lift);opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s ease;z-index:90}.toast.show{opacity:1;transform:translate(-50%,0)}
+    .toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);background:var(--charcoal);color:var(--warm-white);padding:13px 22px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:var(--shadow-lift);opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s ease;z-index:90}.toast.show{opacity:1;transform:translate(-50%,0)}
     @media(max-width:860px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.side-nav{flex-direction:row;overflow-x:auto;gap:6px}.side-nav a{white-space:nowrap}.nav-label,.sidebar-foot{display:none}.sidebar .brand{border-bottom:none;padding-bottom:12px;margin-bottom:8px}.topbar{padding:0 20px;gap:10px}.admin-chip .who{display:none}.content{padding:20px}}
     .notif-panel{position:absolute;top:52px;right:0;width:320px;max-height:400px;background:var(--white);border:1.5px solid var(--beige);border-radius:var(--radius-lg);box-shadow:var(--shadow-lift);z-index:200;display:flex;flex-direction:column;overflow:hidden}
     .notif-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--beige)}
@@ -50,8 +50,10 @@
 </head>
 <body>
 
+  <a class="skip-link" href="#mainContent">Skip to main content</a>
+
   <div class="app">
-    <aside class="sidebar">
+    <aside class="sidebar" role="navigation" aria-label="Admin navigation">
       <div class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" style="height:36px;width:auto;max-width:170px;object-fit:contain" /></div>
       <span class="nav-label">Main</span>
       <ul class="side-nav">
@@ -59,7 +61,7 @@
         <li><a href="admin-products.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Products</a></li>
         <li><a href="admin-sales.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><path d="M7 7h.01"/></svg>Sales</a></li>
         <li><a href="admin-orders.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Orders</a></li>
-        <li><a class="active" href="admin-customers.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Customers</a></li>
+        <li><a class="active" href="admin-customers.html" aria-current="page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Customers</a></li>
         <li><a href="admin-categories.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Categories</a></li>
         <li><a href="admin-analytics.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>Analytics</a></li>
       </ul>
@@ -73,7 +75,7 @@
       <header class="topbar">
         <button class="admin-drawer-toggle" type="button" aria-label="Open menu" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg></button>
         <div class="top-actions">
-          <button type="button" class="icon-btn admin-lang-mobile" id="adminLangMobile">EN</button>
+          <button type="button" class="icon-btn admin-lang-mobile" id="adminLangMobile" aria-pressed="false">EN</button>
           <button class="icon-btn" id="notifBtn" aria-label="Notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot" id="notifDot"></span></button>
           <div id="notifPanel" class="notif-panel" style="display:none;">
             <div class="notif-header"><h4>Notifications</h4><button type="button" class="notif-clear" id="notifClear">Clear all</button></div>
@@ -83,7 +85,7 @@
         </div>
       </header>
 
-      <main class="content">
+      <main class="content" id="mainContent" tabindex="-1">
         <section class="page-head"><div><h1>Customers</h1><p>Your customer database and purchase history.</p></div></section>
         <section class="panel">
           <div class="filters" style="margin-bottom:20px">
@@ -106,9 +108,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <div class="modal-overlay" id="editModal">
+  <div class="modal-overlay" id="editModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden style="display:none">
     <div class="modal-card">
-      <div class="modal-head"><h3>Edit Customer</h3><button class="modal-close" id="modalClose" aria-label="Close">&times;</button></div>
+      <div class="modal-head"><h3 id="modalTitle">Edit Customer</h3><button class="modal-close" id="modalClose" aria-label="Close">&times;</button></div>
       <div class="modal-body">
         <div class="modal-field"><label for="mName">Name</label><input type="text" id="mName" /></div>
         <div class="modal-field"><label for="mEmail">Email</label><input type="email" id="mEmail" /></div>
@@ -131,6 +133,7 @@
       var cycle = ['en', 'ar', 'fr'];
       function sync(code) {
         btn.textContent = code.toUpperCase();
+        btn.setAttribute('aria-pressed', code === 'en' ? 'false' : 'true');
       }
       sync(i18n.getLang());
       i18n.onChange(sync);
@@ -224,8 +227,8 @@
             var isHidden = HIDDEN_EMAILS[c.email];
             var hiddenBadge = isHidden ? ' <span style="display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);font-size:11px;font-weight:600;background:rgba(179,83,46,.1);color:var(--danger);vertical-align:middle">Hidden</span>' : '';
             var actions = isHidden
-              ? '<button class="restore-cust" title="Restore to list">' + svg('<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>') + '</button>'
-              : '<button class="edit" title="Edit">' + svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>') + '</button><button class="danger delete-cust" title="Hide from list">' + svg('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>') + '</button>';
+              ? '<button class="restore-cust" title="Restore to list" aria-label="Restore customer ' + escapeHtml(c.name) + '">' + svg('<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>') + '</button>'
+              : '<button class="edit" title="Edit" aria-label="Edit customer ' + escapeHtml(c.name) + '">' + svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>') + '</button><button class="danger delete-cust" title="Hide from list" aria-label="Delete customer ' + escapeHtml(c.name) + '">' + svg('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>') + '</button>';
             return '<tr' + (isHidden ? ' style="opacity:.6"' : '') + '><td><span class="avatar-sm">' + initials(c.name) + '</span></td><td><div class="cust-name">' + escapeHtml(c.name) + hiddenBadge + '</div></td><td class="cust-email">' + escapeHtml(c.email) + '</td><td class="muted">' + escapeHtml(c.phone) + '</td><td class="muted">' + escapeHtml(c.address) + '</td><td>' + c.orders + '</td><td class="price">' + priceFull(c.spent) + '</td><td class="muted">' + c.last + '</td><td><div class="row-actions">' + actions + '</div></td></tr>';
           }).join('');
         }
@@ -276,6 +279,16 @@
 
       var editEmail = '';
       var modal = document.getElementById('editModal');
+      var modalOpener = null;
+      function trapTab(e) {
+        if (e.key !== 'Tab' || modal.hidden) return;
+        var focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!focusables.length) return;
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
       function openEditModal(email) {
         editEmail = email;
         var c = CUSTOMERS.find(function (x) { return x.email === email; });
@@ -288,12 +301,26 @@
         document.getElementById('mPhone').value = c.phone;
         document.getElementById('mAddress').value = addr;
         document.getElementById('mCity').value = city;
+        modalOpener = document.activeElement;
+        modal.hidden = false;
+        modal.style.display = 'flex';
         modal.classList.add('open');
+        var first = modal.querySelector('input, button, select, textarea, a[href]');
+        if (first) first.focus();
       }
-      function closeModal() { modal.classList.remove('open'); }
+      function closeModal() {
+        if (modal.hidden) return;
+        modal.classList.remove('open');
+        modal.hidden = true;
+        modal.style.display = 'none';
+        if (modalOpener && modalOpener.focus) modalOpener.focus();
+        modalOpener = null;
+      }
       document.getElementById('modalClose').addEventListener('click', closeModal);
       document.getElementById('modalCancel').addEventListener('click', closeModal);
       modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+      modal.addEventListener('keydown', trapTab);
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
 
       document.getElementById('modalSave').addEventListener('click', function () {
         var body = {

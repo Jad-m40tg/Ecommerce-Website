@@ -170,7 +170,7 @@
               '<div class="wish-price">' + formatted + '</div>' +
               '<div class="wish-actions">' +
                 '<a href="product.html?id=' + encodeURIComponent(item.id) + '" class="btn btn-sm btn-view">View</a>' +
-                '<button type="button" class="btn btn-sm btn-remove" data-remove="' + item.id + '">Remove</button>' +
+                '<button type="button" class="btn btn-sm btn-remove" data-remove="' + item.id + '" aria-label="Remove ' + escapeHtml(item.name || 'Product') + ' from wishlist">Remove</button>' +
               '</div>' +
             '</div>' +
           '</div>';

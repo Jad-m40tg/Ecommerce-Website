@@ -236,12 +236,14 @@
   <!-- ==========================================================
        ORDER CONFIRMATION MODAL
        ========================================================== -->
-  <div class="modal-backdrop" id="orderModal" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <div class="modal-check"><span class="material-symbols-outlined" style="font-size:36px;">check</span></div>
-      <h3>Order Confirmed</h3>
+  <div class="modal-backdrop" id="orderModal" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle" tabindex="-1">
+    <div class="modal-overlay" id="orderModalOverlay">
+      <div class="modal-card">
+        <div class="modal-check"><span class="material-symbols-outlined" style="font-size:36px;">check</span></div>
+        <h3 id="orderModalTitle">Order Confirmed</h3>
       <p>Thanks for your order. You&rsquo;ll receive a confirmation email shortly with your order details and delivery estimate.</p>
-      <button type="button" class="btn btn-primary" id="modalCloseBtn">Continue Shopping</button>
+        <button type="button" class="btn btn-primary" id="modalCloseBtn">Continue Shopping</button>
+      </div>
     </div>
   </div>
 

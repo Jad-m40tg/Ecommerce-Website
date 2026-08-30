@@ -332,7 +332,7 @@ function startInlineEdit(card, reviewId) {
   var editor = document.createElement('div');
   editor.className = 'review-editor';
   editor.innerHTML =
-    '<textarea class="review-edit-textarea" maxlength="2000">' + escapeHtml(review.comment || '') + '</textarea>' +
+    '<textarea class="review-edit-textarea" maxlength="2000" aria-label="Edit your review">' + escapeHtml(review.comment || '') + '</textarea>' +
     '<div class="review-editor-actions">' +
       '<button type="button" class="btn btn-primary review-save-btn">Save</button>' +
       '<button type="button" class="btn btn-outline review-cancel-btn">Cancel</button>' +
@@ -471,11 +471,11 @@ function renderProduct(p) {
     swatches = colors.map(function (c, i) {
       var hex = c.hex || '#e8e0d3';
       var name = c.name || c;
-      return '<button type="button" class="swatch ' + (i === 0 ? 'active' : '') + '" style="background:' + hex + '" data-color="' + escapeHtml(name) + '" aria-label="Color: ' + escapeHtml(name) + '"></button>';
+      return '<button type="button" class="swatch ' + (i === 0 ? 'active' : '') + '" style="background:' + hex + '" data-color="' + escapeHtml(name) + '" aria-label="Color: ' + escapeHtml(name) + '" aria-pressed="' + (i === 0 ? 'true' : 'false') + '"></button>';
     }).join('');
   } else {
     swatches = colors.map(function (name, i) {
-      return '<button type="button" class="swatch ' + (i === 0 ? 'active' : '') + '" style="background:' + colorHex(name) + '" data-color="' + escapeHtml(name) + '" aria-label="Color: ' + escapeHtml(name) + '"></button>';
+      return '<button type="button" class="swatch ' + (i === 0 ? 'active' : '') + '" style="background:' + colorHex(name) + '" data-color="' + escapeHtml(name) + '" aria-label="Color: ' + escapeHtml(name) + '" aria-pressed="' + (i === 0 ? 'true' : 'false') + '"></button>';
     }).join('');
   }
 
@@ -556,7 +556,7 @@ function renderProduct(p) {
         '<div class="info-category">' + escapeHtml(catLabel) + '</div>' +
         '<h1>' + escapeHtml(p.name) + '</h1>' +
         '<div class="info-rating">' +
-          '<span class="stars">' + stars + '</span>' +
+          '<span class="stars"><span aria-hidden="true">' + stars + '</span><span class="sr-only">Rated ' + avgRating + ' out of 5 stars</span></span>' +
           '<small>' + avgRating + ' &middot; ' + reviewCount + ' review' + (reviewCount !== 1 ? 's' : '') + '</small>' +
         '</div>' +
         '<div class="info-price">' +
@@ -598,16 +598,16 @@ function renderProduct(p) {
 
         '<div class="tabs">' +
           '<div class="tab-nav" role="tablist">' +
-            '<button type="button" class="active" data-tab="desc" role="tab">Description</button>' +
-            '<button type="button" data-tab="specs" role="tab">Specifications</button>' +
-            '<button type="button" data-tab="ship" role="tab">Shipping &amp; Returns</button>' +
+            '<button type="button" class="active" data-tab="desc" id="tab-desc" role="tab" aria-selected="true" aria-controls="panel-desc">Description</button>' +
+            '<button type="button" data-tab="specs" id="tab-specs" role="tab" aria-selected="false" aria-controls="panel-specs">Specifications</button>' +
+            '<button type="button" data-tab="ship" id="tab-ship" role="tab" aria-selected="false" aria-controls="panel-ship">Shipping &amp; Returns</button>' +
           '</div>' +
           '<div class="tab-panels">' +
-            '<div class="tab-panel active" data-panel="desc">' +
+            '<div class="tab-panel active" data-panel="desc" id="panel-desc" role="tabpanel" aria-labelledby="tab-desc">' +
               '<h3>About this piece</h3>' +
               '<p>' + escapeHtml(description) + '</p>' +
             '</div>' +
-            '<div class="tab-panel" data-panel="specs">' +
+            '<div class="tab-panel" data-panel="specs" id="panel-specs" role="tabpanel" aria-labelledby="tab-specs">' +
               '<h3>The details</h3>' +
               '<table class="specs-table"><tbody>' +
                 '<tr><th>Brand</th><td>' + escapeHtml(p.brand || 'Boularas') + '</td></tr>' +
@@ -616,7 +616,7 @@ function renderProduct(p) {
                 specsRows +
               '</tbody></table>' +
             '</div>' +
-            '<div class="tab-panel" data-panel="ship">' +
+            '<div class="tab-panel" data-panel="ship" id="panel-ship" role="tabpanel" aria-labelledby="tab-ship">' +
               '<h3>Delivery &amp; returns</h3>' +
               '<p><b>Shipping</b> ' + escapeHtml(shippingText) + '</p>' +
               '<p><b>Returns</b> ' + escapeHtml(returnsText) + '</p>' +
@@ -683,6 +683,7 @@ function ensureLightbox() {
   lightboxEl.className = 'lightbox';
   lightboxEl.setAttribute('role', 'dialog');
   lightboxEl.setAttribute('aria-modal', 'true');
+  lightboxEl.setAttribute('aria-label', 'Product image viewer');
   lightboxEl.innerHTML =
     '<button type="button" class="lightbox-btn lightbox-close" aria-label="Close">&#10005;</button>' +
     '<button type="button" class="lightbox-btn lightbox-prev" aria-label="Previous image">&#8249;</button>' +
@@ -693,7 +694,28 @@ function ensureLightbox() {
   lightboxEl.querySelector('.lightbox-prev').addEventListener('click', function () { lightboxStep(-1); });
   lightboxEl.querySelector('.lightbox-next').addEventListener('click', function () { lightboxStep(1); });
   lightboxEl.addEventListener('click', function (event) { if (event.target === lightboxEl) closeLightbox(); });
+  lightboxEl.addEventListener('keydown', trapLightboxFocus);
   return lightboxEl;
+}
+
+function getLightboxFocusables() {
+  if (!lightboxEl) return [];
+  return Array.prototype.slice.call(lightboxEl.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+}
+
+function trapLightboxFocus(event) {
+  if (!lightboxEl || !lightboxEl.classList.contains('open')) return;
+  if (event.key !== 'Tab') return;
+  var focusables = getLightboxFocusables();
+  if (focusables.length === 0) { event.preventDefault(); return; }
+  var first = focusables[0];
+  var last = focusables[focusables.length - 1];
+  var active = document.activeElement;
+  if (event.shiftKey) {
+    if (active === first || !lightboxEl.contains(active)) { event.preventDefault(); last.focus(); }
+  } else {
+    if (active === last || !lightboxEl.contains(active)) { event.preventDefault(); first.focus(); }
+  }
 }
 
 function updateLightbox() {
@@ -714,14 +736,18 @@ function openLightbox(src) {
   lightboxIndex = idx >= 0 ? idx : 0;
   ensureLightbox();
   updateLightbox();
+  window.__lastFocused = document.activeElement;
   lightboxEl.classList.add('open');
   document.body.style.overflow = 'hidden';
+  var closeBtn = lightboxEl.querySelector('.lightbox-close');
+  if (closeBtn) closeBtn.focus();
 }
 
 function closeLightbox() {
   if (!lightboxEl) return;
   lightboxEl.classList.remove('open');
   document.body.style.overflow = '';
+  if (window.__lastFocused && window.__lastFocused.focus) window.__lastFocused.focus();
 }
 
 function lightboxStep(dir) {
@@ -757,8 +783,9 @@ function wireUpDetail(p, colors) {
   document.getElementById('swatchList').addEventListener('click', function (event) {
     var swatch = event.target.closest('[data-color]');
     if (!swatch) return;
-    document.querySelectorAll('#swatchList .swatch').forEach(function (s) { s.classList.remove('active'); });
+    document.querySelectorAll('#swatchList .swatch').forEach(function (s) { s.classList.remove('active'); s.setAttribute('aria-pressed', 'false'); });
     swatch.classList.add('active');
+    swatch.setAttribute('aria-pressed', 'true');
     selection.color = swatch.getAttribute('data-color');
     document.getElementById('selectedColor').textContent = selection.color;
     updateOrderSummary(p);
@@ -842,12 +869,16 @@ function wireUpDetail(p, colors) {
       wishBtn.style.color = 'var(--warm-white)';
       wishBtn.style.borderColor = 'var(--charcoal)';
     }
+    wishBtn.setAttribute('aria-pressed', wished ? 'true' : 'false');
+    wishBtn.setAttribute('aria-label', wished ? 'Remove from wishlist' : 'Add to wishlist');
     wishBtn.addEventListener('click', function () {
       wished = !wished;
       wishBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings:\'' + (wished ? 'FILL\' 1' : 'FILL\' 0') + ',\'wght\' 400,\'GRAD\' 0,\'opsz\' 24">' + (wished ? 'favorite' : 'favorite_border') + '</span>';
       wishBtn.style.background = wished ? 'var(--charcoal)' : '';
       wishBtn.style.color = wished ? 'var(--warm-white)' : '';
       wishBtn.style.borderColor = wished ? 'var(--charcoal)' : '';
+      wishBtn.setAttribute('aria-pressed', wished ? 'true' : 'false');
+      wishBtn.setAttribute('aria-label', wished ? 'Remove from wishlist' : 'Add to wishlist');
       if (wished) {
         wishList.push({ id: p.id, name: p.name, price_cents: p.price_cents, image: p.image || (p.images && p.images[0]) || '' });
       } else {
@@ -859,14 +890,34 @@ function wireUpDetail(p, colors) {
     });
   }
 
-  document.querySelectorAll('[data-tab]').forEach(function (btn) {
+  var tabButtons = Array.prototype.slice.call(document.querySelectorAll('[data-tab]'));
+  function activateTab(btn) {
+    var name = btn.getAttribute('data-tab');
+    document.querySelectorAll('[data-tab]').forEach(function (b) {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-panel]').forEach(function (panel) {
+      panel.classList.toggle('active', panel.getAttribute('data-panel') === name);
+    });
+    btn.classList.add('active');
+  }
+  tabButtons.forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var name = btn.getAttribute('data-tab');
-      document.querySelectorAll('[data-tab]').forEach(function (b) { b.classList.remove('active'); });
-      document.querySelectorAll('[data-panel]').forEach(function (panel) {
-        panel.classList.toggle('active', panel.getAttribute('data-panel') === name);
-      });
-      btn.classList.add('active');
+      activateTab(btn);
+    });
+    btn.addEventListener('keydown', function (event) {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      var idx = tabButtons.indexOf(btn);
+      var next;
+      if (event.key === 'ArrowLeft') {
+        next = idx - 1 < 0 ? tabButtons.length - 1 : idx - 1;
+      } else {
+        next = idx + 1 >= tabButtons.length ? 0 : idx + 1;
+      }
+      tabButtons[next].focus();
+      activateTab(tabButtons[next]);
     });
   });
 
@@ -990,14 +1041,40 @@ Object.keys(formRules).forEach(function (name) {
 
 var modal = document.getElementById('orderModal');
 
+function getModalFocusables() {
+  var overlay = document.getElementById('orderModalOverlay');
+  if (!overlay) return [];
+  return Array.prototype.slice.call(overlay.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+}
+
+function trapModalFocus(event) {
+  if (!modal.classList.contains('open')) return;
+  if (event.key === 'Escape') { closeModal(); return; }
+  if (event.key !== 'Tab') return;
+  var focusables = getModalFocusables();
+  if (focusables.length === 0) { event.preventDefault(); return; }
+  var first = focusables[0];
+  var last = focusables[focusables.length - 1];
+  var active = document.activeElement;
+  if (event.shiftKey) {
+    if (active === first || !modal.contains(active)) { event.preventDefault(); last.focus(); }
+  } else {
+    if (active === last || !modal.contains(active)) { event.preventDefault(); first.focus(); }
+  }
+}
+
 function openModal() {
+  window.__lastFocused = document.activeElement;
   modal.classList.add('open');
+  modal.addEventListener('keydown', trapModalFocus);
   document.body.style.overflow = 'hidden';
   setTimeout(function () { document.getElementById('modalCloseBtn').focus(); }, 200);
 }
 function closeModal() {
+  modal.removeEventListener('keydown', trapModalFocus);
   modal.classList.remove('open');
   document.body.style.overflow = '';
+  if (window.__lastFocused && window.__lastFocused.focus) window.__lastFocused.focus();
 }
 
 document.getElementById('orderForm').addEventListener('submit', function (event) {

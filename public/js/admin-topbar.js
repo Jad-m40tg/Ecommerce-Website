@@ -57,6 +57,7 @@
   notifBtn.setAttribute('aria-controls', notifPanel.id || 'notifPanel');
   notifPanel.setAttribute('role', 'region');
   notifPanel.setAttribute('aria-label', 'Notifications');
+  notifPanel.setAttribute('aria-live', 'polite');
 
   var seenNotifs = JSON.parse(localStorage.getItem('seen_notifs') || '[]');
 
@@ -123,7 +124,7 @@
         notifBody.innerHTML = '<div class="notif-empty">No notifications yet</div>';
       } else {
         notifBody.innerHTML = visible.map(function (n) {
-          return '<div class="notif-item" role="button" tabindex="0" data-key="' + n.key + '" data-id="' + n.orderId + '" style="cursor:pointer" title="Open order"><div class="notif-icon">' + n.icon + '</div><div><div class="notif-text">' + n.text + '</div><div class="notif-time">' + timeAgo(n.time) + '</div></div><button type="button" class="notif-dismiss" data-dismiss="' + n.key + '" title="Dismiss notification" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;line-height:1;padding:2px 6px;margin-left:auto;align-self:flex-start">&times;</button></div>';
+          return '<div class="notif-item" data-key="' + n.key + '" data-id="' + n.orderId + '" style="cursor:pointer"><div class="notif-main" role="button" tabindex="0" title="Open order" style="display:flex;gap:10px;flex:1;min-width:0;align-items:flex-start"><div class="notif-icon">' + n.icon + '</div><div><div class="notif-text">' + n.text + '</div><div class="notif-time">' + timeAgo(n.time) + '</div></div></div><button type="button" class="notif-dismiss" data-dismiss="' + n.key + '" aria-label="Dismiss notification" title="Dismiss notification" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;line-height:1;padding:2px 6px;margin-left:auto;align-self:flex-start">&times;</button></div>';
         }).join('');
       }
     }).catch(function () {});
@@ -143,7 +144,7 @@
       if (notifDot) notifDot.style.display = 'none';
       // Keyboard activation (detail === 0): move focus into the panel
       if (e.detail === 0) {
-        var firstFocusable = notifBody.querySelector('.notif-item') || notifClear;
+        var firstFocusable = notifBody.querySelector('.notif-main') || notifClear;
         if (firstFocusable) firstFocusable.focus();
       }
     }

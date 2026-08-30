@@ -81,9 +81,10 @@ function renderCategoryList() {
   });
   var items = Object.keys(CATEGORY_LABELS).map(function (key) {
     var isActive = state.category === key ? ' active' : '';
+    var pressed = state.category === key ? 'true' : 'false';
     var count = counts[key] || 0;
     return (
-      '<li><button type="button" class="' + isActive.trim() + '" data-cat="' + key + '">' +
+      '<li><button type="button" class="' + isActive.trim() + '" data-cat="' + key + '" aria-pressed="' + pressed + '">' +
         '<span>' + CATEGORY_LABELS[key] + '</span>' +
         '<small>' + count + '</small>' +
       '</button></li>'
@@ -162,12 +163,42 @@ document.getElementById('sortSelect').addEventListener('change', function () {
 
 document.getElementById('clearFilters').addEventListener('click', clearFilters);
 
+function openFiltersPanel() {
+  var panel = document.getElementById('filtersPanel');
+  var toggle = document.getElementById('filtersToggle');
+  panel.classList.add('open');
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  if (toggle) toggle.setAttribute('aria-expanded', 'true');
+  var first = panel.querySelector('button, [href], input, select, textarea');
+  if (first) first.focus();
+}
+function closeFiltersPanel() {
+  var panel = document.getElementById('filtersPanel');
+  var toggle = document.getElementById('filtersToggle');
+  panel.classList.remove('open');
+  panel.removeAttribute('role');
+  panel.removeAttribute('aria-modal');
+  if (toggle) toggle.setAttribute('aria-expanded', 'false');
+}
 document.getElementById('filtersToggle').addEventListener('click', function () {
-  document.getElementById('filtersPanel').classList.toggle('open');
+  var panel = document.getElementById('filtersPanel');
+  if (panel.classList.contains('open')) {
+    closeFiltersPanel();
+  } else {
+    openFiltersPanel();
+  }
 });
-
-document.getElementById('filtersClose').addEventListener('click', function () {
-  document.getElementById('filtersPanel').classList.remove('open');
+document.getElementById('filtersClose').addEventListener('click', closeFiltersPanel);
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    var fp = document.getElementById('filtersPanel');
+    if (fp && fp.classList.contains('open')) {
+      closeFiltersPanel();
+      var ft = document.getElementById('filtersToggle');
+      if (ft) ft.focus();
+    }
+  }
 });
 
 /* ---------- PRODUCT CARDS + ROW ---------- */
@@ -189,6 +220,7 @@ function productCardHTML(product) {
   var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
   var nameEscaped = escapeHtml(product.name);
+  var addLabel = !(product.stock > 0) ? 'Product ' + nameEscaped + ' unavailable' : (inCart ? nameEscaped + ' is in cart' : 'Add ' + nameEscaped + ' to cart');
   return (
     '<div class="product-card">' +
       '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="View ' + nameEscaped + '">' +
@@ -199,12 +231,12 @@ function productCardHTML(product) {
         '<span class="card-body">' +
           '<span class="card-category">' + escapeHtml(product.category_name || '') + '</span>' +
           '<span class="card-title">' + nameEscaped + '</span>' +
-          '<span class="card-rating">' + stars + '<span>(' + (product.reviews || 0) + ')</span></span>' +
+          '<span class="card-rating"><span aria-hidden="true">' + stars + '</span><span class="sr-only">Rated ' + (product.rating || 0) + ' out of 5 stars</span><span>(' + (product.reviews || 0) + ')</span></span>' +
         '</span>' +
       '</a>' +
       '<span class="card-price-row">' +
         '<span class="card-price">' + priceHtml + oldPrice + '</span>' +
-        '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
+        '<button class="' + btnClass + '" type="button" data-add="' + product.id + '" aria-label="' + addLabel + '"' + btnDisabled + '>' + btnText + '</button>' +
       '</span>' +
     '</div>'
   );

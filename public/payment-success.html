@@ -66,7 +66,7 @@
   </header>
 
   <main class="success-page" id="main" tabindex="-1">
-    <div class="success-card" id="successContent">
+    <div class="success-card" id="successContent" role="status" aria-live="polite">
       <div class="spinner-lg" id="loadingSpinner"></div>
       <p id="loadingText" style="margin-top:12px">Verifying your payment...</p>
     </div>
@@ -93,8 +93,17 @@
       var orderId = params.get('order_id');
       var content = document.getElementById('successContent');
 
+      function setContent(html) {
+        content.innerHTML = html;
+        var heading = content.querySelector('h1, h2, h3');
+        if (heading) {
+          heading.setAttribute('tabindex', '-1');
+          heading.focus();
+        }
+      }
+
       if (!orderId) {
-        content.innerHTML = '<div class="success-icon">?</div><h1>Invalid Link</h1><p>No order information found. Please check your email for the correct link.</p><div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+        setContent('<div class="success-icon">?</div><h1>Invalid Link</h1><p>No order information found. Please check your email for the correct link.</p><div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
         return;
       }
 
@@ -124,9 +133,9 @@
 
       function showTimeoutNote() {
         if (paidSeen) {
-          content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Successful</h1><p>Your tracking code is being generated \u2014 keep this page open, it will appear automatically. You can also check your order on the tracking page.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+          setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Successful</h1><p>Your tracking code is being generated \u2014 keep this page open, it will appear automatically. You can also check your order on the tracking page.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>');
         } else {
-          content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Processing</h1><p>Your payment is being processed. You will receive a confirmation email shortly.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+          setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Processing</h1><p>Your payment is being processed. You will receive a confirmation email shortly.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>');
         }
       }
 
@@ -140,7 +149,7 @@
         fetch('/api/payments/public-status/' + orderId).then(function (r) {
           if (r.status === 404) {
             stopPolling();
-            content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Processing</h1><p>Your payment is being processed. You will receive a confirmation email shortly.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+            setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Processing</h1><p>Your payment is being processed. You will receive a confirmation email shortly.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>');
             return null;
           }
           return r.json();
@@ -148,16 +157,16 @@
           if (!data) return;
           if (data.payment_status === 'refunded' && data.order_status === 'cancelled') {
             stopPolling();
-            content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Order Cancelled & Refunded</h1><p>Your order has been cancelled and your payment has been refunded.</p>' +
+            setContent('<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Order Cancelled & Refunded</h1><p>Your order has been cancelled and your payment has been refunded.</p>' +
               '<div class="cancelled-badge">Cancelled & Refunded</div>' +
               (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
           } else if (data.payment_status === 'refunded') {
             stopPolling();
-            content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">refund</span></div><h1>Payment Refunded</h1><p>Your order has been refunded. If you have any questions, please contact us.</p>' +
+            setContent('<div class="success-icon danger"><span class="material-symbols-outlined">refund</span></div><h1>Payment Refunded</h1><p>Your order has been refunded. If you have any questions, please contact us.</p>' +
               '<div class="cancelled-badge">Refunded</div>' +
               (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
           } else if (data.payment_status === 'paid') {
             paidSeen = true;
             clearCart();
@@ -167,31 +176,42 @@
 
             if (orderCancelled) {
               stopPolling();
-              content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Payment Successful - Order Cancelled</h1><p>Thank you! Your payment was confirmed but your order has been cancelled by our team.</p>' +
+              setContent('<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Payment Successful - Order Cancelled</h1><p>Thank you! Your payment was confirmed but your order has been cancelled by our team.</p>' +
                 '<div class="cancelled-badge">Order cancelled</div>' +
                 (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
             } else if (tc) {
               stopPolling();
-              content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed and your order is being processed.</p>' +
+              setContent('<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed and your order is being processed.</p>' +
                 '<div class="tracking-code">' + tc + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code: use it to follow your order.</p>' +
-                '<div class="success-actions"><a href="track.html' + (tc ? '?code=' + tc : '') + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+                '<div class="success-actions"><a href="track.html' + (tc ? '?code=' + tc : '') + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>');
             } else if (noestCancelled) {
               stopPolling();
-              content.innerHTML = '<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Payment Successful - Shipment Cancelled</h1><p>Your payment has been confirmed but the shipment was cancelled.</p>' +
+              setContent('<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Payment Successful - Shipment Cancelled</h1><p>Your payment has been confirmed but the shipment was cancelled.</p>' +
                 '<div class="cancelled-badge">Shipment cancelled</div>' +
                 (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
             } else if (!waitingForCode) {
               waitingForCode = true;
-              content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed. Your tracking code will appear here as soon as your order is shipped.</p>' +
+              setContent('<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed. Your tracking code will appear here as soon as your order is shipped.</p>' +
                 '<div class="wait-badge"><span class="spinner-sm"></span>Waiting for tracking code</div>' +
                 (storePhone ? '<div class="call-note">Questions about your order? Call us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
             }
           } else if (data.checkout_status === 'failed' || data.checkout_status === 'expired') {
             stopPolling();
-            window.location.href = 'payment-failed.html?order_id=' + orderId;
+            setContent('<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Payment Not Completed</h1><p>Redirecting to the payment failed page in <span id="redirectCountdown">5</span> seconds.</p>');
+            var redirectSeconds = 5;
+            var redirectTimer = setInterval(function () {
+              redirectSeconds--;
+              if (redirectSeconds <= 0) {
+                clearInterval(redirectTimer);
+                window.location.href = 'payment-failed.html?order_id=' + orderId;
+              } else {
+                var cd = document.getElementById('redirectCountdown');
+                if (cd) cd.textContent = redirectSeconds;
+              }
+            }, 1000);
           }
         }).catch(function () {});
       }, POLL_INTERVAL_MS);

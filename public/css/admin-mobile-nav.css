@@ -83,7 +83,23 @@
   .stat-grid .stat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
 
-/* ---- Keyboard focus (shared admin chrome) ----
+/* ---- Skip link (shared admin) ---- */
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: 14px;
+  z-index: 400;
+  padding: 10px 18px;
+  background: var(--charcoal);
+  color: var(--warm-white);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  transition: top 0.2s ease;
+}
+.skip-link:focus { top: 12px; }
+
+/* ---- Keyboard focus (shared admin chrome) ---- */
    Per-page a/button/input/select/textarea rules exist; these cover the
    focusable-but-not-native elements (role="button" divs, drawer, upload zones). */
 .admin-drawer-toggle:focus-visible,

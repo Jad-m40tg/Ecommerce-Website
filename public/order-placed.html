@@ -66,7 +66,7 @@
   </header>
 
   <main class="success-page" id="main" tabindex="-1">
-    <div class="success-card" id="successContent">
+    <div class="success-card" id="successContent" role="status" aria-live="polite">
       <div class="spinner-lg" id="loadingSpinner"></div>
       <p id="loadingText" style="margin-top:12px">Loading your order...</p>
     </div>
@@ -94,8 +94,17 @@
       var code = params.get('code');
       var content = document.getElementById('successContent');
 
+      function setContent(html) {
+        content.innerHTML = html;
+        var heading = content.querySelector('h1, h2, h3');
+        if (heading) {
+          heading.setAttribute('tabindex', '-1');
+          heading.focus();
+        }
+      }
+
       if (!orderId || !code) {
-        content.innerHTML = '<div class="success-icon">?</div><h1>Invalid Link</h1><p>No order information found. Please check your email for the correct link.</p><div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+        setContent('<div class="success-icon">?</div><h1>Invalid Link</h1><p>No order information found. Please check your email for the correct link.</p><div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
         return;
       }
 
@@ -109,18 +118,18 @@
 
       function phoneHref(p) { return 'tel:+' + String(p).replace(/\D/g, ''); }
 
-      content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Order Confirmed</h1><p>Your order has been placed. Your tracking code will appear here as soon as your order is shipped.</p>' +
+      setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Order Confirmed</h1><p>Your order has been placed. Your tracking code will appear here as soon as your order is shipped.</p>' +
         '<div class="wait-badge"><span class="spinner-sm"></span>Waiting for tracking code</div>' +
         (storePhone ? '<div class="call-note">Questions about your order? Call us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-        '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+        '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
 
       var pollInterval = setInterval(function () {
         attempts++;
         if (attempts > maxAttempts) {
           clearInterval(pollInterval);
-          content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Order Confirmed</h1><p>Your order has been placed. Your tracking code will appear here once your order is shipped.</p>' +
+          setContent('<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Order Confirmed</h1><p>Your order has been placed. Your tracking code will appear here once your order is shipped.</p>' +
             (storePhone ? '<div class="call-note">Questions about your order? Call us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-            '<div class="success-actions"><a href="javascript:location.reload()" class="btn btn-outline">Check Again</a><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+            '<div class="success-actions"><button type="button" class="btn btn-outline" onclick="location.reload()">Check Again</button><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
           return;
         }
 
@@ -134,22 +143,22 @@
 
           if (orderCancelled) {
             clearInterval(pollInterval);
-            content.innerHTML = '<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Order Cancelled</h1><p>Your order has been cancelled. If you have any questions, please contact us.</p>' +
+            setContent('<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Order Cancelled</h1><p>Your order has been cancelled. If you have any questions, please contact us.</p>' +
               '<div class="cancelled-badge">Order cancelled</div>' +
               (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
           } else if (noestArrived) {
             clearInterval(pollInterval);
-            content.innerHTML = '<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Order Confirmed</h1><p>Thank you! Your order has been placed and is being processed.</p>' +
+            setContent('<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Order Confirmed</h1><p>Thank you! Your order has been placed and is being processed.</p>' +
               '<div class="tracking-code">' + escapeHtml(surfaced) + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code: use it to follow your order.</p>' +
               (storePhone ? '<div class="call-note">Questions about your order? Call us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-              '<div class="success-actions"><a href="track.html?code=' + encodeURIComponent(surfaced) + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>';
+              '<div class="success-actions"><a href="track.html?code=' + encodeURIComponent(surfaced) + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>');
           } else if (noestCancelled) {
             clearInterval(pollInterval);
-            content.innerHTML = '<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Order Confirmed - Shipment Cancelled</h1><p>Your order has been placed but the shipment was cancelled.</p>' +
+            setContent('<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Order Confirmed - Shipment Cancelled</h1><p>Your order has been placed but the shipment was cancelled.</p>' +
               '<div class="cancelled-badge">Shipment cancelled</div>' +
               (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>';
+              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
           }
         }).catch(function () {});
       }, 2000);

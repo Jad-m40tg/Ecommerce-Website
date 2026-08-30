@@ -35,8 +35,10 @@
 .hero-badge {
   display: inline-block;
   padding: 7px 16px;
-  border-radius: var(--radius-pill);
-  background: var(--sage);
+  border-radius: 6px;
+  background: #6b7f5ede;
+  --webkit-backdrop-fliter:blur(4px);
+  backdrop-filter: blur(4px);
   color: var(--warm-white);
   font-size: 12.5px;
   font-weight: 600;
@@ -89,6 +91,10 @@
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
 }
 
 /* ============================================================

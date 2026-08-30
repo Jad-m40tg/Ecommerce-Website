@@ -70,8 +70,12 @@
   <script>
     (function () {
       var toggle = document.getElementById('menuToggle');
-      if (toggle) toggle.addEventListener('click', function () {
-        document.getElementById('navLinks').classList.toggle('open');
+      var navLinks = document.getElementById('navLinks');
+      if (!toggle || !navLinks) return;
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.addEventListener('click', function () {
+        var open = navLinks.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
       });
       if (typeof updateCartCount === 'function') updateCartCount();
     })();

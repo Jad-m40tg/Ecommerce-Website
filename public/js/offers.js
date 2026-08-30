@@ -42,7 +42,7 @@ function renderPromotions() {
       ? '<div class="promo-code"><span class="code">' + escapeHtml(promo.code) + '</span><button class="copy-btn" type="button" data-code="' + promo.code + '">Copy</button></div>'
       : '';
     return (
-      '<article class="promo-card reveal" tabindex="0">' +
+      '<article class="promo-card reveal">' +
         '<div class="promo-icon" aria-hidden="true"><span class="material-symbols-outlined">' + promo.icon + '</span></div>' +
         '<h3>' + escapeHtml(promo.title) + '</h3>' +
         '<p>' + promo.desc + '</p>' +
@@ -81,7 +81,7 @@ function productCardHTML(product) {
         '<span class="card-body">' +
           '<span class="card-category">' + escapeHtml(product.category_name || '') + '</span>' +
           '<span class="card-title">' + nameEscaped + '</span>' +
-          '<span class="card-rating">' + stars + '<span>(' + (product.reviews || 0) + ')</span></span>' +
+          '<span class="card-rating"><span aria-hidden="true">' + stars + '</span><span class="sr-only">Rated ' + Math.round(product.rating || 0) + ' out of 5 stars</span><span>(' + (product.reviews || 0) + ')</span></span>' +
         '</span>' +
       '</a>' +
       '<span class="card-price-row">' +

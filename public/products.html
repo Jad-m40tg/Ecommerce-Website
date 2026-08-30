@@ -79,7 +79,7 @@
   <!-- ==========================================================
        CATALOG
        ========================================================== -->
-  <main class="section" id="catalog">
+  <main class="section" id="catalog" tabindex="-1">
     <div class="container">
 
       <div class="catalog">
@@ -110,12 +110,12 @@
         <!-- ---------- PRODUCT AREA ---------- -->
         <div>
           <div class="catalog-toolbar reveal">
-            <div class="result-count">
+            <div class="result-count" role="status" aria-live="polite">
               Showing <b id="resultCount">0</b> products
             </div>
 
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-              <button type="button" class="filters-toggle" id="filtersToggle" aria-label="Toggle filters">
+              <button type="button" class="filters-toggle" id="filtersToggle" aria-label="Toggle filters" aria-expanded="false" aria-controls="filtersPanel">
                 &#9776; Filters
               </button>
 

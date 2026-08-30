@@ -38,6 +38,7 @@ function productCardHTML(product) {
   var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
   var nameEscaped = escapeHtml(product.name);
+  var addLabel = !(product.stock > 0) ? 'Product ' + nameEscaped + ' unavailable' : (inCart ? nameEscaped + ' is in cart' : 'Add ' + nameEscaped + ' to cart');
   return (
     '<article class="product-card reveal">' +
       '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="View ' + nameEscaped + '">' +
@@ -52,7 +53,7 @@ function productCardHTML(product) {
       '</a>' +
       '<span class="card-price-row">' +
         '<span class="card-price">' + price(product.price_cents || 0) + oldPriceHTML + '</span>' +
-        '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
+        '<button class="' + btnClass + '" type="button" data-add="' + product.id + '" aria-label="' + addLabel + '"' + btnDisabled + '>' + btnText + '</button>' +
       '</span>' +
     '</article>'
   );

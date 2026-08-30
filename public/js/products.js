@@ -82,6 +82,7 @@ function productCardHTML(product) {
   var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
   var nameEscaped = escapeHtml(product.name);
+  var addLabel = !(product.stock > 0) ? 'Product ' + nameEscaped + ' unavailable' : (inCart ? nameEscaped + ' is in cart' : 'Add ' + nameEscaped + ' to cart');
   return (
     '<div class="product-card">' +
       '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="View ' + nameEscaped + '">' +
@@ -96,7 +97,7 @@ function productCardHTML(product) {
     '</a>' +
     '<span class="card-price-row">' +
       '<span class="card-price">' + price(product.price_cents || 0) + oldPriceHTML + '</span>' +
-      '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
+      '<button class="' + btnClass + '" type="button" data-add="' + product.id + '" aria-label="' + addLabel + '"' + btnDisabled + '>' + btnText + '</button>' +
     '</span>' +
   '</div>'
   );
@@ -264,11 +265,42 @@ document.addEventListener('keydown', function (e) {
 });
 
 /* Mobile filters panel toggle */
+function openFiltersPanel() {
+  var panel = document.getElementById('filtersPanel');
+  var toggle = document.getElementById('filtersToggle');
+  panel.classList.add('open');
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  if (toggle) toggle.setAttribute('aria-expanded', 'true');
+  var first = panel.querySelector('button, [href], input, select, textarea');
+  if (first) first.focus();
+}
+function closeFiltersPanel() {
+  var panel = document.getElementById('filtersPanel');
+  var toggle = document.getElementById('filtersToggle');
+  panel.classList.remove('open');
+  panel.removeAttribute('role');
+  panel.removeAttribute('aria-modal');
+  if (toggle) toggle.setAttribute('aria-expanded', 'false');
+}
 document.getElementById('filtersToggle').addEventListener('click', function () {
-  document.getElementById('filtersPanel').classList.toggle('open');
+  var panel = document.getElementById('filtersPanel');
+  if (panel.classList.contains('open')) {
+    closeFiltersPanel();
+  } else {
+    openFiltersPanel();
+  }
 });
-document.getElementById('filtersClose').addEventListener('click', function () {
-  document.getElementById('filtersPanel').classList.remove('open');
+document.getElementById('filtersClose').addEventListener('click', closeFiltersPanel);
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    var fp = document.getElementById('filtersPanel');
+    if (fp && fp.classList.contains('open')) {
+      closeFiltersPanel();
+      var ft = document.getElementById('filtersToggle');
+      if (ft) ft.focus();
+    }
+  }
 });
 
 /* Reveal-on-scroll (same behavior as homepage) */

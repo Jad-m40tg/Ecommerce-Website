@@ -71,7 +71,7 @@ function productCardHTML(product) {
       '</a>' +
       '<span class="card-price-row">' +
         '<span class="card-price">' + price(product.price_cents) + oldPrice + '</span>' +
-        '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
+        '<button class="' + btnClass + '" type="button" data-add="' + product.id + '" data-name="' + nameEscaped + '"' + btnDisabled + ' aria-label="' + (inCart ? 'Remove ' + nameEscaped + ' from cart' : 'Add ' + nameEscaped + ' to cart') + '">' + btnText + '</button>' +
       '</span>' +
     '</div>'
   );
@@ -260,14 +260,17 @@ document.addEventListener('click', function (event) {
   showToast('Added to cart');
   addBtn.textContent = 'In Cart';
   addBtn.className = 'card-added';
+  addBtn.setAttribute('aria-label', 'Remove ' + (addBtn.getAttribute('data-name') || '') + ' from cart');
 });
 
 /* Keep add buttons in sync with cart state */
 function renderCartState() {
   document.querySelectorAll('[data-add]').forEach(function (btn) {
     var inCart = isInCart(btn.getAttribute('data-add'));
+    var name = btn.getAttribute('data-name') || '';
     btn.textContent = inCart ? 'In Cart' : 'Add';
     btn.className = inCart ? 'card-added' : 'card-add';
+    btn.setAttribute('aria-label', (inCart ? 'Remove ' + name + ' from cart' : 'Add ' + name + ' to cart'));
   });
 }
 window.addEventListener('cart:updated', renderCartState);

@@ -208,6 +208,8 @@ document.addEventListener('click', function (event) {
 
   if (!validateForm()) {
     showToast('Please fix the highlighted fields.');
+    var firstInvalid = document.querySelector('[aria-invalid="true"]');
+    if (firstInvalid && typeof firstInvalid.focus === 'function') firstInvalid.focus();
     return;
   }
 
