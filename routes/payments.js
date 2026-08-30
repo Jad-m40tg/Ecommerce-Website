@@ -1,9 +1,21 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { getCheckout, verifyWebhookSignature } = require('../services/payment');
 
 const router = express.Router();
+
+// Public status is watched by the payment-success/failed pages. It is
+// unauthenticated (needed client-side), so it must be rate-limited to stop
+// attackers brute-forcing sequential order IDs to enumerate orders/statuses.
+const publicStatusLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { error: 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
 
 // Shared lookup + sync logic for both the admin status route and the public status route.
 // Looks up an order by id, falls back to a Chargily checkout lookup, and syncs
@@ -81,8 +93,9 @@ router.get('/status/:id', authenticateToken, requireAdmin, async (req, res) => {
 
 // GET /api/payments/public-status/:id — Public. Check payment status for an order.
 // Same lookup/sync as the admin route but returns only minimal, non-sensitive
-// fields (no order_id, no lookup_code).
-router.get('/public-status/:id', async (req, res) => {
+// fields (no order_id, no lookup_code, and critically NO NOEST tracking code,
+// which could be used to correlate/track shipments).
+router.get('/public-status/:id', publicStatusLimiter, async (req, res) => {
   try {
     const result = await lookupAndSyncOrder(req.params.id);
 
@@ -92,7 +105,6 @@ router.get('/public-status/:id', async (req, res) => {
       checkout_status: result.checkout ? result.checkout.status : null,
       payment_status: result.order.payment_status,
       order_status: result.order.order_status,
-      tracking_code: result.order.noest_tracking || null,
       noest_status: result.order.noest_status || null
     });
   } catch (err) {

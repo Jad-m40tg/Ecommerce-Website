@@ -132,7 +132,7 @@
     })();
   </script>
 
-  <script src="js/admin-topbar.js?v=24"></script>
+  <script src="js/admin-topbar.js?v=25"></script>
   <script src="js/admin-mobile-nav.js?v=23"></script>
   <script>
     (function () {
@@ -168,14 +168,30 @@
           email: document.getElementById('pEmail').value.trim()
         };
 
-        var savePromises = [apiFetch('/api/admin/me', { method: 'PUT', body: JSON.stringify(body) })];
-
-        if (np) {
-          savePromises.push(apiFetch('/api/admin/password', { method: 'PUT', body: JSON.stringify({ current_password: document.getElementById('currentPass').value, new_password: np }) }));
+        // Password change FIRST, then the profile save. Changing the password
+        // revokes the current token (bumps token_version) and returns a fresh
+        // one, so it must complete and be stored before any further request.
+        function changePassword() {
+          if (!np) return Promise.resolve();
+          return apiFetch('/api/admin/password', { method: 'PUT', body: JSON.stringify({ current_password: document.getElementById('currentPass').value, new_password: np }) })
+            .then(function (data) {
+              if (data && data.token) {
+                localStorage.setItem('admin_token', data.token);
+                token = data.token;
+              }
+              document.getElementById('currentPass').value = '';
+              document.getElementById('newPass').value = '';
+              document.getElementById('confirmPass').value = '';
+            });
         }
 
-        Promise.all(savePromises)
-          .then(function () { showToast('Profile saved'); if (body.name) { document.getElementById('displayName').textContent = body.name.split(' ')[0]; document.getElementById('avatarInit').textContent = body.name.charAt(0).toUpperCase(); } })
+        function saveProfile() {
+          return apiFetch('/api/admin/me', { method: 'PUT', body: JSON.stringify(body) });
+        }
+
+        changePassword()
+          .then(saveProfile)
+          .then(function () { showToast(np ? 'Profile saved. Password updated.' : 'Profile saved'); if (body.name) { document.getElementById('displayName').textContent = body.name.split(' ')[0]; document.getElementById('avatarInit').textContent = body.name.charAt(0).toUpperCase(); } })
           .catch(function () { showToast('Failed to save profile'); })
           .finally(function () { saveBtn.disabled = false; });
       });

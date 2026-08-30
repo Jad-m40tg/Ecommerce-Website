@@ -82,6 +82,11 @@
 
   var TRUCK_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>';
 
+  // Same visual language as the customer-side payment status: check_circle (confirmed)
+  // and cancel (failed/cancelled) from Material Symbols.
+  var CHECK_CIRCLE_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 2.5 2.5L16 9"/></svg>';
+  var CANCEL_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>';
+
   function timeAgo(dateStr) {
     if (!dateStr) return '—';
     var t = new Date(dateStr.replace(' ', 'T') + 'Z').getTime();
@@ -105,7 +110,9 @@
         var icon;
         if (o.order_status === 'pending') icon = '&#9888;';
         else if (o.order_status === 'shipped') icon = TRUCK_SVG;
-        else if (o.order_status === 'delivered') icon = '&#10003;';
+        else if (o.order_status === 'delivered') icon = '<span style="color:var(--sage);display:flex;align-items:center;justify-content:center">' + CHECK_CIRCLE_SVG + '</span>';
+        else if (o.order_status === 'confirmed') icon = '<span style="color:var(--sage);display:flex;align-items:center;justify-content:center">' + CHECK_CIRCLE_SVG + '</span>';
+        else if (o.order_status === 'cancelled') icon = '<span style="color:var(--danger);display:flex;align-items:center;justify-content:center">' + CANCEL_SVG + '</span>';
         else icon = '&#9679;';
         notifs.push({ key: key, icon: icon, text: '<strong>#' + (o.id || '').toString().slice(0, 8) + '</strong> ' + escapeHtml(o.customer_name || 'Customer') + ' - ' + (o.order_status || 'pending'), time: o.created_at, orderId: o.id });
       });

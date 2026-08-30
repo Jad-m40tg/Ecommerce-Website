@@ -1,6 +1,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const db = require('../db');
+const config = require('../config');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { createCheckout, getCheckout } = require('../services/payment');
 const { activeSalesMap, buildOrderItems, computeTotals } = require('../services/pricing');
@@ -14,6 +15,17 @@ const checkoutLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: { error: 'Too many checkout attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Tracking is a public endpoint keyed only by an 8-char code. The code space is
+// large (36^8), but without a rate limit an attacker could still brute-force it
+// to enumerate orders and read their item list / totals. Keep it tight.
+const trackLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  message: { error: 'Too many tracking requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false
 });
@@ -42,7 +54,7 @@ function generateTrackingCode() {
 const TRACKING_CODE_PATTERN = /^([A-Z0-9]{8}|[A-Z0-9]{2,4}-[A-Z0-9]{2,4}-\d{6,10})$/i;
 
 // GET /api/orders/track?code=XXXX — Public order tracking by tracking code.
-router.get('/track', (req, res) => {
+router.get('/track', trackLimiter, (req, res) => {
   const { code } = req.query;
   if (!code || typeof code !== 'string' || !TRACKING_CODE_PATTERN.test(code.trim())) {
     return res.status(400).json({ error: 'Please provide a valid tracking code' });
@@ -227,7 +239,7 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
           orderId: id,
           customerEmail: customer_email,
           customerName: customer_name,
-          baseUrl: req.protocol + '://' + req.get('host')
+          baseUrl: config.APP_URL
         });
 
         db.prepare("UPDATE orders SET payment_reference = ? WHERE id = ?").run(checkout.id, id);

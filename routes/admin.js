@@ -3,8 +3,10 @@
 
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const db = require('../db');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { JWT_SECRET, JWT_EXPIRES } = require('../config');
 
 const router = express.Router();
 // Every route in this file requires login + admin role
@@ -42,7 +44,7 @@ router.put('/me', (req, res) => {
 router.put('/password', async (req, res) => {
   const { current_password, new_password } = req.body;
   if (!current_password || !new_password) return res.status(400).json({ error: 'current_password and new_password required' });
-  if (new_password.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  if (new_password.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters' });
 
   const admin = db.prepare('SELECT password_hash FROM admins WHERE id = ?').get(req.user.id);
   if (!admin) return res.status(404).json({ error: 'Admin not found' });
@@ -53,7 +55,16 @@ router.put('/password', async (req, res) => {
   const hash = await bcrypt.hash(new_password, 10);
   db.prepare('UPDATE admins SET password_hash = ?, token_version = token_version + 1 WHERE id = ?').run(hash, req.user.id);
 
-  res.json({ success: true });
+  // The token_version bump revokes every previously-issued token. Re-issue a
+  // fresh token carrying the NEW token_version so the current admin stays
+  // logged in while all other (pre-change) sessions are invalidated.
+  const token = jwt.sign(
+    { id: req.user.id, role: req.user.role, token_version: req.user.token_version + 1 },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES }
+  );
+
+  res.json({ success: true, token });
 });
 
 module.exports = router;
