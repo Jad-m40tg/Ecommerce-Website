@@ -4,12 +4,35 @@ var PRODUCTS = [];
 
 /* ---------- PROMOTIONS DATA ---------- */
 var PROMOTIONS = [
-  { icon: 'local_shipping', title: 'Free Delivery', desc: 'On all orders over 66,700 DA. White-glove delivery included, we set everything up and remove packaging.', code: 'FREESHIP' },
-  { icon: 'card_giftcard', title: 'New Customer', desc: 'Welcome to Boularas! Get 15% off your first order of 26,680 DA or more when you sign up for our list.', code: 'WELCOME15' },
-  { icon: 'layers', title: 'Bundle & Save', desc: 'Buy 3 or more items from the same collection and save 20% automatically at checkout. No code needed.', code: null },
-  { icon: 'school', title: 'Student Discount', desc: 'Full-time students get 10% off site-wide year-round. Verify your .edu email and enjoy a better study space.', code: 'STUDENT10' },
-  { icon: 'event', title: 'Seasonal Flash Sale', desc: 'New deals drop every Friday at 10 AM. A different category goes on sale each week, check back often.', code: null },
-  { icon: 'group_add', title: 'Refer a Friend', desc: 'Give 6,670 DA, get 6,670 DA. When a friend places their first order over 40,020 DA using your referral link, you both earn credit.', code: 'GIFT50' }
+{
+    icon: 'local_shipping',
+    title: 'Delivery Across Algeria',
+    desc: 'We deliver your orders to all 69 wilayas across Algeria.'
+  },
+
+  {
+    icon: 'payments',
+    title: 'Flexible Payment',
+    desc: 'Pay by Cash on Delivery or choose a digital payment method including Edahabia, CIB, or BaridiMob.'
+  },
+
+  {
+    icon: 'local_offer',
+    title: 'Regular Offers',
+    desc: 'Keep an eye on our latest promotions and special offers for new opportunities to save.'
+  },
+
+  {
+    icon: 'storefront',
+    title: 'A Physical Store',
+    desc: 'Visit our physical store and discover our furniture and home furnishings in person.'
+  },
+
+  {
+    icon: 'verified',
+    title: 'Trusted Locally',
+    desc: 'Serving customers through our physical store and online, with a focus on quality and reliable service.'
+  }
 ];
 
 function renderPromotions() {
@@ -19,7 +42,7 @@ function renderPromotions() {
       ? '<div class="promo-code"><span class="code">' + escapeHtml(promo.code) + '</span><button class="copy-btn" type="button" data-code="' + promo.code + '">Copy</button></div>'
       : '';
     return (
-      '<article class="promo-card reveal">' +
+      '<article class="promo-card reveal" tabindex="0">' +
         '<div class="promo-icon" aria-hidden="true"><span class="material-symbols-outlined">' + promo.icon + '</span></div>' +
         '<h3>' + escapeHtml(promo.title) + '</h3>' +
         '<p>' + promo.desc + '</p>' +
@@ -224,6 +247,15 @@ document.getElementById('menuToggle').addEventListener('click', function () {
   if (btn) btn.setAttribute('aria-expanded', navLinks.classList.contains('open') ? 'true' : 'false');
 });
 
+document.addEventListener('click', function (e) {
+  var navLinks = document.getElementById('navLinks');
+  var toggle = document.getElementById('menuToggle');
+  if (!navLinks || !navLinks.classList.contains('open')) return;
+  if (navLinks.contains(e.target) || (toggle && toggle.contains(e.target))) return;
+  navLinks.classList.remove('open');
+  if (toggle) toggle.setAttribute('aria-expanded', 'false');
+});
+
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
     var nl = document.getElementById('navLinks');
@@ -298,3 +330,69 @@ fetch('/api/products/browse/on-sale')
     if (typeof initLazyImages === 'function') initLazyImages();
   })
   .catch(function () {});
+
+/* ---------- KEYBOARD: arrow-key navigation for promo + product cards ---------- */
+(function () {
+  function promoCols() {
+    var w = window.innerWidth;
+    if (w <= 520) return 1;
+    if (w <= 900) return 2;
+    return 3;
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    var active = document.activeElement;
+
+    // 1) Promo grid: arrows move between promo-cards (grid: 3 / 2 / 1 cols)
+    var promoGrid = document.getElementById('promoGrid');
+    var promoCards = promoGrid ? Array.prototype.slice.call(promoGrid.querySelectorAll('.promo-card')) : [];
+    // If skip link landed on #promotions itself, arrow goes to first promo card
+    if (active && active.id === 'promotions' && promoCards.length) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault(); promoCards[0].focus(); promoCards[0].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        return;
+      }
+    }
+    var promoCard = active ? active.closest('.promo-card') : null;
+    if (promoCard && promoGrid && promoGrid.contains(promoCard) && promoCards.length) {
+      var idx = promoCards.indexOf(promoCard);
+      if (idx === -1) return;
+      var cols = promoCols();
+      var next = -1;
+      if (e.key === 'ArrowRight') next = idx + 1;
+      else if (e.key === 'ArrowLeft') next = idx - 1;
+      else if (e.key === 'ArrowDown') next = idx + cols;
+      else if (e.key === 'ArrowUp') next = idx - cols;
+      if (next >= 0 && next < promoCards.length) {
+        e.preventDefault();
+        promoCards[next].focus();
+        promoCards[next].scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+      }
+      return;
+    }
+
+    // 2) Sale row (horizontal scroller): arrows move between product cards
+    var saleRow = document.getElementById('saleRow');
+    if (saleRow) {
+      var cards = Array.prototype.slice.call(saleRow.querySelectorAll('.product-card'));
+      if (cards.length) {
+        var curCard = active ? active.closest('.product-card') : null;
+        // Only handle if focus is inside the sale row
+        if (curCard && saleRow.contains(curCard)) {
+          var cIdx = cards.indexOf(curCard);
+          if (cIdx === -1) return;
+          var nIdx = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nIdx = cIdx + 1;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nIdx = cIdx - 1;
+          if (nIdx >= 0 && nIdx < cards.length) {
+            e.preventDefault();
+            var hit = cards[nIdx].querySelector('.card-hit');
+            if (hit) { hit.focus(); hit.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }); }
+            else { cards[nIdx].focus(); }
+          }
+          return;
+        }
+      }
+    }
+  });
+})();

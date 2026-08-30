@@ -82,6 +82,11 @@ app.get(['/product.html', '/product'], sendProductPage);
 // 'extensions: ["html"]' allows /index without the .html extension.
 // HTML is never cached (revalidated each visit); images cache for a year;
 // css/js cache for 1 day to avoid stale assets during updates.
+// During development (NODE_ENV !== 'production') css/js are NOT cached at all,
+// so a normal refresh always shows the latest edits — no hard-refresh or
+// manual browser cache clearing needed.
+const isProduction = process.env.NODE_ENV === 'production';
+const cssJsCache = isProduction ? 'public, max-age=86400' : 'no-cache';
 app.use(express.static(path.join(__dirname, 'public'), {
   index: false,
   extensions: ['html'],
@@ -91,7 +96,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     } else if (/\.(png|jpe?g|webp|gif|svg|avif|ico)$/i.test(path)) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     } else if (/\.(css|js)$/i.test(path)) {
-      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.setHeader('Cache-Control', cssJsCache);
     }
   }
 }));

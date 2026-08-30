@@ -9,7 +9,7 @@
   background: var(--charcoal);
   color: var(--warm-white);
   padding: 13px 26px;
-  border-radius: var(--radius-pill);
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
   box-shadow: var(--shadow-lift);

@@ -162,6 +162,15 @@ document.getElementById('menuToggle').addEventListener('click', function () {
   if (btn) btn.setAttribute('aria-expanded', navLinks.classList.contains('open') ? 'true' : 'false');
 });
 
+document.addEventListener('click', function (e) {
+  var navLinks = document.getElementById('navLinks');
+  var toggle = document.getElementById('menuToggle');
+  if (!navLinks || !navLinks.classList.contains('open')) return;
+  if (navLinks.contains(e.target) || (toggle && toggle.contains(e.target))) return;
+  navLinks.classList.remove('open');
+  if (toggle) toggle.setAttribute('aria-expanded', 'false');
+});
+
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
     var nl = document.getElementById('navLinks');

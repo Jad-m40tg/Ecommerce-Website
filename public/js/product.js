@@ -827,7 +827,7 @@ function wireUpDetail(p, colors) {
       return;
     }
     addToCart(p, { qty: selection.qty, color: selection.color, size: selection.size });
-    showToast(p.name + ' added to cart');
+    showToast('Added to cart');
     renderCartState();
   });
 
@@ -1114,6 +1114,15 @@ document.getElementById('menuToggle').addEventListener('click', function () {
   navLinks.classList.toggle('open');
   var btn = document.getElementById('menuToggle');
   if (btn) btn.setAttribute('aria-expanded', navLinks.classList.contains('open') ? 'true' : 'false');
+});
+
+document.addEventListener('click', function (e) {
+  var navLinks = document.getElementById('navLinks');
+  var toggle = document.getElementById('menuToggle');
+  if (!navLinks || !navLinks.classList.contains('open')) return;
+  if (navLinks.contains(e.target) || (toggle && toggle.contains(e.target))) return;
+  navLinks.classList.remove('open');
+  if (toggle) toggle.setAttribute('aria-expanded', 'false');
 });
 
 document.addEventListener('keydown', function (e) {

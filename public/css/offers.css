@@ -94,9 +94,10 @@
 .promo-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
 
 .promo-icon {
-  width: 52px; height: 52px; border-radius: var(--radius-md);
+  width: 52px; height: 52px; border-radius: var(--radius-md); 
   background: var(--cream);
   display: flex; align-items: center; justify-content: center;
+  border: 0.09rem solid var(--sage);
 }
 .promo-icon .material-symbols-outlined { font-size: 28px; color: var(--sage); }
 
@@ -175,7 +176,7 @@
 
 .product-card > .card-hit {
   display: flex; flex-direction: column; flex: 1;
-  text-decoration: none; color: inherit;
+  text-decoration: none; color: inherit; outline: none;
 }
 .product-card:has(.card-hit:focus-visible) {
   outline: 2px solid var(--sage); outline-offset: 2px;
@@ -337,3 +338,14 @@
   .offer-empty-icon svg { width: 18px; height: 18px; }
   .offer-media img { height: 180px; }
 }
+
+/* Promo cards are keyboard-focusable; match product-card focus treatment */
+.promo-card:focus { outline: none; }
+.promo-card:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+}
+.promo-card:focus-within { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
+
+/* Skip target itself should not draw a ring — the cards do */
+#promotions:focus { outline: none; }
