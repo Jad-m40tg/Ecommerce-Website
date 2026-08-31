@@ -96,26 +96,26 @@
 
   <div class="login-card">
     <div class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" style="height:44px;width:auto;max-width:200px;object-fit:contain" /></div>
-    <p class="subtitle">Sign in to your admin account</p>
+    <p class="subtitle" data-i18n="admin:login.subtitle">Sign in to your admin account</p>
 
     <div class="error" id="error" role="alert" tabindex="-1"></div>
 
     <form id="loginForm" novalidate>
       <div class="field">
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="example@email.com" autocomplete="email" required aria-required="true" aria-describedby="error" />
+        <label for="email" data-i18n="admin:login.email">Email</label>
+        <input type="email" id="email" placeholder="example@email.com" autocomplete="email" required aria-required="true" aria-describedby="error" data-i18n-attr="placeholder:admin:login.email_ph" />
       </div>
       <div class="field">
-        <label for="password">Password</label>
+        <label for="password" data-i18n="admin:login.password">Password</label>
         <div class="password-wrap">
-          <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required aria-required="true" aria-describedby="error" />
-          <button type="button" class="eye-btn" id="togglePassword" aria-label="Show password" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7 -11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></svg></button>
+          <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required aria-required="true" aria-describedby="error" data-i18n-attr="placeholder:admin:login.password_ph" />
+          <button type="button" class="eye-btn" id="togglePassword" aria-label="Show password" aria-pressed="false" data-i18n-attr="aria-label:admin:login.show_password"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7 -11-7-11-7z"/><circle cx="12" cy="12" r="3.5"/></svg></button>
         </div>
       </div>
-      <button type="submit" class="login-btn" id="loginBtn">Sign In</button>
+      <button type="submit" class="login-btn" id="loginBtn" data-i18n="admin:login.signin">Sign In</button>
     </form>
 
-    <p class="hint"><a href="index.html">← Back to store</a></p>
+    <p class="hint"><a href="index.html" data-i18n="admin:login.back_to_store">← Back to store</a></p>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -148,7 +148,7 @@
           var isPwd = pwd.type === 'password';
           pwd.type = isPwd ? 'text' : 'password';
           tog.setAttribute('aria-pressed', isPwd ? 'true' : 'false');
-          tog.setAttribute('aria-label', isPwd ? 'Hide password' : 'Show password');
+          tog.setAttribute('aria-label', isPwd ? window.i18n('admin:login.hide_password') : window.i18n('admin:login.show_password'));
           tog.innerHTML = isPwd ? eyeOff : eye;
         });
       }
@@ -162,10 +162,10 @@
       var btn   = document.getElementById('loginBtn');
 
       errEl.classList.remove('show');
-      if (!email || !pass) { errEl.textContent = 'Please fill in all fields'; errEl.classList.add('show'); errEl.focus(); return; }
+      if (!email || !pass) { errEl.textContent = window.i18n('admin:login.err_fill_all'); errEl.classList.add('show'); errEl.focus(); return; }
 
       btn.disabled = true;
-      btn.textContent = 'Signing in…';
+      btn.textContent = window.i18n('admin:login.signing_in');
 
       fetch('/api/auth/login', {
         method: 'POST',
@@ -174,19 +174,24 @@
       })
       .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
       .then(function (res) {
-        if (!res.ok) { errEl.textContent = res.data.error || res.data.message || 'Invalid credentials'; errEl.classList.add('show'); btn.disabled = false; btn.textContent = 'Sign In'; errEl.focus(); return; }
+        if (!res.ok) { errEl.textContent = res.data.error || res.data.message || window.i18n('admin:login.err_invalid_creds'); errEl.classList.add('show'); btn.disabled = false; btn.textContent = window.i18n('admin:login.signin'); errEl.focus(); return; }
         localStorage.setItem('admin_token', res.data.token);
-        showToast('Logged in successfully!');
+        showToast(window.i18n('admin:login.logged_in'));
         setTimeout(function () { window.location.href = 'admin-dashboard.html'; }, 600);
       })
       .catch(function () {
-        errEl.textContent = 'Network error. Please try again.';
+        errEl.textContent = window.i18n('admin:login.network_error');
         errEl.classList.add('show');
         errEl.focus();
         btn.disabled = false;
-        btn.textContent = 'Sign In';
+        btn.textContent = window.i18n('admin:login.signin');
       });
     });
   </script>
+  <script src="js/language.js?v=23"></script>
+  <script src="js/vendor/i18next.min.js"></script>
+  <script src="js/vendor/i18next-http-backend.min.js"></script>
+  <script src="js/i18n-init.js?v=1"></script>
+  <script src="js/i18n-helper.js?v=1"></script>
 </body>
 </html>

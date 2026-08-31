@@ -1,3 +1,86 @@
 {
-  "admin.dashboard": "لوحة التحكم"
+  "admin.dashboard": "لوحة التحكم",
+  "login": {
+    "title": "تسجيل دخول المشرف | بولاراس",
+    "subtitle": "سجّل الدخول إلى حساب المشرف الخاص بك",
+    "email": "البريد الإلكتروني",
+    "email_ph": "example@email.com",
+    "password": "كلمة المرور",
+    "password_ph": "أدخل كلمة المرور",
+    "show_password": "إظهار كلمة المرور",
+    "hide_password": "إخفاء كلمة المرور",
+    "signin": "تسجيل الدخول",
+    "signing_in": "جارٍ تسجيل الدخول…",
+    "back_to_store": "← العودة إلى المتجر",
+    "err_fill_all": "يرجى ملء جميع الحقول",
+    "err_invalid_creds": "بيانات الدخول غير صحيحة",
+    "network_error": "خطأ في الشبكة. يرجى المحاولة مرة أخرى.",
+    "logged_in": "تم تسجيل الدخول بنجاح!"
+  },
+  "nav": {
+    "label_main": "الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "sales": "المبيعات",
+    "orders": "الطلبات",
+    "customers": "العملاء",
+    "categories": "الفئات",
+    "analytics": "التحليلات",
+    "label_system": "النظام",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج",
+    "profile": "الملف الشخصي"
+  },
+  "topbar": {
+    "open_menu": "فتح القائمة",
+    "notifications": "الإشعارات",
+    "clear_all": "مسح الكل",
+    "no_new_notifications": "لا توجد إشعارات جديدة",
+    "no_notifications_yet": "لا توجد إشعارات بعد",
+    "admin_profile": "ملف المشرف",
+    "admin": "مشرف",
+    "store_admin": "مشرف المتجر",
+    "open_order": "فتح الطلب",
+    "dismiss_notification": "تجاهل الإشعار",
+    "unauthorized": "غير مصرح",
+    "just_now": "الآن",
+    "mins_ago": "منذ {{count}} د",
+    "hrs_ago": "منذ {{count}} س",
+    "days_ago": "منذ {{count}} يوم",
+    "customer": "عميل"
+  },
+  "dashboard": {
+    "skip_main": "تخطَّ إلى المحتوى الرئيسي",
+    "title": "لوحة التحكم | بولاراس",
+    "page_h1": "لوحة التحكم",
+    "welcome": "مرحبًا بعودتك. هذه نظرة عامة على متجرك.",
+    "revenue_30d": "الإيرادات (30 يوم)",
+    "orders": "الطلبات",
+    "products": "المنتجات",
+    "active_catalog": "الكتالوج النشط",
+    "customers_lbl": "{{count}} عملاء",
+    "revenue_by_week": "الإيرادات الأسبوعية",
+    "last_8_weeks": "آخر 8 أسابيع",
+    "recent_orders": "أحدث الطلبات",
+    "latest_orders": "أحدث طلبات العملاء",
+    "view_all": "عرض الكل",
+    "col_order": "الطلب",
+    "col_customer": "العميل",
+    "col_status": "الحالة",
+    "col_total": "الإجمالي",
+    "loading": "جارٍ التحميل…",
+    "unable_load_orders": "تعذّر تحميل الطلبات",
+    "no_orders_yet": "لا توجد طلبات بعد",
+    "chart_revenue": "الإيرادات"
+  },
+  "order": {
+    "status": {
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "processing": "قيد المعالجة",
+      "shipped": "تم الشحن",
+      "delivered": "تم التوصيل",
+      "cancelled": "ملغي"
+    }
+  }
 }

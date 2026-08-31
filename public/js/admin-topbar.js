@@ -10,7 +10,7 @@
     opts = opts || {};
     opts.headers = Object.assign(authHeaders(), opts.headers || {});
     return fetch(url, opts).then(function (r) {
-      if (r.status === 401 || r.status === 403) { localStorage.removeItem('admin_token'); window.location.href = 'admin-login.html'; throw new Error('Unauthorized'); }
+      if (r.status === 401 || r.status === 403) { localStorage.removeItem('admin_token'); window.location.href = 'admin-login.html'; throw new Error(window.i18n ? window.i18n('admin:topbar.unauthorized') : 'Unauthorized'); }
       return r.json();
     });
   }
@@ -56,7 +56,7 @@
   notifBtn.setAttribute('aria-expanded', 'false');
   notifBtn.setAttribute('aria-controls', notifPanel.id || 'notifPanel');
   notifPanel.setAttribute('role', 'region');
-  notifPanel.setAttribute('aria-label', 'Notifications');
+  notifPanel.setAttribute('aria-label', window.i18n ? window.i18n('admin:topbar.notifications') : 'Notifications');
   notifPanel.setAttribute('aria-live', 'polite');
 
   var seenNotifs = JSON.parse(localStorage.getItem('seen_notifs') || '[]');
@@ -88,17 +88,21 @@
   var CHECK_CIRCLE_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 12 2.5 2.5L16 9"/></svg>';
   var CANCEL_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>';
 
+  function t(key, opts) {
+    return window.i18n ? window.i18n(key, opts) : key;
+  }
+
   function timeAgo(dateStr) {
     if (!dateStr) return '—';
-    var t = new Date(dateStr.replace(' ', 'T') + 'Z').getTime();
-    if (isNaN(t)) return '—';
-    var diff = Date.now() - t;
+    var d = new Date(dateStr.replace(' ', 'T') + 'Z').getTime();
+    if (isNaN(d)) return '—';
+    var diff = Date.now() - d;
     var mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return mins + 'm ago';
+    if (mins < 1) return t('admin:topbar.just_now');
+    if (mins < 60) return t('admin:topbar.mins_ago', { count: mins });
     var hrs = Math.floor(mins / 60);
-    if (hrs < 24) return hrs + 'h ago';
-    return Math.floor(hrs / 24) + 'd ago';
+    if (hrs < 24) return t('admin:topbar.hrs_ago', { count: hrs });
+    return t('admin:topbar.days_ago', { count: Math.floor(hrs / 24) });
   }
 
   function loadNotifications() {
@@ -115,16 +119,18 @@
         else if (o.order_status === 'confirmed') icon = '<span style="color:var(--sage);display:flex;align-items:center;justify-content:center">' + CHECK_CIRCLE_SVG + '</span>';
         else if (o.order_status === 'cancelled') icon = '<span style="color:var(--danger);display:flex;align-items:center;justify-content:center">' + CANCEL_SVG + '</span>';
         else icon = '&#9679;';
-        notifs.push({ key: key, icon: icon, text: '<strong>#' + (o.id || '').toString().slice(0, 8) + '</strong> ' + escapeHtml(o.customer_name || 'Customer') + ' - ' + (o.order_status || 'pending'), time: o.created_at, orderId: o.id });
+        var cname = escapeHtml(o.customer_name || t('admin:topbar.customer'));
+        var ost = t('admin:order.status.' + (o.order_status || 'pending'));
+        notifs.push({ key: key, icon: icon, text: '<strong>#' + (o.id || '').toString().slice(0, 8) + '</strong> ' + cname + ' - ' + ost, time: o.created_at, orderId: o.id });
       });
       var visible = notifs.filter(function (n) { return dismissed.indexOf(n.key) === -1; });
       var unseen = visible.filter(function (n) { return seenNotifs.indexOf(n.key) === -1; });
       if (notifDot) notifDot.style.display = unseen.length > 0 ? 'block' : 'none';
       if (visible.length === 0) {
-        notifBody.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+        notifBody.innerHTML = '<div class="notif-empty">' + t('admin:topbar.no_notifications_yet') + '</div>';
       } else {
         notifBody.innerHTML = visible.map(function (n) {
-          return '<div class="notif-item" data-key="' + n.key + '" data-id="' + n.orderId + '" style="cursor:pointer"><div class="notif-main" role="button" tabindex="0" title="Open order" style="display:flex;gap:10px;flex:1;min-width:0;align-items:flex-start"><div class="notif-icon">' + n.icon + '</div><div><div class="notif-text">' + n.text + '</div><div class="notif-time">' + timeAgo(n.time) + '</div></div></div><button type="button" class="notif-dismiss" data-dismiss="' + n.key + '" aria-label="Dismiss notification" title="Dismiss notification" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;line-height:1;padding:2px 6px;margin-left:auto;align-self:flex-start">&times;</button></div>';
+          return '<div class="notif-item" data-key="' + n.key + '" data-id="' + n.orderId + '" style="cursor:pointer"><div class="notif-main" role="button" tabindex="0" title="' + t('admin:topbar.open_order') + '" style="display:flex;gap:10px;flex:1;min-width:0;align-items:flex-start"><div class="notif-icon">' + n.icon + '</div><div><div class="notif-text">' + n.text + '</div><div class="notif-time">' + timeAgo(n.time) + '</div></div></div><button type="button" class="notif-dismiss" data-dismiss="' + n.key + '" aria-label="' + t('admin:topbar.dismiss_notification') + '" title="' + t('admin:topbar.dismiss_notification') + '" style="background:none;border:none;color:var(--gray);cursor:pointer;font-size:14px;line-height:1;padding:2px 6px;margin-left:auto;align-self:flex-start">&times;</button></div>';
         }).join('');
       }
     }).catch(function () {});
@@ -196,7 +202,7 @@
       saveDismissed(dismissed);
       localStorage.setItem('seen_notifs', JSON.stringify(seenNotifs));
       if (notifDot) notifDot.style.display = 'none';
-      notifBody.innerHTML = '<div class="notif-empty">No new notifications</div>';
+      notifBody.innerHTML = '<div class="notif-empty">' + t('admin:topbar.no_new_notifications') + '</div>';
     });
   }
 
@@ -212,5 +218,7 @@
     }
   });
 
-  loadNotifications();
+  if (window.i18n) loadNotifications();
+  else window.addEventListener('i18n:ready', loadNotifications, { once: true });
+  window.addEventListener('i18n:changed', loadNotifications);
 })();

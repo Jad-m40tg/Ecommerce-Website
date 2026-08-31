@@ -1,3 +1,86 @@
 {
-  "admin.dashboard": "Dashboard"
+  "admin.dashboard": "Dashboard",
+  "login": {
+    "title": "Admin Login | Boularas",
+    "subtitle": "Sign in to your admin account",
+    "email": "Email",
+    "email_ph": "example@email.com",
+    "password": "Password",
+    "password_ph": "Enter your password",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "signin": "Sign In",
+    "signing_in": "Signing in…",
+    "back_to_store": "← Back to store",
+    "err_fill_all": "Please fill in all fields",
+    "err_invalid_creds": "Invalid credentials",
+    "network_error": "Network error. Please try again.",
+    "logged_in": "Logged in successfully!"
+  },
+  "nav": {
+    "label_main": "Main",
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "sales": "Sales",
+    "orders": "Orders",
+    "customers": "Customers",
+    "categories": "Categories",
+    "analytics": "Analytics",
+    "label_system": "System",
+    "settings": "Settings",
+    "logout": "Logout",
+    "profile": "Profile"
+  },
+  "topbar": {
+    "open_menu": "Open menu",
+    "notifications": "Notifications",
+    "clear_all": "Clear all",
+    "no_new_notifications": "No new notifications",
+    "no_notifications_yet": "No notifications yet",
+    "admin_profile": "Admin profile",
+    "admin": "Admin",
+    "store_admin": "Store admin",
+    "open_order": "Open order",
+    "dismiss_notification": "Dismiss notification",
+    "unauthorized": "Unauthorized",
+    "just_now": "Just now",
+    "mins_ago": "{{count}}m ago",
+    "hrs_ago": "{{count}}h ago",
+    "days_ago": "{{count}}d ago",
+    "customer": "Customer"
+  },
+  "dashboard": {
+    "skip_main": "Skip to main content",
+    "title": "Dashboard | Boularas Admin",
+    "page_h1": "Dashboard",
+    "welcome": "Welcome back. Here's your store overview.",
+    "revenue_30d": "Revenue (30d)",
+    "orders": "Orders",
+    "products": "Products",
+    "active_catalog": "Active catalog",
+    "customers_lbl": "{{count}} customers",
+    "revenue_by_week": "Revenue by Week",
+    "last_8_weeks": "Last 8 weeks",
+    "recent_orders": "Recent Orders",
+    "latest_orders": "Latest customer orders",
+    "view_all": "View All",
+    "col_order": "Order",
+    "col_customer": "Customer",
+    "col_status": "Status",
+    "col_total": "Total",
+    "loading": "Loading…",
+    "unable_load_orders": "Unable to load orders",
+    "no_orders_yet": "No orders yet",
+    "chart_revenue": "Revenue"
+  },
+  "order": {
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  }
 }
