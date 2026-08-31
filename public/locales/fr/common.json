@@ -1,3 +1,6 @@
 {
-  "site.name": "Boularas"
+  "site": {
+    "name": "Boularas"
+  },
+  "skip_to_content": "Aller au contenu"
 }
