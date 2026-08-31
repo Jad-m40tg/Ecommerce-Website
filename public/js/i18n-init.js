@@ -100,5 +100,20 @@
     applyToElement: applyToElement
   });
 
+  // B3 — Switcher: language.js already calls setLang() → onChange callbacks.
+  // Register i18next.changeLanguage as the callback that swaps the text.
+  function wireSwitcher() {
+    if (typeof window.i18next === 'undefined') return;
+    window.i18next.on('languageChanged', function () {
+      requestAnimationFrame(apply);
+    });
+    if (window.BoularasI18n && typeof window.BoularasI18n.onChange === 'function') {
+      window.BoularasI18n.onChange(function (code) {
+        window.i18next.changeLanguage(code);
+      });
+    }
+  }
+
   init();
+  wireSwitcher();
 })();
