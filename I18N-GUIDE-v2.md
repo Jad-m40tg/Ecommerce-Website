@@ -318,3 +318,4 @@ on every single wording tweak as you notice it.
 - Explicitly still out of scope, unchanged from v1: backend-rendered
   strings, transactional emails. Not covered by either guide, worth a note
   if you ever revisit: per-locale meta tags/OG data for SEO.
+  (executed fully..?)
