@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Checkout | Boularas Modern Furniture &amp; Home</title>
+  <title data-i18n="customer:checkout.title">Checkout | Boularas Modern Furniture &amp; Home</title>
   <meta name="description" content="Complete your secure checkout at Boularas: shipping details, payment, and order confirmation." />
   <meta property="og:title" content="Checkout | Boularas Modern Furniture &amp; Home" />
   <meta property="og:description" content="Complete your secure checkout at Boularas: shipping details, payment, and order confirmation." />
@@ -83,8 +83,8 @@
          PAGE HEAD
          ========================================================== -->
     <div class="container page-head">
-      <h1>Checkout</h1>
-      <p id="pageSubtitle">Complete your order.</p>
+      <h1 data-i18n="customer:checkout.title_h1">Checkout</h1>
+      <p id="pageSubtitle" data-i18n="customer:checkout.subtitle_default">Complete your order.</p>
     </div>
 
     <!-- ==========================================================
@@ -98,18 +98,18 @@
 
           <!-- Contact -->
           <section class="form-section" id="contactSection">
-            <h2>Contact</h2>
+            <h2 data-i18n="customer:checkout.contact">Contact</h2>
             <div class="form-row full">
               <div class="field">
-                <label for="email">Email <span class="required">*</span></label>
+                <label for="email"><span data-i18n="customer:checkout.email">Email</span> <span class="required">*</span></label>
                 <input type="email" id="email" placeholder="you@example.com" required />
                 <i class="fa-solid fa-circle-check validation-icon"></i>
-                <div class="error-msg" id="emailError" role="alert">Please enter a valid email.</div>
+                <div class="error-msg" id="emailError" role="alert" data-i18n="customer:checkout.err_email">Please enter a valid email.</div>
               </div>
             </div>
             <div class="form-row">
               <div class="field">
-                <label for="phone">Phone <span class="required">*</span></label>
+                <label for="phone"><span data-i18n="customer:checkout.phone">Phone</span> <span class="required">*</span></label>
                 <input type="tel" id="phone" placeholder="0555 12 34 56" />
                 <i class="fa-solid fa-circle-check validation-icon"></i>
                 <div class="error-msg" id="phoneError" role="alert"></div>
@@ -119,64 +119,64 @@
 
           <!-- Shipping -->
           <section class="form-section" id="shippingSection">
-            <h2>Shipping Address</h2>
+            <h2 data-i18n="customer:checkout.shipping_address">Shipping Address</h2>
             <div class="form-row">
               <div class="field">
-                <label for="firstName">First Name <span class="required">*</span></label>
+                <label for="firstName"><span data-i18n="customer:checkout.first_name">First Name</span> <span class="required">*</span></label>
                 <input type="text" id="firstName" placeholder="Jane" required />
                 <i class="fa-solid fa-circle-check validation-icon"></i>
-                <div class="error-msg" id="firstNameError" role="alert">Required.</div>
+                <div class="error-msg" id="firstNameError" role="alert" data-i18n="customer:checkout.required">Required.</div>
               </div>
               <div class="field">
-                <label for="lastName">Last Name <span class="required">*</span></label>
+                <label for="lastName"><span data-i18n="customer:checkout.last_name">Last Name</span> <span class="required">*</span></label>
                 <input type="text" id="lastName" placeholder="Doe" required />
                 <i class="fa-solid fa-circle-check validation-icon"></i>
-                <div class="error-msg" id="lastNameError" role="alert">Required.</div>
+                <div class="error-msg" id="lastNameError" role="alert" data-i18n="customer:checkout.required">Required.</div>
               </div>
             </div>
             <div class="form-row full">
               <div class="field">
-                <label for="address">Address <span class="required">*</span></label>
+                <label for="address"><span data-i18n="customer:checkout.address">Address</span> <span class="required">*</span></label>
                 <input type="text" id="address" placeholder="Rue Didouche Mourad" required />
                 <i class="fa-solid fa-circle-check validation-icon"></i>
-                <div class="error-msg" id="addressError" role="alert">Required.</div>
+                <div class="error-msg" id="addressError" role="alert" data-i18n="customer:checkout.required">Required.</div>
               </div>
             </div>
             <div class="form-row full">
               <div class="field">
-                <label for="apt">Apartment, suite, etc. (optional)</label>
+                <label for="apt" data-i18n="customer:checkout.apt">Apartment, suite, etc. (optional)</label>
                 <input type="text" id="apt" placeholder="Appartement (optionnel)" />
               </div>
             </div>
             <div class="form-row full">
               <div class="field">
-                <label for="city">City (Wilaya) <span class="required">*</span></label>
+                <label for="city"><span data-i18n="customer:checkout.city_wilaya">City (Wilaya)</span> <span class="required">*</span></label>
                 <input type="text" id="city" placeholder="Algiers" required />
                 <i class="fa-solid fa-circle-check validation-icon"></i>
-                <div class="error-msg" id="cityError" role="alert">Required.</div>
+                <div class="error-msg" id="cityError" role="alert" data-i18n="customer:checkout.required">Required.</div>
               </div>
             </div>
           </section>
 
           <!-- Payment -->
           <section class="form-section" id="paymentSection">
-            <h2>Payment Method</h2>
+            <h2 data-i18n="customer:checkout.payment_method">Payment Method</h2>
             <div class="form-row full">
               <div class="field">
-                <label>Choose how you'd like to pay</label>
+                <label data-i18n="customer:checkout.choose_payment">Choose how you'd like to pay</label>
                 <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
                   <label style="display:flex;align-items:center;gap:12px;padding:16px;border:2px solid var(--beige);border-radius:12px;cursor:pointer;transition:border-color .2s">
                     <input type="radio" name="payment_method" value="cash_on_delivery" checked style="width:18px;height:18px;accent-color:var(--sage)" />
                     <div>
-                      <strong style="font-size:15px">Cash on Delivery</strong>
-                      <div style="font-size:13px;color:var(--gray);margin-top:2px">Pay with cash when your order arrives. Available in all wilayas.</div>
+                      <strong style="font-size:15px" data-i18n="customer:checkout.cod_title">Cash on Delivery</strong>
+                      <div style="font-size:13px;color:var(--gray);margin-top:2px" data-i18n="customer:checkout.cod_sub">Pay with cash when your order arrives. Available in all wilayas.</div>
                     </div>
                   </label>
                   <label style="display:flex;align-items:center;gap:12px;padding:16px;border:2px solid var(--beige);border-radius:12px;cursor:pointer;transition:border-color .2s">
                     <input type="radio" name="payment_method" value="card" style="width:18px;height:18px;accent-color:var(--sage)" />
                     <div>
-                      <strong style="font-size:15px">Pay Now: CIB / Edahabia / BaridiMob</strong>
-                      <div style="font-size:13px;color:var(--gray);margin-top:2px">You'll be redirected to Chargily to complete the payment securely.</div>
+                      <strong style="font-size:15px" data-i18n="customer:checkout.card_title">Pay Now: CIB / Edahabia / BaridiMob</strong>
+                      <div style="font-size:13px;color:var(--gray);margin-top:2px" data-i18n="customer:checkout.card_sub">You'll be redirected to Chargily to complete the payment securely.</div>
                     </div>
                   </label>
                 </div>
@@ -204,5 +204,9 @@
   <script src="js/cart-utils.js?v=22"></script>
   <script src="js/checkout.js?v=23"></script>
   <script src="js/language.js?v=23"></script>
+  <script src="js/vendor/i18next.min.js"></script>
+  <script src="js/vendor/i18next-http-backend.min.js"></script>
+  <script src="js/i18n-init.js?v=1"></script>
+  <script src="js/i18n-helper.js?v=1"></script>
 </body>
 </html>

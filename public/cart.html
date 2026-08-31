@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Your Cart | Boularas Modern Furniture &amp; Home</title>
+  <title data-i18n="customer:cart.title">Your Cart | Boularas Modern Furniture &amp; Home</title>
   <meta name="description" content="Review the items in your Boularas cart, adjust quantities, apply a promo code, and continue to secure checkout." />
   <meta property="og:title" content="Your Cart | Boularas Modern Furniture &amp; Home" />
   <meta property="og:description" content="Review the items in your Boularas cart, adjust quantities, apply a promo code, and continue to secure checkout." />
@@ -74,7 +74,7 @@
         <span class="sep">/</span>
         <a href="products.html">Shop</a>
         <span class="sep">/</span>
-        <span class="current">Cart</span>
+        <span class="current" data-i18n="customer:nav.cart">Cart</span>
       </nav>
     </div>
 
@@ -82,8 +82,8 @@
          PAGE HEAD
          ========================================================== -->
     <div class="container page-head">
-      <h1>Your Cart</h1>
-      <p id="pageSubtitle">Review your items before checkout.</p>
+      <h1 data-i18n="customer:cart.your_cart">Your Cart</h1>
+      <p id="pageSubtitle" data-i18n="customer:cart.subtitle_default">Review your items before checkout.</p>
     </div>
 
     <!-- ==========================================================
@@ -114,5 +114,9 @@
   <script src="js/cart-utils.js?v=22"></script>
   <script src="js/cart.js?v=22"></script>
   <script src="js/language.js?v=23"></script>
+  <script src="js/vendor/i18next.min.js"></script>
+  <script src="js/vendor/i18next-http-backend.min.js"></script>
+  <script src="js/i18n-init.js?v=1"></script>
+  <script src="js/i18n-helper.js?v=1"></script>
 </body>
 </html>

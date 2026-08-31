@@ -9,10 +9,6 @@
  * attribute showing the raw key over every element it translates.
  */
 (function () {
-  function hasOwn(obj, key) {
-    return Object.prototype.hasOwnProperty.call(obj, key);
-  }
-
   var isDebug = false;
   try {
     isDebug = /i18nDebug=1/.test(window.location.search) || localStorage.getItem('i18nDebug') === '1';
@@ -21,7 +17,7 @@
   function translateElement(el) {
     if (!el || !window.i18n) return;
     var key = el.getAttribute('data-i18n');
-    if (!key || !hasOwn(window.i18n, key)) return;
+    if (!key) return;
     el.innerHTML = window.i18n(key);
     if (isDebug) el.setAttribute('title', key);
   }

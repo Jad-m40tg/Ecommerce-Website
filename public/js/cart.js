@@ -1,4 +1,4 @@
-/* cart.js — cart.html specific logic */
+﻿/* cart.js â€” cart.html specific logic */
 
 /* ---------- 2. TOTALS MATH ---------- */
 var SHIPPING_FLAT   = 999;    // default, overridden by API
@@ -81,20 +81,20 @@ function renderCart() {
   var subtitle = document.getElementById('pageSubtitle');
 
   if (cart.length === 0) {
-    subtitle.textContent = 'Your cart is currently empty.';
+    subtitle.textContent = window.i18n('customer:cart.empty_subtitle');
     list.innerHTML =
       '<div class="empty-cart">' +
         '<div class="emoji" aria-hidden="true"><span class="material-symbols-outlined" style="font-size:48px;">shopping_bag</span></div>' +
-        '<h2>Your cart is empty</h2>' +
-        '<p>Discover pieces made to last and designed to be lived with.</p>' +
-        '<a href="products.html" class="btn btn-primary">Browse the Shop</a>' +
+        '<h2>' + window.i18n('customer:cart.empty_title') + '</h2>' +
+        '<p>' + window.i18n('customer:cart.empty_sub') + '</p>' +
+        '<a href="products.html" class="btn btn-primary">' + window.i18n('customer:cart.browse_shop') + '</a>' +
       '</div>';
     renderSummary();
     return;
   }
 
   var itemCount = cart.reduce(function (s, i) { return s + i.qty; }, 0);
-  subtitle.textContent = itemCount + (itemCount === 1 ? ' item' : ' items') + ' ready for checkout.';
+  subtitle.textContent = window.i18n('customer:cart.item_count', { count: itemCount });
 
   list.innerHTML = cart.map(function (item, index) {
     var color = item.color || '';
@@ -102,7 +102,7 @@ function renderCart() {
     var line = (item.price_cents || 0) * item.qty;
     var metaTags = '';
     if (color) metaTags += '<span class="tag"><span class="dot" style="background:' + colorHex(color) + '"></span>' + escapeHtml(color) + '</span>';
-    if (size) metaTags += '<span class="tag">Size: ' + escapeHtml(size) + '</span>';
+    if (size) metaTags += '<span class="tag">' + window.i18n('customer:cart.size') + ': ' + escapeHtml(size) + '</span>';
 
     var prod = PRODUCT_CATALOG[String(item.id)];
     var img = prod ? getProductImage(prod) : (item.image || DEFAULT_PRODUCT_IMAGE);
@@ -122,18 +122,18 @@ function renderCart() {
           (metaTags ? '<div class="item-meta">' + metaTags + '</div>' : '') +
           '<div class="item-controls">' +
             '<div class="qty">' +
-              '<button type="button" data-action="dec" data-index="' + index + '" aria-label="Decrease quantity"' + minusDisabled + '>&minus;</button>' +
-              '<input type="number" value="' + item.qty + '" min="1" max="' + maxQty + '" data-action="set" data-index="' + index + '" aria-label="Quantity" />' +
-              '<button type="button" data-action="inc" data-index="' + index + '" aria-label="Increase quantity"' + plusDisabled + '>+</button>' +
+              '<button type="button" data-action="dec" data-index="' + index + '" aria-label="' + window.i18n('customer:cart.qty_dec') + '"' + minusDisabled + '>&minus;</button>' +
+              '<input type="number" value="' + item.qty + '" min="1" max="' + maxQty + '" data-action="set" data-index="' + index + '" aria-label="' + window.i18n('customer:cart.qty') + '" />' +
+              '<button type="button" data-action="inc" data-index="' + index + '" aria-label="' + window.i18n('customer:cart.qty_inc') + '"' + plusDisabled + '>+</button>' +
             '</div>' +
-            '<button type="button" class="remove-btn" data-action="remove" data-index="' + index + '" data-key="' + escapeHtml(item.key || '') + '">&#10005; Remove</button>' +
+            '<button type="button" class="remove-btn" data-action="remove" data-index="' + index + '" data-key="' + escapeHtml(item.key || '') + '">&#10005; ' + window.i18n('customer:cart.remove') + '</button>' +
           '</div>' +
-          (item.qty >= maxQty ? '<div class="stock-note">Only ' + maxQty + ' in stock</div>' : '') +
+          (item.qty >= maxQty ? '<div class="stock-note">' + window.i18n('customer:cart.only_in_stock', { count: maxQty }) + '</div>' : '') +
         '</div>' +
 
         '<div class="item-price">' +
           '<div class="line-total">' + price(line) + '</div>' +
-          '<small>' + price(item.price_cents || 0) + ' each</small>' +
+          '<small>' + price(item.price_cents || 0) + ' ' + window.i18n('customer:cart.each') + '</small>' +
         '</div>' +
       '</article>'
     );
@@ -156,49 +156,49 @@ function renderSummary() {
   }
 
   var shippingLabel = isEmpty
-    ? 'Free'
-    : (totals.shipping === 0 ? 'Free' : priceHTML(totals.shipping));
+    ? window.i18n('customer:cart.free')
+    : (totals.shipping === 0 ? window.i18n('customer:cart.free') : priceHTML(totals.shipping));
 
   var discountLine = appliedPromo
-    ? '<div class="summary-line"><span>Discount (' + escapeHtml(appliedPromo.code) + ')</span><b style="color: var(--sage)">' + priceHTML(-totals.discount) + '</b></div>'
+    ? '<div class="summary-line"><span>' + window.i18n('customer:cart.discount') + ' (' + escapeHtml(appliedPromo.code) + ')</span><b style="color: var(--sage)">' + priceHTML(-totals.discount) + '</b></div>'
     : '';
 
   panel.innerHTML =
-    '<h2>Order Summary</h2>' +
+    '<h2>' + window.i18n('customer:cart.order_summary') + '</h2>' +
 
-    '<div class="summary-line"><span>Subtotal</span><b>' + priceHTML(totals.subtotal) + '</b></div>' +
+    '<div class="summary-line"><span>' + window.i18n('customer:cart.subtotal') + '</span><b>' + priceHTML(totals.subtotal) + '</b></div>' +
     discountLine +
-    '<div class="summary-line"><span>Shipping</span><b>' + shippingLabel + '</b></div>' +
-    '<div class="summary-line"><span>Tax (est.)</span><b>' + priceHTML(totals.tax) + '</b></div>' +
+    '<div class="summary-line"><span>' + window.i18n('customer:cart.shipping') + '</span><b>' + shippingLabel + '</b></div>' +
+    '<div class="summary-line"><span>' + window.i18n('customer:cart.tax_est') + '</span><b>' + priceHTML(totals.tax) + '</b></div>' +
 
     '<div class="summary-divider"></div>' +
 
     '<div class="summary-line" style="font-size: 12.5px;">' +
-      '<span>Promo code</span>' +
+      '<span>' + window.i18n('customer:cart.promo_code') + '</span>' +
     '</div>' +
     '<div class="promo">' +
-      '<input type="text" id="promoInput" aria-label="Promo code" placeholder="e.g. BOUL10" ' +
+      '<input type="text" id="promoInput" aria-label="' + window.i18n('customer:cart.promo_code') + '" placeholder="' + window.i18n('customer:cart.promo_placeholder') + '" ' +
         (appliedPromo ? 'value="' + escapeHtml(appliedPromo.code) + '" disabled' : '') + ' />' +
-      '<button type="button" id="promoBtn">' + (appliedPromo ? 'Remove' : 'Apply') + '</button>' +
+      '<button type="button" id="promoBtn">' + (appliedPromo ? window.i18n('customer:cart.remove') : window.i18n('customer:cart.apply')) + '</button>' +
     '</div>' +
     '<div class="promo-msg" id="promoMsg" role="status" aria-live="polite">' +
-      (appliedPromo ? '&#10003; ' + escapeHtml(appliedPromo.label) + ' applied.' : 'Try BOUL10 or WELCOME5.') +
+      (appliedPromo ? '&#10003; ' + escapeHtml(appliedPromo.label) + ' ' + window.i18n('customer:cart.applied') : window.i18n('customer:cart.promo_try')) +
     '</div>' +
 
     '<div class="summary-divider"></div>' +
 
     '<div class="summary-total">' +
-      '<span>Total</span>' +
+      '<span>' + window.i18n('customer:cart.total') + '</span>' +
       '<span class="value">' + priceHTML(totals.total) + '</span>' +
     '</div>' +
 
     '<button type="button" class="btn btn-primary" id="checkoutBtn" ' + (isEmpty ? 'disabled style="opacity:0.5;cursor:not-allowed"' : '') + '>' +
-      'Continue to Checkout' +
+      window.i18n('customer:cart.continue_checkout') +
     '</button>' +
 
     '<div class="summary-note">' +
-      'Secure checkout &middot; Free returns within 30 days<br />' +
-      'Free shipping on orders over ' + price(FREE_SHIP_OVER) +
+      window.i18n('customer:cart.secure_checkout') + ' &middot; ' + window.i18n('customer:cart.free_returns') + '<br />' +
+      window.i18n('customer:cart.free_shipping_over', { amount: price(FREE_SHIP_OVER) })
     '</div>';
 }
 
@@ -217,8 +217,8 @@ document.getElementById('cartItems').addEventListener('click', function (event) 
   if (action === 'inc') {
     var maxQty = maxQtyOf(cart[index]);
     if (cart[index].qty >= maxQty) {
-      if (stockOf(cart[index]) == null) showToast('Maximum 99 per item');
-      else showToast('Only ' + maxQty + ' in stock');
+      if (stockOf(cart[index]) == null) showToast(window.i18n('customer:cart.max_per_item'));
+      else showToast(window.i18n('customer:cart.only_in_stock', { count: maxQty }));
       return;
     }
     updateQty(cart[index].key, cart[index].qty + 1);
@@ -235,7 +235,7 @@ document.getElementById('cartItems').addEventListener('click', function (event) 
       delete removeTimers[itemKey];
       removeFromCart(itemKey);
       renderCart();
-      showToast('Item removed from cart');
+      showToast(window.i18n('customer:cart.removed'));
     }, 280);
   }
 });
@@ -261,30 +261,30 @@ document.getElementById('summaryPanel').addEventListener('click', function (even
     if (appliedPromo) {
       appliedPromo = null;
       savePromo(null);
-      showToast('Promo code removed');
+      showToast(window.i18n('customer:cart.promo_removed'));
       renderSummary();
       return;
     }
 
     var code  = (input.value || '').trim().toUpperCase();
     if (!code) {
-      msg.textContent = 'Enter a code to apply.';
+      msg.textContent = window.i18n('customer:cart.promo_enter');
       msg.style.color = 'var(--wood)';
       return;
     }
     if (PROMOS[code]) {
       appliedPromo = Object.assign({ code: code }, PROMOS[code]);
       savePromo(appliedPromo);
-      showToast('Promo code applied');
+      showToast(window.i18n('customer:cart.promo_applied'));
       renderSummary();
     } else {
-      msg.textContent = 'Sorry, that code isn\'t valid.';
+      msg.textContent = window.i18n('customer:cart.promo_invalid');
       msg.style.color = 'var(--wood)';
     }
   }
 
   if (event.target.id === 'checkoutBtn') {
-    showToast('Redirecting to checkout\u2026');
+    showToast(window.i18n('customer:cart.redirecting'));
     setTimeout(function () { window.location.href = 'checkout.html'; }, 600);
   }
 });
@@ -340,9 +340,15 @@ function showToast(message) {
 }
 
 /* ---------- BOOT ---------- */
-updateCartCount();
-renderCart();
-loadCatalog();
+function bootCart() {
+  updateCartCount();
+  renderCart();
+  loadCatalog();
+}
+
+if (window.i18n) bootCart();
+else window.addEventListener('i18n:ready', bootCart, { once: true });
+window.addEventListener('i18n:changed', function () { renderCart(); });
 
 /* Stale-state sync: cross-tab, bfcache back-navigation, and in-page cart:updated */
 window.addEventListener('cart:updated', function () { renderCart(); });

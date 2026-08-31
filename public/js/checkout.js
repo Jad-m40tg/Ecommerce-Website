@@ -1,4 +1,4 @@
-/* checkout.js — checkout.html specific logic */
+﻿/* checkout.js â€” checkout.html specific logic */
 
 /* ---------- 2. TOTALS MATH ---------- */
 var SHIPPING_FLAT   = 999;    // default, overridden by API
@@ -50,17 +50,17 @@ function renderSummary() {
   var subtitle = document.getElementById('pageSubtitle');
 
   if (cart.length === 0) {
-    if (subtitle) subtitle.textContent = 'Your cart is empty. Add items before checking out.';
+    if (subtitle) subtitle.textContent = window.i18n('customer:checkout.empty_subtitle');
     panel.innerHTML =
-      '<h2>Order Summary</h2>' +
-      '<p style="color: var(--gray); font-size: 14px; margin-bottom: 16px;">Your cart is empty.</p>' +
-      '<a href="products.html" class="btn btn-primary" style="width:100%;">Browse Products</a>';
+      '<h2>' + window.i18n('customer:cart.order_summary') + '</h2>' +
+      '<p style="color: var(--gray); font-size: 14px; margin-bottom: 16px;">' + window.i18n('customer:checkout.empty_cart') + '</p>' +
+      '<a href="products.html" class="btn btn-primary" style="width:100%;">' + window.i18n('customer:cart.browse_shop') + '</a>';
     return;
   }
 
-  if (subtitle) subtitle.textContent = cart.reduce(function (s, i) { return s + i.qty; }, 0) + ' item(s) ready for checkout.';
+  if (subtitle) subtitle.textContent = window.i18n('customer:checkout.item_count', { count: cart.reduce(function (s, i) { return s + i.qty; }, 0) });
 
-  var shippingLabel = totals.shipping === 0 ? 'Free' : priceHTML(totals.shipping);
+  var shippingLabel = totals.shipping === 0 ? window.i18n('customer:cart.free') : priceHTML(totals.shipping);
 
   var itemsHtml = cart.map(function (item) {
     var prod = PRODUCT_CATALOG[String(item.id)];
@@ -71,7 +71,7 @@ function renderSummary() {
         '<div class="thumb"><img src="' + img + '" alt="' + escapeHtml(item.name) + '" data-category="' + escapeHtml(cat) + '" onerror="handleImageError(this)" /></div>' +
         '<div class="info">' +
           '<div class="name">' + escapeHtml(item.name) + '</div>' +
-          '<div class="qty-label">Qty: ' + item.qty + '</div>' +
+          '<div class="qty-label">' + window.i18n('customer:checkout.qty') + ': ' + item.qty + '</div>' +
         '</div>' +
         '<div class="line-price">' + price((item.price_cents || 0) * item.qty) + '</div>' +
       '</div>'
@@ -79,31 +79,31 @@ function renderSummary() {
   }).join('');
 
   panel.innerHTML =
-    '<h2>Order Summary</h2>' +
+    '<h2>' + window.i18n('customer:cart.order_summary') + '</h2>' +
     '<div class="summary-items">' + itemsHtml + '</div>' +
 
     '<div class="summary-divider"></div>' +
 
-    '<div class="summary-line"><span>Subtotal</span><b>' + priceHTML(totals.subtotal) + '</b></div>' +
-    (totals.discount > 0 ? '<div class="summary-line"><span>Discount (' + escapeHtml(appliedPromo.code) + ')</span><b style="color: var(--sage)">' + priceHTML(-totals.discount) + '</b></div>' : '') +
-    '<div class="summary-line"><span>Shipping</span><b>' + shippingLabel + '</b></div>' +
-    '<div class="summary-line"><span>Tax (est.)</span><b>' + priceHTML(totals.tax) + '</b></div>' +
+    '<div class="summary-line"><span>' + window.i18n('customer:cart.subtotal') + '</span><b>' + priceHTML(totals.subtotal) + '</b></div>' +
+    (totals.discount > 0 ? '<div class="summary-line"><span>' + window.i18n('customer:cart.discount') + ' (' + escapeHtml(appliedPromo.code) + ')</span><b style="color: var(--sage)">' + priceHTML(-totals.discount) + '</b></div>' : '') +
+    '<div class="summary-line"><span>' + window.i18n('customer:cart.shipping') + '</span><b>' + shippingLabel + '</b></div>' +
+    '<div class="summary-line"><span>' + window.i18n('customer:cart.tax_est') + '</span><b>' + priceHTML(totals.tax) + '</b></div>' +
 
     '<div class="summary-divider"></div>' +
 
     '<div class="summary-total">' +
-      '<span>Total</span>' +
+      '<span>' + window.i18n('customer:cart.total') + '</span>' +
       '<span class="value">' + priceHTML(totals.total) + '</span>' +
     '</div>' +
 
-    '<button type="button" class="btn btn-primary" id="placeOrderBtn">Place Order</button>' +
+    '<button type="button" class="btn btn-primary" id="placeOrderBtn">' + window.i18n('customer:checkout.place_order') + '</button>' +
 
     '<div class="summary-note">' +
-      'Secure checkout &middot; Free returns within 30 days<br />' +
-      'Free shipping on orders over ' + price(FREE_SHIP_OVER) +
+      window.i18n('customer:cart.secure_checkout') + ' &middot; ' + window.i18n('customer:cart.free_returns') + '<br />' +
+      window.i18n('customer:cart.free_shipping_over', { amount: price(FREE_SHIP_OVER) })
     '</div>' +
 
-    '<a href="cart.html" class="back-link">&#8592; Back to Cart</a>';
+    '<a href="cart.html" class="back-link">&#8592; ' + window.i18n('customer:checkout.back_to_cart') + '</a>';
 }
 
 /* ---------- 4. FORM VALIDATION ---------- */
@@ -137,33 +137,33 @@ function validateField(id, errorId, test) {
 
 function emailTest(v) {
   v = v.trim();
-  if (!v) return 'Email is required.';
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? true : 'Please enter a valid email.';
+  if (!v) return window.i18n('customer:checkout.req_email');
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? true : window.i18n('customer:checkout.err_email');
 }
 function phoneTest(v) {
   var digits = v.replace(/\D/g, '');
-  if (digits.length === 0) return 'Phone number is required.';
-  return digits.length >= 7 ? true : 'Please enter a valid phone number.';
+  if (digits.length === 0) return window.i18n('customer:checkout.req_phone');
+  return digits.length >= 7 ? true : window.i18n('customer:checkout.err_phone');
 }
 function firstNameTest(v) {
   v = v.trim();
-  if (!v) return 'First name is required.';
-  return v.length >= 3 ? true : 'Name must be at least 3 characters.';
+  if (!v) return window.i18n('customer:checkout.req_first_name');
+  return v.length >= 3 ? true : window.i18n('customer:checkout.err_name_length');
 }
 function lastNameTest(v) {
   v = v.trim();
-  if (!v) return 'Last name is required.';
-  return v.length >= 3 ? true : 'Name must be at least 3 characters.';
+  if (!v) return window.i18n('customer:checkout.req_last_name');
+  return v.length >= 3 ? true : window.i18n('customer:checkout.err_name_length');
 }
 function addressTest(v) {
   v = v.trim();
-  if (!v) return 'Address is required.';
-  return v.length >= 5 ? true : 'Please enter your delivery address.';
+  if (!v) return window.i18n('customer:checkout.req_address');
+  return v.length >= 5 ? true : window.i18n('customer:checkout.err_address');
 }
 function cityTest(v) {
   v = v.trim();
-  if (!v) return 'City is required.';
-  return v.length >= 2 ? true : 'Please enter your city.';
+  if (!v) return window.i18n('customer:checkout.req_city');
+  return v.length >= 2 ? true : window.i18n('customer:checkout.err_city');
 }
 
 var LIVE_FIELDS = [
@@ -207,7 +207,7 @@ document.addEventListener('click', function (event) {
   if (event.target.id !== 'placeOrderBtn') return;
 
   if (!validateForm()) {
-    showToast('Please fix the highlighted fields.');
+    showToast(window.i18n('customer:checkout.fix_fields'));
     var firstInvalid = document.querySelector('[aria-invalid="true"]');
     if (firstInvalid && typeof firstInvalid.focus === 'function') firstInvalid.focus();
     return;
@@ -215,7 +215,7 @@ document.addEventListener('click', function (event) {
 
   var btn = event.target;
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Processing\u2026';
+  btn.innerHTML = '<span class="spinner"></span> ' + window.i18n('customer:checkout.processing');
 
   var cart = getCart();
   var paymentMethod = 'cash_on_delivery';
@@ -272,9 +272,9 @@ document.addEventListener('click', function (event) {
       }
     }
   }).catch(function (err) {
-    btn.innerHTML = 'Place Order';
+    btn.innerHTML = window.i18n('customer:checkout.place_order');
     btn.disabled = false;
-    showToast(err.message || 'Failed to place order. Please try again.');
+    showToast(err.message || window.i18n('customer:checkout.place_failed'));
   });
 });
 
@@ -330,8 +330,14 @@ function showToast(message) {
 }
 
 /* Init */
-updateCartCount();
-renderSummary();
+function bootCheckout() {
+  updateCartCount();
+  renderSummary();
+}
+
+if (window.i18n) bootCheckout();
+else window.addEventListener('i18n:ready', bootCheckout, { once: true });
+window.addEventListener('i18n:changed', function () { renderSummary(); });
 
 window.addEventListener('cart:updated', renderSummary);
 window.addEventListener('storage', function (e) { if (e.key === window.CART_KEY) { renderSummary(); } });

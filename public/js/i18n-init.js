@@ -33,12 +33,8 @@
     isDebug = /i18nDebug=1/.test(window.location.search) || localStorage.getItem('i18nDebug') === '1';
   } catch (e) {}
 
-  function hasOwn(obj, key) {
-    return Object.prototype.hasOwnProperty.call(obj, key);
-  }
-
   function applyToElement(el, key) {
-    var val = window.i18n.t(key);
+    var val = window.i18n(key);
     el.innerHTML = val;
     if (isDebug) {
       el.setAttribute('title', key);
@@ -56,7 +52,7 @@
         var attr = kv[0].trim();
         var key = kv.slice(1).join('=').trim();
         if (!attr || !key) continue;
-        node.setAttribute(attr, window.i18n.t(key));
+        node.setAttribute(attr, window.i18n(key));
       }
     }
   }
@@ -89,9 +85,11 @@
       .then(function () {
         window.i18n = window.i18next.t;
         apply();
+        window.dispatchEvent(new CustomEvent('i18n:ready'));
       })
       .catch(function () {
         window.i18n = window.i18next.t;
+        window.dispatchEvent(new CustomEvent('i18n:ready'));
       });
   }
 
@@ -106,6 +104,7 @@
     if (typeof window.i18next === 'undefined') return;
     window.i18next.on('languageChanged', function () {
       requestAnimationFrame(apply);
+      window.dispatchEvent(new CustomEvent('i18n:changed'));
     });
     if (window.BoularasI18n && typeof window.BoularasI18n.onChange === 'function') {
       window.BoularasI18n.onChange(function (code) {
