@@ -26,22 +26,22 @@ function productCardHTML(product) {
   var isSale = product.on_sale || product.on_sale === 1;
   var oldPrice = product.old_price_cents ? product.old_price_cents : null;
   var badge = '';
-  if (isSale && oldPrice) badge = '<span class="card-badge sale">Sale</span>';
+  if (isSale && oldPrice) badge = '<span class="card-badge sale">' + window.i18n('customer:product.sale') + '</span>';
   if (!(product.stock > 0)) {
-    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">unavailable</span>';
+    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">' + window.i18n('customer:product.unavailable') + '</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;
   }
   var oldPriceHTML = oldPrice ? '<s>' + price(oldPrice) + '</s>' : '';
   var inCart = isInCart(product.id);
   var btnClass = inCart ? 'card-added' : 'card-add';
-  var btnText = inCart ? 'In Cart' : 'Add';
+  var btnText = inCart ? window.i18n('customer:product.in_cart') : window.i18n('customer:product.add');
   var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
   var nameEscaped = escapeHtml(product.name);
-  var addLabel = !(product.stock > 0) ? 'Product ' + nameEscaped + ' unavailable' : (inCart ? nameEscaped + ' is in cart' : 'Add ' + nameEscaped + ' to cart');
+  var addLabel = !(product.stock > 0) ? window.i18n('customer:product.unavailable_label', { name: nameEscaped }) : (inCart ? window.i18n('customer:product.in_cart_label', { name: nameEscaped }) : window.i18n('customer:product.add_label', { name: nameEscaped }));
   return (
     '<article class="product-card reveal">' +
-      '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="View ' + nameEscaped + '">' +
+      '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="' + window.i18n('customer:product.view', { name: nameEscaped }) + '">' +
         '<span class="card-media">' +
           badge +
           '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + nameEscaped + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
@@ -74,12 +74,12 @@ function performSearch() {
   if (input) input.value = query;
 
   if (!query) {
-    if (countEl) countEl.innerHTML = 'Enter a search term above to find products.';
+    if (countEl) countEl.innerHTML = window.i18n('customer:search.enter_term');
     grid.innerHTML =
       '<div class="no-results" style="grid-column: 1 / -1;">' +
         '<div class="icon" aria-hidden="true"><span class="material-symbols-outlined">search</span></div>' +
-        '<h2>Search Boularas</h2>' +
-        '<p>Find your perfect piece, try searching for "sofa", "desk", or "lamp".</p>' +
+        '<h2>' + window.i18n('customer:search.no_query_title') + '</h2>' +
+        '<p>' + window.i18n('customer:search.no_query_sub') + '</p>' +
       '</div>';
     return;
   }
@@ -94,18 +94,16 @@ function performSearch() {
   });
 
   if (countEl) {
-    countEl.innerHTML = results.length === 1
-      ? '<b>1</b> result for "<b>' + escapeHtml(query) + '</b>"'
-      : '<b>' + results.length + '</b> results for "<b>' + escapeHtml(query) + '</b>"';
+    countEl.innerHTML = window.i18n('customer:search.result', { count: results.length, query: escapeHtml(query) });
   }
 
   if (results.length === 0) {
     grid.innerHTML =
       '<div class="no-results">' +
         '<div class="icon" aria-hidden="true"><span class="material-symbols-outlined">mood_bad</span></div>' +
-        '<h2>No results found</h2>' +
-        '<p>We couldn\'t find anything matching "<b>' + escapeHtml(query) + '</b>". Try a different search term.</p>' +
-        '<a href="products.html" class="btn btn-outline">Browse All Products</a>' +
+        '<h2>' + window.i18n('customer:search.no_results_title') + '</h2>' +
+        '<p>' + window.i18n('customer:search.no_results_sub', { query: escapeHtml(query) }) + '</p>' +
+        '<a href="products.html" class="btn btn-outline">' + window.i18n('customer:search.browse_all') + '</a>' +
       '</div>';
     return;
   }
@@ -130,8 +128,8 @@ document.addEventListener('click', function (event) {
   if (!product) return;
   if (!(product.stock > 0)) return;
   addToCart(product);
-  showToast(product.name + ' added to cart');
-  addButton.textContent = 'In Cart';
+  showToast(window.i18n('customer:product.added_to_cart', { name: escapeHtml(product.name) }));
+  addButton.textContent = window.i18n('customer:product.in_cart');
   addButton.className = 'card-added';
 });
 
@@ -139,7 +137,7 @@ document.addEventListener('click', function (event) {
 function renderCartState() {
   document.querySelectorAll('[data-add]').forEach(function (addButton) {
     var inCart = isInCart(addButton.getAttribute('data-add'));
-    addButton.textContent = inCart ? 'In Cart' : 'Add';
+    addButton.textContent = inCart ? window.i18n('customer:product.in_cart') : window.i18n('customer:product.add');
     addButton.className = inCart ? 'card-added' : 'card-add';
     var product = PRODUCTS.find(function (p) { return String(p.id) === String(addButton.getAttribute('data-add')); });
     if (product && !(product.stock > 0)) {
@@ -208,7 +206,7 @@ function showToast(message) {
 updateCartCount();
 
 /* ---------- API DATA ---------- */
-(function () {
+function bootSearch() {
   var query = (new URLSearchParams(window.location.search).get('q') || '').trim();
   if (!query) { performSearch(); return; }
 
@@ -224,4 +222,10 @@ updateCartCount();
     .catch(function () {
       performSearch();
     });
-})();
+}
+
+/* Re-render search output when the language changes */
+window.addEventListener('i18n:changed', function () { performSearch(); });
+
+if (window.i18n) bootSearch();
+else window.addEventListener('i18n:ready', bootSearch, { once: true });

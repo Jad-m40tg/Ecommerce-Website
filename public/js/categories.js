@@ -21,6 +21,13 @@ function sliderLabel(dzd) {
   return Number(dzd).toLocaleString('en-US') + ' DA';
 }
 
+/* Render the "Up to X DA" price label with i18n */
+function renderPriceMaxLabel() {
+  var wrap = document.getElementById('priceMaxWrap');
+  if (!wrap) return;
+  wrap.innerHTML = window.i18n('customer:catalog.up_to', { amount: PRICE_MAX_LABEL });
+}
+
 function setupPriceSlider() {
   var maxCents = 0;
   PRODUCTS.forEach(function (p) {
@@ -34,7 +41,7 @@ function setupPriceSlider() {
   slider.min = 0;
   slider.max = PRICE_MAX_DA;
   slider.value = PRICE_MAX_DA;
-  document.getElementById('priceMaxLabel').textContent = PRICE_MAX_LABEL;
+  renderPriceMaxLabel();
 }
 
 /* ---------- RENDER CATEGORIES ---------- */
@@ -49,7 +56,7 @@ function renderCategories() {
         '<img class="card-img" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + img + '" alt="' + escapeHtml(cat.name) + '" loading="lazy" onerror="handleImageError(this)" />' +
         '<div class="card-body">' +
           '<h3>' + escapeHtml(cat.name) + '</h3>' +
-          '<span class="count">' + count + ' product' + (count !== 1 ? 's' : '') + '</span>' +
+          '<span class="count">' + window.i18n('customer:categories.count', { count: count }) + '</span>' +
           '<div class="arrow" aria-hidden="true">&rarr;</div>' +
         '</div>' +
       '</a>'
@@ -119,9 +126,9 @@ function renderProducts() {
   if (list.length === 0) {
     grid.innerHTML =
       '<div class="empty-state">' +
-        '<h3>Nothing matches those filters</h3>' +
-        '<p>Try widening the price range or picking another category.</p>' +
-        '<button type="button" class="btn btn-outline" id="emptyReset">Clear filters</button>' +
+        '<h3>' + window.i18n('customer:catalog.empty_title') + '</h3>' +
+        '<p>' + window.i18n('customer:catalog.empty_sub') + '</p>' +
+        '<button type="button" class="btn btn-outline" id="emptyReset">' + window.i18n('customer:catalog.empty_reset') + '</button>' +
       '</div>';
     document.getElementById('emptyReset').addEventListener('click', clearFilters);
   } else {
@@ -129,7 +136,7 @@ function renderProducts() {
     if (typeof initLazyImages === 'function') initLazyImages();
   }
 
-  document.getElementById('resultCount').textContent = list.length;
+  document.getElementById('resultCount').innerHTML = window.i18n('customer:catalog.showing', { count: list.length });
 }
 
 function clearFilters() {
@@ -137,7 +144,7 @@ function clearFilters() {
   state.maxPrice = PRICE_MAX_DA;
   state.sort = 'featured';
   document.getElementById('priceSlider').value = PRICE_MAX_DA;
-  document.getElementById('priceMaxLabel').textContent = PRICE_MAX_LABEL;
+  renderPriceMaxLabel();
   document.getElementById('sortSelect').value = 'featured';
   renderCategoryList();
   renderProducts();
@@ -205,10 +212,10 @@ document.addEventListener('keydown', function (e) {
 function productCardHTML(product) {
   var stars = '\u2605'.repeat(Math.round(product.rating || 0));
   var badge = '';
-  if (product.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
-  if (product.badge === 'new')  badge = '<span class="card-badge">New</span>';
+  if (product.badge === 'sale') badge = '<span class="card-badge sale">' + window.i18n('customer:product.sale') + '</span>';
+  if (product.badge === 'new')  badge = '<span class="card-badge">' + window.i18n('customer:product.new') + '</span>';
   if (!(product.stock > 0)) {
-    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">unavailable</span>';
+    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">' + window.i18n('customer:product.unavailable') + '</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;
   }
   var oldPrice = product.price_cents && product.old_price_cents
@@ -216,14 +223,14 @@ function productCardHTML(product) {
   var priceHtml = product.price_cents ? price(product.price_cents) : '';
   var inCart = isInCart(product.id);
   var btnClass = inCart ? 'card-added' : 'card-add';
-  var btnText = inCart ? 'In Cart' : 'Add';
+  var btnText = inCart ? window.i18n('customer:product.in_cart') : window.i18n('customer:product.add');
   var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
   var nameEscaped = escapeHtml(product.name);
-  var addLabel = !(product.stock > 0) ? 'Product ' + nameEscaped + ' unavailable' : (inCart ? nameEscaped + ' is in cart' : 'Add ' + nameEscaped + ' to cart');
+  var addLabel = !(product.stock > 0) ? window.i18n('customer:product.unavailable_label', { name: nameEscaped }) : (inCart ? window.i18n('customer:product.in_cart_label', { name: nameEscaped }) : window.i18n('customer:product.add_label', { name: nameEscaped }));
   return (
     '<div class="product-card">' +
-      '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="View ' + nameEscaped + '">' +
+      '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="' + window.i18n('customer:product.view', { name: nameEscaped }) + '">' +
         '<span class="card-media">' +
           badge +
           '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + (product.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg') + '" alt="' + nameEscaped + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
@@ -231,7 +238,7 @@ function productCardHTML(product) {
         '<span class="card-body">' +
           '<span class="card-category">' + escapeHtml(product.category_name || '') + '</span>' +
           '<span class="card-title">' + nameEscaped + '</span>' +
-          '<span class="card-rating"><span aria-hidden="true">' + stars + '</span><span class="sr-only">Rated ' + (product.rating || 0) + ' out of 5 stars</span><span>(' + (product.reviews || 0) + ')</span></span>' +
+          '<span class="card-rating"><span aria-hidden="true">' + stars + '</span><span class="sr-only">' + window.i18n('customer:product.rated', { rating: (product.rating || 0) }) + '</span><span>(' + (product.reviews || 0) + ')</span></span>' +
         '</span>' +
       '</a>' +
       '<span class="card-price-row">' +
@@ -260,9 +267,9 @@ document.addEventListener('click', function (event) {
   if (product) {
     if (!(product.stock > 0)) return;
     addToCart(product);
-    showToast(product.name + ' added to cart');
+    showToast(window.i18n('customer:product.added_to_cart', { name: escapeHtml(product.name) }));
   }
-  addButton.textContent = 'In Cart';
+  addButton.textContent = window.i18n('customer:product.in_cart');
   addButton.className = 'card-added';
 });
 
@@ -270,7 +277,7 @@ document.addEventListener('click', function (event) {
 function renderCartState() {
   document.querySelectorAll('[data-add]').forEach(function (addButton) {
     var inCart = isInCart(addButton.getAttribute('data-add'));
-    addButton.textContent = inCart ? 'In Cart' : 'Add';
+    addButton.textContent = inCart ? window.i18n('customer:product.in_cart') : window.i18n('customer:product.add');
     addButton.className = inCart ? 'card-added' : 'card-add';
   });
 }
@@ -342,58 +349,74 @@ function showToast(message) {
 updateCartCount();
 
 /* ---------- API DATA LOADING ---------- */
-fetch('/api/categories')
-  .then(function (r) { return r.json(); })
-  .then(function (data) {
-    var cats = data.categories || data.data || data;
-    if (!Array.isArray(cats) || !cats.length) return;
-    CATEGORIES = cats.filter(function (c) { return (c.status || 'active') === 'active'; })
-      .sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
-    CATEGORY_LABELS = { all: 'All Products' };
-    CATEGORIES.forEach(function (c) {
-      var slug = (c.slug || '').toLowerCase();
-      if (slug) CATEGORY_LABELS[slug] = c.name || slug;
-    });
-    updateCategoryCounts();
-    renderCategories();
-    renderCategoryList();
-  })
-  .catch(function () {});
+function bootCategories() {
+  fetch('/api/categories')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var cats = data.categories || data.data || data;
+      if (!Array.isArray(cats) || !cats.length) return;
+      CATEGORIES = cats.filter(function (c) { return (c.status || 'active') === 'active'; })
+        .sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
+      CATEGORY_LABELS = { all: window.i18n('customer:categories.all_products') };
+      CATEGORIES.forEach(function (c) {
+        var slug = (c.slug || '').toLowerCase();
+        if (slug) CATEGORY_LABELS[slug] = c.name || slug;
+      });
+      updateCategoryCounts();
+      renderCategories();
+      renderCategoryList();
+    })
+    .catch(function () {});
 
-fetch('/api/products/browse')
-  .then(function (r) { return r.json(); })
-  .then(function (data) {
-    var items = data.products || data.data || data;
-    if (!Array.isArray(items) || !items.length) return;
-    PRODUCTS = items.map(function (p) {
-      var imgs = [];
-      try { imgs = typeof p.images === 'string' ? JSON.parse(p.images) : (Array.isArray(p.images) ? p.images : []); } catch (e) { imgs = []; }
-      var img = (imgs[0]) ? imgs[0] : (p.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg');
-      return {
-        id: p.id,
-        name: p.name || 'Untitled',
-        slug: p.slug || '',
-        category: p.category || '',
-        category_name: (p.category_name || p.category || 'Uncategorized'),
-        price_cents: p.price_cents || 0,
-        old_price_cents: p.old_price_cents || null,
-        stock: p.stock || 0,
-        on_sale: !!p.on_sale,
-        rating: parseFloat(p.rating) || 0,
-        reviews: parseInt(p.reviews, 10) || 0,
-        image: img,
-        badge: p.on_sale ? 'sale' : null,
-        colors: p.colors || [],
-        sizes: p.sizes || []
-      };
-    });
-    updateCategoryCounts();
-    renderCategories();
-    renderCategoryList();
-    setupPriceSlider();
-    renderProducts();
-    var shuffled = PRODUCTS.slice().sort(function () { return Math.random() - 0.5; });
-    renderRow('popularRow', shuffled.slice(0, 8));
-    if (typeof initLazyImages === 'function') initLazyImages();
-  })
-  .catch(function () {});
+  fetch('/api/products/browse')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var items = data.products || data.data || data;
+      if (!Array.isArray(items) || !items.length) return;
+      PRODUCTS = items.map(function (p) {
+        var imgs = [];
+        try { imgs = typeof p.images === 'string' ? JSON.parse(p.images) : (Array.isArray(p.images) ? p.images : []); } catch (e) { imgs = []; }
+        var img = (imgs[0]) ? imgs[0] : (p.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg');
+        return {
+          id: p.id,
+          name: p.name || 'Untitled',
+          slug: p.slug || '',
+          category: p.category || '',
+          category_name: (p.category_name || p.category || 'Uncategorized'),
+          price_cents: p.price_cents || 0,
+          old_price_cents: p.old_price_cents || null,
+          stock: p.stock || 0,
+          on_sale: !!p.on_sale,
+          rating: parseFloat(p.rating) || 0,
+          reviews: parseInt(p.reviews, 10) || 0,
+          image: img,
+          badge: p.on_sale ? 'sale' : null,
+          colors: p.colors || [],
+          sizes: p.sizes || []
+        };
+      });
+      updateCategoryCounts();
+      renderCategories();
+      renderCategoryList();
+      setupPriceSlider();
+      renderProducts();
+      renderRow('popularRow', PRODUCTS.slice().sort(function () { return Math.random() - 0.5; }).slice(0, 8));
+      if (typeof initLazyImages === 'function') initLazyImages();
+    })
+    .catch(function () {});
+}
+
+/* Re-render text-dependent output when the language changes */
+function rerenderCategories() {
+  if (!PRODUCTS.length && !CATEGORIES.length) return;
+  renderPriceMaxLabel();
+  renderCategoryList();
+  renderCategories();
+  renderProducts();
+  renderRow('popularRow', PRODUCTS.slice().sort(function () { return Math.random() - 0.5; }).slice(0, 8));
+  if (typeof initLazyImages === 'function') initLazyImages();
+}
+
+if (window.i18n) bootCategories();
+else window.addEventListener('i18n:ready', bootCategories, { once: true });
+window.addEventListener('i18n:changed', rerenderCategories);
