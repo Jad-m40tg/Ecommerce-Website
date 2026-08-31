@@ -109,3 +109,17 @@
 .banner-drop:focus-visible,
 .campaign-banner-drop:focus-visible,
 .dropzone:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
+
+/* ---- ARABIC GLYPH COVERAGE — Cairo (all widths) ----
+   Inter/Playfair have no Arabic letterforms. When lang is ar, route
+   glyphs through Cairo (which also carries Latin). Latin (en/fr) stays
+   on Inter/Playfair untouched. dir stays ltr; font swap only. */
+html[lang="ar"] body,
+html[lang="ar"] body * {
+  font-family: 'Cairo', 'Inter', sans-serif !important;
+}
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3 {
+  font-family: 'Cairo', 'Playfair Display', serif !important;
+}

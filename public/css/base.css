@@ -77,3 +77,20 @@ button { font-family: inherit; cursor: pointer; }
   vertical-align: middle;
   line-height: 1;
 }
+
+/* ============================================================
+   ARABIC GLYPH COVERAGE — Cairo
+   Inter/Playfair have no Arabic letterforms. When the document
+   lang is ar, route every glyph through Cairo (which also carries
+   Latin). Latin (en/fr) stays on Inter/Playfair untouched.
+   dir stays ltr; this only swaps the font, never the layout.
+   ============================================================ */
+html[lang="ar"] body,
+html[lang="ar"] body * {
+  font-family: 'Cairo', 'Inter', sans-serif !important;
+}
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3 {
+  font-family: 'Cairo', 'Playfair Display', serif !important;
+}
