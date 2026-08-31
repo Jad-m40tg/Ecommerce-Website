@@ -32,7 +32,7 @@
 </head>
 <body>
 
-    <a class="skip-link" href="#promotions">Skip to content</a>
+    <a class="skip-link" href="#promotions" data-i18n="common.skip_to_content">Skip to content</a>
 
   <!-- ==========================================================
        NAVBAR - identical to sibling pages
@@ -82,16 +82,16 @@
         <div class="offer reveal">
           <div class="offer-text">
             <div class="offer-sale" id="offerSale" hidden>
-              <span class="eyebrow">Limited time</span>
-              <h2 id="offerTitle">The Autumn Comfort Sale: up to 30% off seating</h2>
-              <p id="offerDesc">Sink into something softer. Selected sofas and armchairs are on sale until the timer runs out.</p>
-              <div class="countdown" role="timer" aria-label="Sale countdown">
-                <div class="count-box"><b id="cdDays">0</b><small>Days</small></div>
-                <div class="count-box"><b id="cdHours">0</b><small>Hours</small></div>
-                <div class="count-box"><b id="cdMins">0</b><small>Mins</small></div>
-                <div class="count-box"><b id="cdSecs">0</b><small>Secs</small></div>
+              <span class="eyebrow" data-i18n="customer:home.offer_eyebrow">Limited time</span>
+              <h2 id="offerTitle" data-i18n="customer:home.offer_default_title">The Autumn Comfort Sale: up to 30% off seating</h2>
+              <p id="offerDesc" data-i18n="customer:home.offer_default_desc">Sink into something softer. Selected sofas and armchairs are on sale until the timer runs out.</p>
+              <div class="countdown" role="timer" aria-label="Sale countdown" data-i18n-attr="aria-label:customer:home.sale_countdown">
+                <div class="count-box"><b id="cdDays">0</b><small data-i18n="customer:home.days">Days</small></div>
+                <div class="count-box"><b id="cdHours">0</b><small data-i18n="customer:home.hours">Hours</small></div>
+                <div class="count-box"><b id="cdMins">0</b><small data-i18n="customer:home.mins">Mins</small></div>
+                <div class="count-box"><b id="cdSecs">0</b><small data-i18n="customer:home.secs">Secs</small></div>
               </div>
-              <a href="products.html?sale=1" id="offerShop" class="btn btn-primary">Shop the Sale</a>
+              <a href="products.html?sale=1" id="offerShop" class="btn btn-primary" data-i18n="customer:home.shop_sale">Shop the Sale</a>
             </div>
 
             <div class="offer-empty" id="offerEmpty">
@@ -101,8 +101,8 @@
                   <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
                 </svg>
               </div>
-              <h2>No Sales Currently Available</h2>
-              <p>Check back later for our exclusive deals and special offers.</p>
+              <h2 data-i18n="customer:home.offer_empty_title">No Sales Currently Available</h2>
+              <p data-i18n="customer:home.offer_empty_p">Check back later for our exclusive deals and special offers.</p>
             </div>
           </div>
           <div class="offer-media">
@@ -118,9 +118,9 @@
     <section class="section" style="padding-top: 0;" id="promotions" tabindex="-1">
       <div class="container">
         <div class="section-head reveal">
-          <span class="eyebrow">Why choose us?</span>
-          <h2>Eeverything you need for your home</h2>
-          <p>Discover furniture and home furnishings, with convenient delivery and flexible payment options across Algeria.</p>
+          <span class="eyebrow" data-i18n="customer:offers.p_eyebrow">Why choose us?</span>
+          <h2 data-i18n="customer:offers.p_h2">Eeverything you need for your home</h2>
+          <p data-i18n="customer:offers.p_desc">Discover furniture and home furnishings, with convenient delivery and flexible payment options across Algeria.</p>
         </div>
 
         <div class="promo-grid" id="promoGrid">
@@ -139,8 +139,8 @@
       <div class="container">
         <div class="row-header reveal">
           <div>
-            <h2>Discounted Favourites</h2>
-            <p>Premium pieces at reduced prices, while stock lasts.</p>
+            <h2 data-i18n="customer:offers.sale_h2">Discounted Favourites</h2>
+            <p data-i18n="customer:offers.sale_p">Premium pieces at reduced prices, while stock lasts.</p>
           </div>
           <div class="row-arrows">
             <button class="arrow-btn" type="button" data-scroll="left" data-target="saleRow" aria-label="Scroll left">&#8592;</button>
@@ -204,7 +204,11 @@
   <script src="utils.js?v=22"></script>
   <script src="js/cart-utils.js?v=22"></script>
   <script src="js/footer.js?v=22"></script>
-  <script src="js/offers.js?v=24"></script>
+  <script src="js/offers.js?v=25"></script>
   <script src="js/language.js?v=23"></script>
+  <script src="js/vendor/i18next.min.js"></script>
+  <script src="js/vendor/i18next-http-backend.min.js"></script>
+  <script src="js/i18n-init.js?v=1"></script>
+  <script src="js/i18n-helper.js?v=1"></script>
 </body>
 </html>

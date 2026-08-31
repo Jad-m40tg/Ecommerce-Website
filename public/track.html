@@ -85,7 +85,7 @@
 </head>
 <body>
 
-  <a class="skip-link" href="#main">Skip to content</a>
+  <a class="skip-link" href="#main" data-i18n="common.skip_to_content">Skip to content</a>
 
   <header class="navbar">
     <div class="container navbar-inner">
@@ -108,22 +108,22 @@
   </header>
 
   <main class="track-page" id="main" tabindex="-1">
-    <h1>Track Your Order</h1>
-    <p class="subtitle">Enter your tracking code to see your order status and delivery timeline.</p>
+    <h1 data-i18n="customer:track.h1">Track Your Order</h1>
+    <p class="subtitle" data-i18n="customer:track.subtitle">Enter your tracking code to see your order status and delivery timeline.</p>
 
     <div class="track-input-group">
       <div class="track-input-wrap">
-        <label for="trackInput" class="sr-only">Tracking number or order reference</label>
-        <input type="text" id="trackInput" placeholder="e.g. WPY-XX-XXXXXXXX" maxlength="30" autocomplete="off" aria-describedby="trackError" />
+        <label for="trackInput" class="sr-only" data-i18n="customer:track.input_label">Tracking number or order reference</label>
+        <input type="text" id="trackInput" placeholder="e.g. WPY-XX-XXXXXXXX" maxlength="30" autocomplete="off" aria-describedby="trackError" data-i18n-attr="placeholder:customer:track.input_ph" />
         <i class="fa-solid fa-circle-check validation-icon"></i>
       </div>
-      <button type="button" class="btn btn-primary" id="trackBtn">Track</button>
+      <button type="button" class="btn btn-primary" id="trackBtn" data-i18n="customer:track.track">Track</button>
     </div>
     <div class="error-msg" id="trackError" role="alert"></div>
 
     <div class="track-result" id="trackResult" role="status" aria-live="polite">
       <div class="order-info" id="orderInfo"></div>
-      <div class="auto-update-hint" id="autoUpdateHint" style="display:none"><i class="fa-solid fa-rotate"></i> Updates automatically</div>
+      <div class="auto-update-hint" id="autoUpdateHint" style="display:none"><i class="fa-solid fa-rotate"></i> <span data-i18n="customer:track.updates">Updates automatically</span></div>
       <div class="timeline" id="timeline"></div>
       <div class="tracking-info" id="trackingInfo" style="display:none"></div>
       <div class="contact-help" id="contactHelp" style="display:none"></div>
@@ -148,14 +148,6 @@
   <script>
     (function () {
       var TRACK_STEPS = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
-      var TRACK_LABELS = {
-        pending: 'Order Placed',
-        confirmed: 'Order Confirmed',
-        processing: 'Processing',
-        shipped: 'Shipped',
-        delivered: 'Delivered'
-      };
-
       var POLL_INTERVAL = 6000;
       var NO_CHANGE_TIMEOUT = 120000;
       var FINAL_STATUSES = ['delivered', 'cancelled'];
@@ -171,21 +163,24 @@
          NOEST prefix change can never block customer tracking. */
       var TRACK_CODE_RE = /^([A-Z0-9]{8}|[A-Z0-9]{2,4}-[A-Z0-9]{2,4}-\d{6,10})$/i;
 
-      var params = new URLSearchParams(window.location.search);
-      var prefill = params.get('code');
-      if (prefill) {
+      function showPrefill() {
+        var params = new URLSearchParams(window.location.search);
+        var prefill = params.get('code');
+        if (!prefill) return;
         document.getElementById('trackInput').value = prefill;
         doTrack(prefill);
       }
+      if (window.i18n) showPrefill();
+      else window.addEventListener('i18n:ready', showPrefill, { once: true });
 
       function validateTrackInput() {
         var input = document.getElementById('trackInput');
         var code = input.value.trim();
         var message = '';
         if (!code) {
-          message = 'Please enter your tracking code.';
+          message = window.i18n('customer:track.err_required');
         } else if (!TRACK_CODE_RE.test(code)) {
-          message = 'Enter a code like XXXXXXXX or WPY-XX-XXXXXXXX.';
+          message = window.i18n('customer:track.err_format');
         }
         if (message) {
           input.classList.add('invalid');
@@ -268,7 +263,7 @@
         fetching = true;
         return fetch('/api/orders/track?code=' + encodeURIComponent(code.toUpperCase()))
           .then(function (r) {
-            if (!r.ok) return r.json().then(function (d) { throw new Error(d.error || 'Not found'); });
+            if (!r.ok) return r.json().then(function (d) { throw new Error(d.error || window.i18n('customer:track.not_found')); });
             return r.json();
           })
           .then(function (data) {
@@ -280,7 +275,7 @@
             onTrackSuccess(order);
           })
           .catch(function (err) {
-            if (!silent) showError(err.message || 'Order not found. Please check your tracking code.');
+            if (!silent) showError(err.message || window.i18n('customer:track.not_found'));
           })
           .finally(function () {
             fetching = false;
@@ -294,16 +289,20 @@
         document.getElementById('trackError').classList.remove('visible');
         document.getElementById('trackResult').classList.remove('visible');
         document.getElementById('trackBtn').disabled = true;
-        document.getElementById('trackBtn').textContent = 'Checking...';
+        document.getElementById('trackBtn').textContent = window.i18n('customer:track.checking');
         currentCode = code;
         fetchTrack(code, false).finally(function () {
           document.getElementById('trackBtn').disabled = false;
-          document.getElementById('trackBtn').textContent = 'Track';
+          document.getElementById('trackBtn').textContent = window.i18n('customer:track.track');
         });
       }
 
       document.addEventListener('visibilitychange', function () {
         if (!document.hidden && pollTimer && currentCode && !fetching) fetchTrack(currentCode, true);
+      });
+
+      window.addEventListener('i18n:changed', function () {
+        if (currentCode && !fetching) fetchTrack(currentCode, true);
       });
 
       fetch('/api/settings')
@@ -313,7 +312,7 @@
           if (!phone || !String(phone).trim()) return;
           var p = String(phone).trim();
           var el = document.getElementById('contactHelp');
-          el.innerHTML = '<i class="fa-solid fa-phone"></i> Questions about your order? Call us at <a href="tel:' + encodeURIComponent(p) + '">' + escapeHtml(p) + '</a>';
+          el.innerHTML = '<i class="fa-solid fa-phone"></i> ' + window.i18n('customer:track.contact_help', { phone: escapeHtml(p) });
           el.style.display = 'flex';
         })
         .catch(function () {});
@@ -321,13 +320,15 @@
       function renderOrderInfo(order) {
         var date = order.created_at ? new Date(order.created_at.replace(' ', 'T') + 'Z').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
         var total = order.total_cents ? price(order.total_cents) : 'ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â';
+        var os = order.order_status || 'pending';
+        var ps = order.payment_status || 'pending';
         document.getElementById('orderInfo').innerHTML =
-          '<div class="order-id">Order #' + (order.id || '') + '</div>' +
+          '<div class="order-id">' + window.i18n('customer:track.order_id', { id: order.id || '' }) + '</div>' +
           '<div class="order-date">' + date + '</div>' +
           '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
             '<span class="order-total">' + total + '</span>' +
-            '<span class="badge ' + escapeHtml(order.order_status || 'pending') + '">' + escapeHtml(order.order_status || 'pending') + '</span>' +
-            '<span class="badge ' + escapeHtml(order.payment_status || 'pending') + '">' + escapeHtml(order.payment_status || 'pending') + '</span>' +
+            '<span class="badge ' + escapeHtml(os) + '">' + window.i18n('customer:order.status.' + os) + '</span>' +
+            '<span class="badge ' + escapeHtml(ps) + '">' + window.i18n('customer:order.payment.' + ps) + '</span>' +
           '</div>';
       }
 
@@ -339,11 +340,12 @@
         var html = '';
         TRACK_STEPS.forEach(function (step, i) {
           var state = i < currentIdx ? 'done' : (i === currentIdx ? 'active' : 'pending');
+          var labelKey = step === 'pending' ? 'order_placed' : (step === 'confirmed' ? 'order_confirmed' : (step === 'processing' ? 'processing' : (step === 'shipped' ? 'shipped' : 'delivered')));
           html += '<div class="tl-step ' + state + '">' +
             '<div class="tl-dot"><span class="material-symbols-outlined">' + (state === 'done' ? 'check' : (state === 'active' ? 'radio_button_checked' : 'circle')) + '</span></div>' +
             '<div class="tl-content">' +
-              '<div class="tl-label">' + TRACK_LABELS[step] + '</div>' +
-              (state === 'done' || state === 'active' ? '<div class="tl-date">' + (state === 'active' ? 'Current status' : 'Completed') + '</div>' : '') +
+              '<div class="tl-label">' + window.i18n('customer:track.' + labelKey) + '</div>' +
+              (state === 'done' || state === 'active' ? '<div class="tl-date">' + (state === 'active' ? window.i18n('customer:track.current') : window.i18n('customer:track.completed')) + '</div>' : '') +
             '</div>' +
           '</div>';
         });
@@ -354,28 +356,32 @@
         var el = document.getElementById('trackingInfo');
         var rows = [];
         if (order.payment_method) {
-          var methodLabel = order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' :
-            order.payment_method === 'card' ? 'Online (CIB / Edahabia / BaridiMob)' :
+          var methodLabel = order.payment_method === 'cash_on_delivery' ? window.i18n('customer:track.payment_cod') :
+            order.payment_method === 'card' ? window.i18n('customer:track.payment_card') :
             order.payment_method;
-          rows.push('<div class="info-row"><span class="label">Payment Method</span><span>' + methodLabel + '</span></div>');
+          rows.push('<div class="info-row"><span class="label">' + window.i18n('customer:track.payment_method') + '</span><span>' + escapeHtml(methodLabel) + '</span></div>');
         }
         if (order.tracking_number) {
-          rows.push('<div class="info-row"><span class="label">Tracking Number</span><span>' + escapeHtml(order.tracking_number) + '</span></div>');
+          rows.push('<div class="info-row"><span class="label">' + window.i18n('customer:track.tracking_number') + '</span><span>' + escapeHtml(order.tracking_number) + '</span></div>');
         }
         if (order.carrier) {
-          rows.push('<div class="info-row"><span class="label">Carrier</span><span>' + escapeHtml(order.carrier) + '</span></div>');
+          rows.push('<div class="info-row"><span class="label">' + window.i18n('customer:track.carrier') + '</span><span>' + escapeHtml(order.carrier) + '</span></div>');
         }
         if (order.tracking_url) {
-          rows.push('<div class="info-row"><span class="label">Tracking Link</span><a href="' + escapeHtml(order.tracking_url) + '" target="_blank" rel="noopener">Track with carrier</a></div>');
+          rows.push('<div class="info-row"><span class="label">' + window.i18n('customer:track.tracking_link') + '</span><a href="' + escapeHtml(order.tracking_url) + '" target="_blank" rel="noopener">' + window.i18n('customer:track.track_with_carrier') + '</a></div>');
         }
 
         if (rows.length) {
-          el.innerHTML = '<h3>Shipping Details</h3>' + rows.join('');
+          el.innerHTML = '<h3>' + window.i18n('customer:track.shipping_details') + '</h3>' + rows.join('');
           el.style.display = 'block';
         }
       }
     })();
   </script>
   <script src="js/language.js?v=23"></script>
+  <script src="js/vendor/i18next.min.js"></script>
+  <script src="js/vendor/i18next-http-backend.min.js"></script>
+  <script src="js/i18n-init.js?v=1"></script>
+  <script src="js/i18n-helper.js?v=1"></script>
 </body>
 </html>

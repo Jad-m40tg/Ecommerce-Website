@@ -5,61 +5,51 @@ var PRODUCTS = [];
 /* ---------- PROMOTIONS DATA ---------- */
 var PROMOTIONS = [
 {
-    icon: 'local_shipping',
-    title: 'Delivery Across Algeria',
-    desc: 'We deliver your orders to all 69 wilayas across Algeria.'
+    icon: 'local_shipping', key: 'promo_delivery'
   },
-
   {
-    icon: 'payments',
-    title: 'Flexible Payment',
-    desc: 'Pay by Cash on Delivery or choose a digital payment method including Edahabia, CIB, or BaridiMob.'
+    icon: 'payments', key: 'promo_payment'
   },
-
   {
-    icon: 'local_offer',
-    title: 'Regular Offers',
-    desc: 'Keep an eye on our latest promotions and special offers for new opportunities to save.'
+    icon: 'local_offer', key: 'promo_offers'
   },
-
   {
-    icon: 'storefront',
-    title: 'A Physical Store',
-    desc: 'Visit our physical store and discover our furniture and home furnishings in person.'
+    icon: 'storefront', key: 'promo_store'
   },
-
   {
-    icon: 'verified',
-    title: 'Trusted Locally',
-    desc: 'Serving customers through our physical store and online, with a focus on quality and reliable service.'
+    icon: 'verified', key: 'promo_trusted'
   }
 ];
 
 function renderPromotions() {
   var grid = document.getElementById('promoGrid');
   grid.innerHTML = PROMOTIONS.map(function (promo) {
+    var titleKey = 'customer:offers.' + promo.key + '_title';
+    var descKey = 'customer:offers.' + promo.key + '_desc';
     var codeHtml = promo.code
-      ? '<div class="promo-code"><span class="code">' + escapeHtml(promo.code) + '</span><button class="copy-btn" type="button" data-code="' + promo.code + '">Copy</button></div>'
+      ? '<div class="promo-code"><span class="code">' + escapeHtml(promo.code) + '</span><button class="copy-btn" type="button" data-code="' + promo.code + '">' + window.i18n('customer:offers.copy') + '</button></div>'
       : '';
     return (
       '<article class="promo-card reveal">' +
         '<div class="promo-icon" aria-hidden="true"><span class="material-symbols-outlined">' + promo.icon + '</span></div>' +
-        '<h3>' + escapeHtml(promo.title) + '</h3>' +
-        '<p>' + promo.desc + '</p>' +
+        '<h3>' + window.i18n(titleKey) + '</h3>' +
+        '<p>' + window.i18n(descKey) + '</p>' +
         codeHtml +
       '</article>'
     );
   }).join('');
+  var promoCards = grid.querySelectorAll('.promo-card.reveal');
+  for (var ri = 0; ri < promoCards.length; ri++) revealObserver.observe(promoCards[ri]);
 }
 
 /* ---------- PRODUCT CARDS ---------- */
 function productCardHTML(product) {
   var stars = '\u2605'.repeat(Math.round(product.rating || 0));
   var badge = '';
-  if (product.badge === 'sale') badge = '<span class="card-badge sale">Sale</span>';
-  if (product.badge === 'new')  badge = '<span class="card-badge">New</span>';
+  if (product.badge === 'sale') badge = '<span class="card-badge sale">' + window.i18n('customer:product.sale') + '</span>';
+  if (product.badge === 'new')  badge = '<span class="card-badge">' + window.i18n('customer:product.new') + '</span>';
   if (!(product.stock > 0)) {
-    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">unavailable</span>';
+    var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">' + window.i18n('customer:product.unavailable') + '</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;
   }
   var oldPrice = product.price_cents && product.old_price_cents
@@ -67,13 +57,13 @@ function productCardHTML(product) {
   var priceHtml = product.price_cents ? price(product.price_cents) : '';
   var inCart = isInCart(product.id);
   var btnClass = inCart ? 'card-added' : 'card-add';
-  var btnText = inCart ? 'In Cart' : 'Add';
+  var btnText = inCart ? window.i18n('customer:product.in_cart') : window.i18n('customer:product.add');
   var btnDisabled = !(product.stock > 0) ? ' disabled style="opacity:0.5;pointer-events:none;"' : '';
 
   var nameEscaped = escapeHtml(product.name);
   return (
     '<article class="product-card">' +
-      '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="View ' + nameEscaped + '">' +
+      '<a class="card-hit" href="product.html?id=' + product.id + '" aria-label="' + window.i18n('customer:product.view', { name: nameEscaped }) + '">' +
         '<span class="card-media">' +
           badge +
           '<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1\' height=\'1\'%3E%3C/svg%3E" data-src="' + (product.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg') + '" alt="' + nameEscaped + '" loading="lazy" onerror="handleImageError(this)" data-category="' + (product.category || '') + '" />' +
@@ -81,12 +71,12 @@ function productCardHTML(product) {
         '<span class="card-body">' +
           '<span class="card-category">' + escapeHtml(product.category_name || '') + '</span>' +
           '<span class="card-title">' + nameEscaped + '</span>' +
-          '<span class="card-rating"><span aria-hidden="true">' + stars + '</span><span class="sr-only">Rated ' + Math.round(product.rating || 0) + ' out of 5 stars</span><span>(' + (product.reviews || 0) + ')</span></span>' +
+          '<span class="card-rating"><span aria-hidden="true">' + stars + '</span><span class="sr-only">' + window.i18n('customer:product.rated', { rating: Math.round(product.rating || 0) }) + '</span><span>(' + (product.reviews || 0) + ')</span></span>' +
         '</span>' +
       '</a>' +
       '<span class="card-price-row">' +
         '<span class="card-price">' + priceHtml + oldPrice + '</span>' +
-        '<button class="' + btnClass + '" type="button" data-add="' + product.id + '"' + btnDisabled + '>' + btnText + '</button>' +
+        '<button class="' + btnClass + '" type="button" data-add="' + product.id + '" data-name="' + nameEscaped + '"' + btnDisabled + ' aria-label="' + window.i18n('customer:product.' + (inCart ? 'remove_from_cart' : 'add_label'), { name: nameEscaped }) + '">' + btnText + '</button>' +
       '</span>' +
     '</article>'
   );
@@ -109,18 +99,21 @@ document.addEventListener('click', function (event) {
   if (product) {
     if (!(product.stock > 0)) return;
     addToCart(product);
-    showToast(product.name + ' added to cart');
+    showToast(window.i18n('customer:product.added_to_cart', { name: escapeHtml(product.name) }));
   }
-  addButton.textContent = 'In Cart';
+  addButton.textContent = window.i18n('customer:product.in_cart');
   addButton.className = 'card-added';
+  addButton.setAttribute('aria-label', window.i18n('customer:product.remove_from_cart', { name: addButton.getAttribute('data-name') || '' }));
 });
 
 /* ---------- CART STATE ---------- */
 function renderCartState() {
   document.querySelectorAll('[data-add]').forEach(function (addButton) {
     var inCart = isInCart(addButton.getAttribute('data-add'));
-    addButton.textContent = inCart ? 'In Cart' : 'Add';
+    var name = addButton.getAttribute('data-name') || '';
+    addButton.textContent = inCart ? window.i18n('customer:product.in_cart') : window.i18n('customer:product.add');
     addButton.className = inCart ? 'card-added' : 'card-add';
+    addButton.setAttribute('aria-label', window.i18n('customer:product.' + (inCart ? 'remove_from_cart' : 'add_label'), { name: name }));
   });
 }
 window.addEventListener('cart:updated', renderCartState);
@@ -133,10 +126,10 @@ document.addEventListener('click', function (event) {
   if (!copyBtn) return;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(copyBtn.getAttribute('data-code')).then(function () {
-      showToast('Code copied to clipboard!');
+      showToast(window.i18n('customer:offers.code_copied'));
     });
   } else {
-    showToast('Code copied to clipboard!');
+    showToast(window.i18n('customer:offers.code_copied'));
   }
 });
 
@@ -216,8 +209,8 @@ function loadActiveSale() {
     for (var i = 0; i < sales.length; i++) {
       if ((sales[i].discount_percent || 0) > maxPct) maxPct = sales[i].discount_percent;
     }
-    if (titleEl) titleEl.textContent = (effectiveSale.title && effectiveSale.title.trim()) ? effectiveSale.title.trim() : ('On Sale Now: Save up to ' + maxPct + '%');
-    if (descEl) descEl.textContent = 'Shop selected products while stock lasts. The deal ends when the timer runs out.';
+    if (titleEl) titleEl.textContent = (effectiveSale.title && effectiveSale.title.trim()) ? effectiveSale.title.trim() : window.i18n('customer:home.on_sale_now', { percent: maxPct });
+    if (descEl) descEl.textContent = window.i18n('customer:home.sale_desc');
     var banner = campaignBanner || effectiveSale.banner_image_url || sale.banner_image_url;
     if (imgEl && banner) imgEl.src = banner;
     if (shopEl) shopEl.href = 'products.html?sale=' + (effectiveSale.id || sale.id);
@@ -235,7 +228,21 @@ function loadActiveSale() {
   }).catch(function () { settingsFailed = true; settle(); });
 }
 
-loadActiveSale();
+function bootOffers() {
+  loadActiveSale();
+  renderPromotions();
+  loadOnSaleProducts();
+}
+
+function rerenderOffers() {
+  loadActiveSale();
+  renderPromotions();
+  renderCartState();
+}
+
+if (window.i18n) bootOffers();
+else window.addEventListener('i18n:ready', bootOffers, { once: true });
+window.addEventListener('i18n:changed', rerenderOffers);
 
 /* ---------- UI HELPERS ---------- */
 
@@ -291,45 +298,43 @@ function showToast(message) {
 /* Init cart badge */
 updateCartCount();
 
-/* ---------- RENDER PROMOTIONS ---------- */
-renderPromotions();
-document.querySelectorAll('.promo-card.reveal').forEach(function (el) { revealObserver.observe(el); });
-
 /* ---------- API DATA ---------- */
 function renderSaleEmpty() {
   var row = document.getElementById('saleRow');
-  if (row) row.innerHTML = '<div style="width:100%;padding:36px 24px;text-align:center;color:var(--gray);font-size:14px">Nothing on sale right now, check back soon.</div>';
+  if (row) row.innerHTML = '<div style="width:100%;padding:36px 24px;text-align:center;color:var(--gray);font-size:14px">' + window.i18n('customer:offers.sale_empty') + '</div>';
 }
 
-fetch('/api/products/browse/on-sale')
-  .then(function (r) { return r.json(); })
-  .then(function (data) {
-    var items = data.products || data.data || data;
-    if (!Array.isArray(items) || !items.length) { renderSaleEmpty(); return; }
-    PRODUCTS = items.map(function (p) {
-      var imgs = []; try { imgs = JSON.parse(p.images || '[]'); } catch(e) { imgs = []; }
-      var img = imgs[0] || p.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg';
-      return {
-        id: p.id,
-        name: p.name || 'Untitled',
-        slug: p.slug || '',
-        category_name: (p.category_name || p.category || 'Uncategorized'),
-        price_cents: p.price_cents || 0,
-        old_price_cents: p.old_price_cents || null,
-        stock: p.stock || 0,
-        on_sale: !!p.on_sale,
-        rating: parseFloat(p.rating) || 0,
-        reviews: parseInt(p.reviews, 10) || 0,
-        image: img,
-        badge: 'sale',
-        colors: p.colors || [],
-        sizes: p.sizes || []
-      };
-    });
-    renderRow('saleRow', PRODUCTS);
-    if (typeof initLazyImages === 'function') initLazyImages();
-  })
-  .catch(function () {});
+function loadOnSaleProducts() {
+  fetch('/api/products/browse/on-sale')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var items = data.products || data.data || data;
+      if (!Array.isArray(items) || !items.length) { renderSaleEmpty(); return; }
+      PRODUCTS = items.map(function (p) {
+        var imgs = []; try { imgs = JSON.parse(p.images || '[]'); } catch(e) { imgs = []; }
+        var img = imgs[0] || p.image || window.DEFAULT_PRODUCT_IMAGE || '/assets/noImageForItem.jpg';
+        return {
+          id: p.id,
+          name: p.name || 'Untitled',
+          slug: p.slug || '',
+          category_name: (p.category_name || p.category || 'Uncategorized'),
+          price_cents: p.price_cents || 0,
+          old_price_cents: p.old_price_cents || null,
+          stock: p.stock || 0,
+          on_sale: !!p.on_sale,
+          rating: parseFloat(p.rating) || 0,
+          reviews: parseInt(p.reviews, 10) || 0,
+          image: img,
+          badge: 'sale',
+          colors: p.colors || [],
+          sizes: p.sizes || []
+        };
+      });
+      renderRow('saleRow', PRODUCTS);
+      if (typeof initLazyImages === 'function') initLazyImages();
+    })
+    .catch(function () {});
+}
 
 /* ---------- KEYBOARD: arrow-key navigation for promo + product cards ---------- */
 (function () {

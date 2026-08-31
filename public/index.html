@@ -41,7 +41,7 @@
 
 <body>
 
-  <a class="skip-link" href="#main">Skip to content</a>
+  <a class="skip-link" href="#main" data-i18n="common.skip_to_content">Skip to content</a>
 
   <!-- ==========================================================
        NAVBAR
@@ -83,12 +83,12 @@
 
       <div class="container">
         <div class="hero-content">
-          <span class="hero-badge">New Collection 2026</span>
-          <h1>Furniture that turns a house into a <em>haven</em>.</h1>
-          <p>Thoughtfully crafted sofas, tables, and d&eacute;cor in natural materials, designed to make every room feel warm, calm, and effortlessly elegant.</p>
+          <span class="hero-badge" data-i18n="customer:home.hero_badge">New Collection 2026</span>
+          <h1 data-i18n="customer:home.hero_h1">Furniture that turns a house into a <em>haven</em>.</h1>
+          <p data-i18n="customer:home.hero_p">Thoughtfully crafted sofas, tables, and d&eacute;cor in natural materials, designed to make every room feel warm, calm, and effortlessly elegant.</p>
           <div class="hero-actions">
-            <a href="products.html" class="btn btn-primary">Shop the Collection</a>
-            <a href="#featured" class="btn btn-outline">Explore Categories</a>
+            <a href="products.html" class="btn btn-primary" data-i18n="customer:home.shop_collection">Shop the Collection</a>
+            <a href="#featured" class="btn btn-outline" data-i18n="customer:home.explore_categories">Explore Categories</a>
           </div>
         </div>
       </div>
@@ -100,8 +100,8 @@
          ========================================================== -->
     <div class="marquee" id="announcementBar" aria-hidden="true">
       <div class="marquee-track" id="announcementTrack">
-        <span>Free Delivery Over 66,700 DA</span><span>Sustainably Sourced Wood</span><span>10-Year Warranty</span><span>Designed in Copenhagen</span><span>30-Day Returns</span>
-        <span>Free Delivery Over 66,700 DA</span><span>Sustainably Sourced Wood</span><span>10-Year Warranty</span><span>Designed in Copenhagen</span><span>30-Day Returns</span>
+        <span data-i18n="customer:home.marquee_free">Free Delivery Over 66,700 DA</span><span data-i18n="customer:home.marquee_wood">Sustainably Sourced Wood</span><span data-i18n="customer:home.marquee_warranty">10-Year Warranty</span><span data-i18n="customer:home.marquee_copenhagen">Designed in Copenhagen</span><span data-i18n="customer:home.marquee_returns">30-Day Returns</span>
+        <span data-i18n="customer:home.marquee_free">Free Delivery Over 66,700 DA</span><span data-i18n="customer:home.marquee_wood">Sustainably Sourced Wood</span><span data-i18n="customer:home.marquee_warranty">10-Year Warranty</span><span data-i18n="customer:home.marquee_copenhagen">Designed in Copenhagen</span><span data-i18n="customer:home.marquee_returns">30-Day Returns</span>
       </div>
     </div>
 
@@ -111,27 +111,27 @@
     <section class="section" id="featured">
       <div class="container">
         <div class="section-head reveal">
-          <span class="eyebrow">Browse by room</span>
-          <h2>Featured Categories</h2>
-          <p>Every piece is chosen for quality, comfort, and timeless design. Start with the rooms you live in most.</p>
+          <span class="eyebrow" data-i18n="customer:home.cat_eyebrow">Browse by room</span>
+          <h2 data-i18n="customer:home.cat_h2">Featured Categories</h2>
+          <p data-i18n="customer:home.cat_p">Every piece is chosen for quality, comfort, and timeless design. Start with the rooms you live in most.</p>
         </div>
 
         <div class="category-grid">
           <a href="products.html?category=living-room" class="category-card reveal">
             <img src="/assets/furn-sofa.jpg" alt="Beige linen sofa" />
-            <div class="category-label">Living Room <small id="cat-living-room-count">...</small></div>
+            <div class="category-label"><span data-i18n="customer:home.living_room">Living Room</span> <small id="cat-living-room-count">...</small></div>
           </a>
           <a href="products.html?category=dining-room" class="category-card reveal">
             <img src="/assets/furn-table.jpg" alt="Oak round dining table" />
-            <div class="category-label">Dining Room <small id="cat-dining-room-count">...</small></div>
+            <div class="category-label"><span data-i18n="customer:home.dining_room">Dining Room</span> <small id="cat-dining-room-count">...</small></div>
           </a>
           <a href="products.html?category=bedroom" class="category-card reveal">
             <img src="/assets/furn-bed.jpg" alt="Upholstered bed with beige headboard" />
-            <div class="category-label">Bedroom <small id="cat-bedroom-count">...</small></div>
+            <div class="category-label"><span data-i18n="customer:home.bedroom">Bedroom</span> <small id="cat-bedroom-count">...</small></div>
           </a>
           <a href="products.html?category=lighting" class="category-card reveal">
             <img src="/assets/furn-lamp.jpg" alt="Floor lamp with linen shade" />
-            <div class="category-label">Lighting &amp; D&eacute;cor <small id="cat-lighting-count">...</small></div>
+            <div class="category-label"><span data-i18n="customer:home.lighting">Lighting &amp; D&eacute;cor</span> <small id="cat-lighting-count">...</small></div>
           </a>
         </div>
       </div>
@@ -145,8 +145,8 @@
       <div class="container">
         <div class="row-header reveal">
           <div>
-            <h2>Best Sellers</h2>
-            <p>The pieces our customers keep coming back for.</p>
+            <h2 data-i18n="customer:home.best_sellers">Best Sellers</h2>
+            <p data-i18n="customer:home.best_sellers_p">The pieces our customers keep coming back for.</p>
           </div>
           <div class="row-arrows">
             <button class="arrow-btn" type="button" data-scroll="left" data-target="bestRow" aria-label="Scroll left">&#8592;</button>
@@ -170,16 +170,16 @@
         <div class="offer reveal">
           <div class="offer-text">
             <div class="offer-sale" id="offerSale" hidden>
-              <span class="eyebrow">Limited time</span>
-              <h2 id="offerTitle">The Autumn Comfort Sale: up to 30% off seating</h2>
-              <p id="offerDesc">Sink into something softer. Selected sofas and armchairs are on sale until the timer runs out.</p>
-              <div class="countdown" role="timer" aria-label="Sale countdown">
-                <div class="count-box"><b id="cdDays">0</b><small>Days</small></div>
-                <div class="count-box"><b id="cdHours">0</b><small>Hours</small></div>
-                <div class="count-box"><b id="cdMins">0</b><small>Mins</small></div>
-                <div class="count-box"><b id="cdSecs">0</b><small>Secs</small></div>
+              <span class="eyebrow" data-i18n="customer:home.offer_eyebrow">Limited time</span>
+              <h2 id="offerTitle" data-i18n="customer:home.offer_default_title">The Autumn Comfort Sale: up to 30% off seating</h2>
+              <p id="offerDesc" data-i18n="customer:home.offer_default_desc">Sink into something softer. Selected sofas and armchairs are on sale until the timer runs out.</p>
+              <div class="countdown" role="timer" aria-label="Sale countdown" data-i18n-attr="aria-label:customer:home.sale_countdown">
+                <div class="count-box"><b id="cdDays">0</b><small data-i18n="customer:home.days">Days</small></div>
+                <div class="count-box"><b id="cdHours">0</b><small data-i18n="customer:home.hours">Hours</small></div>
+                <div class="count-box"><b id="cdMins">0</b><small data-i18n="customer:home.mins">Mins</small></div>
+                <div class="count-box"><b id="cdSecs">0</b><small data-i18n="customer:home.secs">Secs</small></div>
               </div>
-              <a href="products.html?sale=1" id="offerShop" class="btn btn-primary">Shop the Sale</a>
+              <a href="products.html?sale=1" id="offerShop" class="btn btn-primary" data-i18n="customer:home.shop_sale">Shop the Sale</a>
             </div>
 
             <div class="offer-empty" id="offerEmpty">
@@ -189,8 +189,8 @@
                   <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
                 </svg>
               </div>
-              <h2>No Sales Currently Available</h2>
-              <p>Check back later for our exclusive deals and special offers.</p>
+              <h2 data-i18n="customer:home.offer_empty_title">No Sales Currently Available</h2>
+              <p data-i18n="customer:home.offer_empty_p">Check back later for our exclusive deals and special offers.</p>
             </div>
           </div>
           <div class="offer-media">
@@ -207,8 +207,8 @@
       <div class="container">
         <div class="row-header reveal">
           <div>
-            <h2>Popular Right Now</h2>
-            <p>Trending pieces from the latest collection.</p>
+            <h2 data-i18n="customer:home.popular_h2">Popular Right Now</h2>
+            <p data-i18n="customer:home.popular_p">Trending pieces from the latest collection.</p>
           </div>
           <div class="row-arrows">
             <button class="arrow-btn" type="button" data-scroll="left" data-target="popularRow" aria-label="Scroll left">&#8592;</button>
@@ -231,8 +231,8 @@
       <div class="container">
         <div class="row-header reveal">
           <div>
-            <h2>Newly Added</h2>
-            <p>Fresh picks just for you.</p>
+            <h2 data-i18n="customer:home.new_h2">Newly Added</h2>
+            <p data-i18n="customer:home.new_p">Fresh picks just for you.</p>
           </div>
           <div class="row-arrows">
             <button class="arrow-btn" type="button" data-scroll="left" data-target="newArrivalsRow" aria-label="Scroll left">&#8592;</button>
@@ -254,8 +254,8 @@
     <section class="section" id="testimonials" style="background: var(--cream);">
       <div class="container">
         <div class="section-head reveal">
-          <span class="eyebrow">From our customers</span>
-          <h2>What Our Customers Say About Us</h2>
+          <span class="eyebrow" data-i18n="customer:home.test_eyebrow">From our customers</span>
+          <h2 data-i18n="customer:home.test_h2">What Our Customers Say About Us</h2>
         </div>
 
         <div class="testimonial-grid" id="testimonialGrid"></div>
@@ -310,7 +310,11 @@
   <script src="utils.js?v=22"></script>
   <script src="js/cart-utils.js?v=22"></script>
   <script src="js/footer.js?v=22"></script>
-  <script src="js/home.js?v=24"></script>
+  <script src="js/home.js?v=25"></script>
   <script src="js/language.js?v=23"></script>
+  <script src="js/vendor/i18next.min.js"></script>
+  <script src="js/vendor/i18next-http-backend.min.js"></script>
+  <script src="js/i18n-init.js?v=1"></script>
+  <script src="js/i18n-helper.js?v=1"></script>
 </body>
 </html>
