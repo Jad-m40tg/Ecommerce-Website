@@ -79,22 +79,22 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 /* ============================================================
-   ARABIC GLYPH COVERAGE — Inter / Playfair Display
-   Arabic users want the same fonts as EN/FR, so we route the Arabic
-   script through Inter (body) and Playfair Display (headings) with a
-   Cairo fallback for any glyphs those don't yet include.
+   ARABIC GLYPH COVERAGE — Tajawal
+   Inter/Playfair have no Arabic letterforms, so we route the Arabic
+   script through Tajawal — a modern geometric Arabic font that
+   visually matches Inter — so Arabic reads like EN/FR.
    dir stays ltr; this only swaps the font, never the layout.
    ============================================================ */
 html[lang="ar"] body,
 html[lang="ar"] body * {
-  font-family: 'Inter', 'Cairo', sans-serif !important;
+  font-family: 'Inter', 'Tajawal', sans-serif !important;
 }
 html[lang="ar"] h1,
 html[lang="ar"] h2,
 html[lang="ar"] h3 {
-  font-family: 'Playfair Display', 'Cairo', serif !important;
+  font-family: 'Playfair Display', 'Tajawal', serif !important;
 }
-/* Keep icon fonts and monospace intact — Inter/Cairo have no icon glyphs
+/* Keep icon fonts and monospace intact — Inter/Tajawal have no icon glyphs
    and must NOT replace the Material Symbols / Font Awesome / mono fonts. */
 html[lang="ar"] .material-symbols-outlined,
 html[lang="ar"] .material-symbols-outlined * {

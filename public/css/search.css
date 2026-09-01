@@ -153,6 +153,8 @@
 
 @media (max-width: 820px) {
   .results-grid { grid-template-columns: repeat(2, 1fr); }
+  .card-price { white-space: normal; overflow-wrap: anywhere; }
+  .card-price-row { flex-wrap: wrap; }
 }
 
 @media (max-width: 800px) {

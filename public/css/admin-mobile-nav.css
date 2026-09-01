@@ -110,20 +110,20 @@
 .campaign-banner-drop:focus-visible,
 .dropzone:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
 
-/* ---- ARABIC GLYPH COVERAGE — Cairo (all widths) ----
+/* ---- ARABIC GLYPH COVERAGE — Tajawal (all widths) ----
    Inter/Playfair have no Arabic letterforms. When lang is ar, route
-   glyphs through Cairo (which also carries Latin). Latin (en/fr) stays
-   on Inter/Playfair untouched. dir stays ltr; font swap only. */
+   glyphs through Tajawal — a modern geometric Arabic font that matches
+   Inter — so Arabic reads like EN/FR. dir stays ltr; font swap only. */
 html[lang="ar"] body,
 html[lang="ar"] body * {
-  font-family: 'Cairo', 'Inter', sans-serif !important;
+  font-family: 'Inter', 'Tajawal', sans-serif !important;
 }
 html[lang="ar"] h1,
 html[lang="ar"] h2,
 html[lang="ar"] h3 {
-  font-family: 'Cairo', 'Playfair Display', serif !important;
+  font-family: 'Playfair Display', 'Tajawal', serif !important;
 }
-/* Keep icon fonts and monospace intact — Cairo/Inter have no icon glyphs
+/* Keep icon fonts and monospace intact — Inter/Tajawal have no icon glyphs
    and must NOT replace the Material Symbols / Font Awesome / mono fonts. */
 html[lang="ar"] .material-symbols-outlined,
 html[lang="ar"] .material-symbols-outlined * {
