@@ -112,8 +112,12 @@ router.get('/public-status/:id', publicStatusLimiter, async (req, res) => {
 
     if (!result) return res.status(404).json({ error: 'Order not found' });
 
+    // Surface ONLY the real NOEST delivery code. The generic auto-generated
+    // lookup code (orders.tracking_code) must NOT be shown here, otherwise the
+    // payment-success page treats it as a delivery code and skips the
+    // "waiting for the NOEST code" spinner for every paid-but-not-yet-shipped order.
     const tracking_code = (result.order.payment_status === 'paid')
-      ? (result.order.noest_tracking || result.order.tracking_code || null)
+      ? (result.order.noest_tracking || null)
       : null;
 
     res.json({
