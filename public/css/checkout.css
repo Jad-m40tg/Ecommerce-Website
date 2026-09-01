@@ -84,7 +84,7 @@
 .field input.invalid { border: 2px solid #e41a1a !important; box-shadow: 0 0 8px rgba(218,29,29,.31); }
 .input-wrap { position: relative; display: flex; align-items: center; }
 .input-wrap input { padding-right: 42px; flex: 1; min-width: 0; }
-.validation-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--sage); font-size: 18px; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
+.validation-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--sage); font-size: 18px; width: 18px; height: 18px; display: grid; place-items: center; line-height: 1; opacity: 0; pointer-events: none; transition: opacity .3s ease; }
 .field input.valid + .validation-icon { opacity: 1; }
 .field input.invalid + .validation-icon { opacity: 0; }
 
