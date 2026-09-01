@@ -512,10 +512,10 @@
           var trackBtn = document.getElementById('noestTrackBtn');
           if (trackBtn) {
             trackBtn.addEventListener('click', function () {
-              var t = this.dataset.tracking;
+              var trackingCode = this.dataset.tracking;
               var resultDiv = document.getElementById('noestTrackResult');
               resultDiv.innerHTML = '<div class="noest-loading">' + escapeHtml(t('admin:orders.fetching_live')) + '</div>';
-              apiFetch('/api/delivery/track', { method: 'POST', body: JSON.stringify({ tracking: t }) })
+              apiFetch('/api/delivery/track', { method: 'POST', body: JSON.stringify({ tracking: trackingCode }) })
                 .then(function (data) {
                   var info = data.data || data;
                   if (Array.isArray(info) && info.length > 0) info = info[0];
@@ -557,9 +557,9 @@
           if (cancelBtn) {
             cancelBtn.addEventListener('click', function () {
               if (!confirm(t('admin:orders.cancel_confirm'))) return;
-              var t = this.dataset.tracking;
+              var trackingCode = this.dataset.tracking;
               this.disabled = true;
-              apiFetch('/api/delivery/cancel', { method: 'POST', body: JSON.stringify({ tracking: t }) })
+              apiFetch('/api/delivery/cancel', { method: 'POST', body: JSON.stringify({ tracking: trackingCode }) })
                 .then(function (result) {
                   if (result.success) {
                     order.noest_tracking = '';
