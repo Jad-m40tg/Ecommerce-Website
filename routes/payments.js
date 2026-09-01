@@ -21,25 +21,34 @@ const publicStatusLimiter = rateLimit({
 // Looks up an order by id, falls back to a Chargily checkout lookup, and syncs
 // the payment status from Chargily when the checkout has been completed.
 async function lookupAndSyncOrder(param) {
+  // A Chargily checkout ID is a non-numeric opaque string (e.g. "01m1dyc..."),
+  // whereas a DB order ID is purely numeric. Only treat the param as a checkout
+  // ID when it is non-numeric — otherwise we'd blindly pass a numeric order ID
+  // to Chargily's API on every status poll, which guarantees a 404 and spams logs.
+  const looksLikeCheckoutId = typeof param === 'string' && !/^\d+$/.test(param);
+
   // Try looking up by order ID first
   let order = db.prepare('SELECT * FROM orders WHERE id = ?').get(param);
   let checkout = null;
 
   if (order && order.payment_reference) {
-    try { checkout = await getCheckout(order.payment_reference); } catch (e) { console.error('Chargily getCheckout failed:', e.message); }
+    try { checkout = await getCheckout(order.payment_reference); }
+    catch (e) { console.error('Chargily getCheckout failed:', e.message); }
   }
 
-  // If not found as order, try as Chargily checkout ID
-  if (!checkout) {
-    try { checkout = await getCheckout(param); } catch (e) { console.error('Chargily getCheckout failed:', e.message); }
-  }
+  // If we couldn't match an order by ID, try treating the param as a Chargily
+  // checkout ID (only when it is non-numeric).
+  if (!order && looksLikeCheckoutId) {
+    try { checkout = await getCheckout(param); }
+    catch (e) { console.error('Chargily getCheckout failed:', e.message); }
 
-  if (checkout && !order) {
-    if (checkout.metadata && checkout.metadata.order_id) {
-      order = db.prepare('SELECT * FROM orders WHERE id = ?').get(checkout.metadata.order_id);
-    }
-    if (!order) {
-      order = db.prepare('SELECT * FROM orders WHERE payment_reference = ?').get(checkout.id);
+    if (checkout) {
+      if (checkout.metadata && checkout.metadata.order_id) {
+        order = db.prepare('SELECT * FROM orders WHERE id = ?').get(checkout.metadata.order_id);
+      }
+      if (!order) {
+        order = db.prepare('SELECT * FROM orders WHERE payment_reference = ?').get(checkout.id);
+      }
     }
   }
 
