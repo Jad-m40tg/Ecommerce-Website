@@ -75,6 +75,9 @@
         },
         fallbackLng: 'en',
         lng: getLang(),
+        // Preload every UI language up front so switching is instant (no
+        // on-demand HTTP fetch per switch). The bundles are small JSON files.
+        preload: ['en', 'fr', 'ar'],
         ns: ['common', currentNamespace()],
         defaultNS: 'common',
         initImmediate: false,
