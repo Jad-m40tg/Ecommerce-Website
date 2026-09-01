@@ -13,6 +13,14 @@ const { sendProductPage } = require('./services/seo');
 
 const app = express();
 
+// Behind a reverse proxy (nginx/etc.) which sets X-Forwarded-For. Telling
+// Express to trust one proxy hop per-deployment makes req.ip resolve to the
+// real client address instead of the proxy's, so express-rate-limit can apply
+// limits per-client rather than globally. Without this, a proxied request
+// (e.g. Chargily redirect -> /api/payments/public-status) triggers
+// ERR_ERL_UNEXPECTED_X_FORWARDED_FOR and effectively blocks legit traffic.
+app.set('trust proxy', 1);
+
 // Security headers via Helmet (Content-Security-Policy, X-Frame-Options, etc.)
 // 'unsafe-inline' for scripts is required because all 20 HTML files use inline <script> blocks.
 // A future improvement would be extracting all JS to external files and removing 'unsafe-inline'.

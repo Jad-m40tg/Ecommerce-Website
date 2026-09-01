@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Payment Successful | Boularas</title>
-  <meta name="description" content="Payment status for your Boularas order." />
-  <meta property="og:title" content="Payment Successful | Boularas" />
-  <meta property="og:description" content="Payment status for your Boularas order." />
+  <title data-i18n="customer:payment_page.meta_title">Payment Successful | Boularas</title>
+  <meta name="description" content="Payment status for your Boularas order." data-i18n-attr="content:customer:payment_page.meta_desc" />
+  <meta property="og:title" content="Payment Successful | Boularas" data-i18n-attr="content:customer:payment_page.meta_title" />
+  <meta property="og:description" content="Payment status for your Boularas order." data-i18n-attr="content:customer:payment_page.meta_desc" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/assets/Boularas_Logo.png" />
   <meta name="twitter:card" content="summary" />
@@ -44,23 +44,23 @@
   </style>
 </head>
 <body style="overflow-x:hidden">
-  <a class="skip-link" href="#main">Skip to content</a>
+  <a class="skip-link" href="#main" data-i18n="common:skip_to_content">Skip to content</a>
   <header class="navbar">
     <div class="container navbar-inner">
-      <a href="index.html" class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" class="brand-logo" /></a>
-      <nav aria-label="Main navigation">
+      <a href="index.html" class="brand"><img src="/assets/Boularas_Logo.png" alt="Boularas logo" class="brand-logo" data-i18n-attr="alt:customer:nav.brand_alt" /></a>
+      <nav aria-label="Main navigation" data-i18n-attr="aria-label:customer:nav.main_nav_aria">
         <ul class="nav-links" id="navLinks">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="products.html">Shop</a></li>
-          <li><a href="categories.html">Categories</a></li>
-          <li><a href="offers.html">Offers</a></li>
+          <li><a href="index.html" data-i18n="customer:nav.home">Home</a></li>
+          <li><a href="products.html" data-i18n="customer:nav.shop">Shop</a></li>
+          <li><a href="categories.html" data-i18n="customer:nav.categories">Categories</a></li>
+          <li><a href="offers.html" data-i18n="customer:nav.offers">Offers</a></li>
         </ul>
       </nav>
       <div class="navbar-actions">
-        <a href="search-results.html" class="nav-search" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></a>
-        <a href="wishlist.html" class="nav-wish" aria-label="Wishlist"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="wish-count" id="wishCount">0</span></a>
-        <a href="cart.html" class="cart-btn" aria-label="Cart"><span class="cart-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span><span class="cart-label">Cart</span> <span class="cart-count" id="cartCount">0</span></a>
-        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">&#9776;</button>
+        <a href="search-results.html" class="nav-search" aria-label="Search" data-i18n-attr="aria-label:customer:nav.search_aria"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></a>
+        <a href="wishlist.html" class="nav-wish" aria-label="Wishlist" data-i18n-attr="aria-label:customer:nav.wishlist_aria"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span class="wish-count" id="wishCount">0</span></a>
+        <a href="cart.html" class="cart-btn" aria-label="Cart" data-i18n-attr="aria-label:customer:nav.cart_aria"><span class="cart-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span><span class="cart-label" data-i18n="customer:nav.cart">Cart</span> <span class="cart-count" id="cartCount">0</span></a>
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu" data-i18n-attr="aria-label:customer:nav.toggle_aria">&#9776;</button>
       </div>
     </div>
   </header>
@@ -68,7 +68,7 @@
   <main class="success-page" id="main" tabindex="-1">
     <div class="success-card" id="successContent" role="status" aria-live="polite">
       <div class="spinner-lg" id="loadingSpinner"></div>
-      <p id="loadingText" style="margin-top:12px">Verifying your payment...</p>
+      <p id="loadingText" style="margin-top:12px" data-i18n="customer:payment_page.loading">Verifying your payment...</p>
     </div>
   </main>
 
@@ -89,6 +89,8 @@
   </script>
   <script>
     (function () {
+      function t(key, params) { return (window.i18n) ? window.i18n(key.trim(), params) : key.trim(); }
+      function boot() {
       var params = new URLSearchParams(window.location.search);
       var orderId = params.get('order_id');
       var content = document.getElementById('successContent');
@@ -103,7 +105,7 @@
       }
 
       if (!orderId) {
-        setContent('<div class="success-icon">?</div><h1>Invalid Link</h1><p>No order information found. Please check your email for the correct link.</p><div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
+        setContent('<div class="success-icon">?</div><h1>' + t('customer:payment_page.invalid_title') + '</h1><p>' + t('customer:payment_page.invalid_desc') + '</p><div class="success-actions"><a href="products.html" class="btn btn-primary">' + t('customer:payment_page.continue_shopping') + '</a></div>');
         return;
       }
 
@@ -133,9 +135,9 @@
 
       function showTimeoutNote() {
         if (paidSeen) {
-          setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Successful</h1><p>Your tracking code is being generated \u2014 keep this page open, it will appear automatically. You can also check your order on the tracking page.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>');
+          setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>' + t('customer:payment_page.timeout_paid_title') + '</h1><p>' + t('customer:payment_page.timeout_paid_desc') + '</p><div class="success-actions"><a href="track.html" class="btn btn-primary">' + t('customer:payment_page.track_order') + '</a><a href="products.html" class="btn btn-outline">' + t('customer:payment_page.continue_shopping') + '</a></div>');
         } else {
-          setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Processing</h1><p>Your payment is being processed. You will receive a confirmation email shortly.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>');
+          setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>' + t('customer:payment_page.processing_title') + '</h1><p>' + t('customer:payment_page.processing_desc') + '</p><div class="success-actions"><a href="track.html" class="btn btn-primary">' + t('customer:payment_page.track_order') + '</a><a href="products.html" class="btn btn-outline">' + t('customer:payment_page.continue_shopping') + '</a></div>');
         }
       }
 
@@ -149,7 +151,7 @@
         fetch('/api/payments/public-status/' + orderId).then(function (r) {
           if (r.status === 404) {
             stopPolling();
-            setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>Payment Processing</h1><p>Your payment is being processed. You will receive a confirmation email shortly.</p><div class="success-actions"><a href="track.html" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>');
+            setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>' + t('customer:payment_page.processing_title') + '</h1><p>' + t('customer:payment_page.processing_desc') + '</p><div class="success-actions"><a href="track.html" class="btn btn-primary">' + t('customer:payment_page.track_order') + '</a><a href="products.html" class="btn btn-outline">' + t('customer:payment_page.continue_shopping') + '</a></div>');
             return null;
           }
           return r.json();
@@ -157,16 +159,16 @@
           if (!data) return;
           if (data.payment_status === 'refunded' && data.order_status === 'cancelled') {
             stopPolling();
-            setContent('<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Order Cancelled & Refunded</h1><p>Your order has been cancelled and your payment has been refunded.</p>' +
-              '<div class="cancelled-badge">Cancelled & Refunded</div>' +
-              (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
+            setContent('<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>' + t('customer:payment_page.refunded_cancelled_title') + '</h1><p>' + t('customer:payment_page.refunded_cancelled_desc') + '</p>' +
+              '<div class="cancelled-badge">' + t('customer:payment_page.cancelled_refunded_badge') + '</div>' +
+              (storePhone ? '<div class="call-note">' + t('customer:payment_page.contact_details') + ' <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+              '<div class="success-actions"><a href="products.html" class="btn btn-primary">' + t('customer:payment_page.continue_shopping') + '</a></div>');
           } else if (data.payment_status === 'refunded') {
             stopPolling();
-            setContent('<div class="success-icon danger"><span class="material-symbols-outlined">refund</span></div><h1>Payment Refunded</h1><p>Your order has been refunded. If you have any questions, please contact us.</p>' +
-              '<div class="cancelled-badge">Refunded</div>' +
-              (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-              '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
+            setContent('<div class="success-icon danger"><span class="material-symbols-outlined">refund</span></div><h1>' + t('customer:payment_page.refunded_title') + '</h1><p>' + t('customer:payment_page.refunded_desc') + '</p>' +
+              '<div class="cancelled-badge">' + t('customer:payment_page.refunded_badge') + '</div>' +
+              (storePhone ? '<div class="call-note">' + t('customer:payment_page.contact_details') + ' <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+              '<div class="success-actions"><a href="products.html" class="btn btn-primary">' + t('customer:payment_page.continue_shopping') + '</a></div>');
           } else if (data.payment_status === 'paid') {
             paidSeen = true;
             clearCart();
@@ -176,31 +178,31 @@
 
             if (orderCancelled) {
               stopPolling();
-              setContent('<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>Payment Successful - Order Cancelled</h1><p>Thank you! Your payment was confirmed but your order has been cancelled by our team.</p>' +
-                '<div class="cancelled-badge">Order cancelled</div>' +
-                (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
+              setContent('<div class="success-icon danger"><span class="material-symbols-outlined">cancel</span></div><h1>' + t('customer:payment_page.success_cancelled_title') + '</h1><p>' + t('customer:payment_page.success_cancelled_desc') + '</p>' +
+                '<div class="cancelled-badge">' + t('customer:payment_page.order_cancelled_badge') + '</div>' +
+                (storePhone ? '<div class="call-note">' + t('customer:payment_page.contact_details') + ' <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+                '<div class="success-actions"><a href="products.html" class="btn btn-primary">' + t('customer:payment_page.continue_shopping') + '</a></div>');
             } else if (tc) {
               stopPolling();
-              setContent('<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed and your order is being processed.</p>' +
-                '<div class="tracking-code">' + tc + '</div><p style="font-size:13px;color:var(--gray)">Your tracking code: use it to follow your order.</p>' +
-                '<div class="success-actions"><a href="track.html' + (tc ? '?code=' + tc : '') + '" class="btn btn-primary">Track Order</a><a href="products.html" class="btn btn-outline">Continue Shopping</a></div>');
+              setContent('<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>' + t('customer:payment_page.success_title') + '</h1><p>' + t('customer:payment_page.success_processing_desc') + '</p>' +
+                '<div class="tracking-code">' + tc + '</div><p style="font-size:13px;color:var(--gray)">' + t('customer:payment_page.tracking_hint') + '</p>' +
+                '<div class="success-actions"><a href="track.html' + (tc ? '?code=' + tc : '') + '" class="btn btn-primary">' + t('customer:payment_page.track_order') + '</a><a href="products.html" class="btn btn-outline">' + t('customer:payment_page.continue_shopping') + '</a></div>');
             } else if (noestCancelled) {
               stopPolling();
-              setContent('<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Payment Successful - Shipment Cancelled</h1><p>Your payment has been confirmed but the shipment was cancelled.</p>' +
-                '<div class="cancelled-badge">Shipment cancelled</div>' +
-                (storePhone ? '<div class="call-note">For more details, contact us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
+              setContent('<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>' + t('customer:payment_page.success_shipment_cancelled_title') + '</h1><p>' + t('customer:payment_page.success_shipment_cancelled_desc') + '</p>' +
+                '<div class="cancelled-badge">' + t('customer:payment_page.shipment_cancelled_badge') + '</div>' +
+                (storePhone ? '<div class="call-note">' + t('customer:payment_page.contact_details') + ' <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+                '<div class="success-actions"><a href="products.html" class="btn btn-primary">' + t('customer:payment_page.continue_shopping') + '</a></div>');
             } else if (!waitingForCode) {
               waitingForCode = true;
-              setContent('<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>Payment Successful</h1><p>Thank you! Your payment has been confirmed. Your tracking code will appear here as soon as your order is shipped.</p>' +
-                '<div class="wait-badge"><span class="spinner-sm"></span>Waiting for tracking code</div>' +
-                (storePhone ? '<div class="call-note">Questions about your order? Call us at <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-                '<div class="success-actions"><a href="products.html" class="btn btn-primary">Continue Shopping</a></div>');
+              setContent('<div class="success-icon"><span class="material-symbols-outlined">check_circle</span></div><h1>' + t('customer:payment_page.waiting_code_title') + '</h1><p>' + t('customer:payment_page.waiting_code_desc') + '</p>' +
+                '<div class="wait-badge"><span class="spinner-sm"></span>' + t('customer:payment_page.waiting_code_badge') + '</div>' +
+                (storePhone ? '<div class="call-note">' + t('customer:payment_page.questions_call') + ' <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+                '<div class="success-actions"><a href="products.html" class="btn btn-primary">' + t('customer:payment_page.continue_shopping') + '</a></div>');
             }
           } else if (data.checkout_status === 'failed' || data.checkout_status === 'expired') {
             stopPolling();
-            setContent('<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>Payment Not Completed</h1><p>Redirecting to the payment failed page in <span id="redirectCountdown">5</span> seconds.</p>');
+            setContent('<div class="success-icon danger warning"><span class="material-symbols-outlined">warning</span></div><h1>' + t('customer:payment_page.not_completed_title') + '</h1><p>' + t('customer:payment_page.not_completed_desc', { count: '<span id="redirectCountdown">5</span>' }) + '</p>');
             var redirectSeconds = 5;
             var redirectTimer = setInterval(function () {
               redirectSeconds--;
@@ -215,8 +217,15 @@
           }
         }).catch(function () {});
       }, POLL_INTERVAL_MS);
+      }
+      if (window.i18n) boot();
+      else window.addEventListener('i18n:ready', function () { boot(); }, { once: true });
     })();
   </script>
   <script src="js/language.js?v=23"></script>
+  <script src="js/vendor/i18next.min.js"></script>
+  <script src="js/vendor/i18next-http-backend.min.js"></script>
+  <script src="js/i18n-init.js?v=1"></script>
+  <script src="js/i18n-helper.js?v=1"></script>
 </body>
 </html>
