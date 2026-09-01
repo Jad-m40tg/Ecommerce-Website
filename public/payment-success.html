@@ -145,7 +145,10 @@
       }
 
       pollInterval = setInterval(function () {
-        if (Date.now() >= deadline) {
+        // Once we're confirmed-paid and just waiting for the NOEST code, keep
+        // polling indefinitely — the spinner stays until the code arrives.
+        // The timeout only guards the initial "still processing payment" phase.
+        if (!waitingForCode && Date.now() >= deadline) {
           stopPolling();
           showTimeoutNote();
           return;
