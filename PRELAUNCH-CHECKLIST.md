@@ -105,3 +105,4 @@
 ---
 
 > **If you only have time for the 🔴 row:** webhook verification + idempotency, atomic stock decrement, admin route auth audit, secrets not in git, SQLite backups, process auto-restart, HTTPS, and the concurrent-checkout test. Those are the ones where a gap means either lost money or a 2am outage with no way to recover.
+(needs to be checked tmrw date: sept 2nd 2026)
