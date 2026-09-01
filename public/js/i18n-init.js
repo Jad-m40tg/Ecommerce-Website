@@ -71,7 +71,7 @@
       .use(window.i18nextHttpBackend)
       .init({
         backend: {
-          loadPath: '/locales/{{lng}}/{{ns}}.json?v=1'
+          loadPath: '/locales/{{lng}}/{{ns}}.json?v=2'
         },
         fallbackLng: 'en',
         lng: getLang(),
