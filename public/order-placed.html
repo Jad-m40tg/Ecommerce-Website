@@ -100,11 +100,9 @@
 
       function setContent(html) {
         content.innerHTML = html;
-        var heading = content.querySelector('h1, h2, h3');
-        if (heading) {
-          heading.setAttribute('tabindex', '-1');
-          heading.focus();
-        }
+        // No .focus() on the heading: iOS/Safari draws a focus ring around it
+        // (the "doubled border" look). #successContent has role="status" +
+        // aria-live="polite", so screen readers still announce updates.
       }
 
       if (!orderId || !code) {
@@ -116,17 +114,27 @@
       var maxAttempts = 150;
       var storePhone = '';
 
-      fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) {
-        storePhone = s.contact_phone || '';
-      }).catch(function () {});
-
       function phoneHref(p) { return 'tel:+' + String(p).replace(/\D/g, ''); }
 
-      setContent('<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>' + t('customer:payment_page.order_confirmed_title') + '</h1><p>' + t('customer:payment_page.order_placed_desc') + '</p>' +
-        '<div class="wait-badge"><span class="spinner-sm"></span>' + t('customer:payment_page.waiting_code_badge') + '</div>' +
-        (storePhone ? '<div class="call-note">' + t('customer:payment_page.questions_call') + ' <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
-        '<div class="success-actions"><a href="products.html" class="btn btn-primary">' + t('customer:payment_page.continue_shopping') + '</a></div>');
+      function waitingHtml() {
+        return '<div class="success-icon"><span class="material-symbols-outlined">schedule</span></div><h1>' + t('customer:payment_page.order_confirmed_title') + '</h1><p>' + t('customer:payment_page.order_placed_desc') + '</p>' +
+          '<div class="wait-badge"><span class="spinner-sm"></span>' + t('customer:payment_page.waiting_code_badge') + '</div>' +
+          (storePhone ? '<div class="call-note">' + t('customer:payment_page.questions_call') + ' <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
+          '<div class="success-actions"><a href="products.html" class="btn btn-primary">' + t('customer:payment_page.continue_shopping') + '</a></div>';
+      }
 
+      setContent(waitingHtml());
+
+      fetch('/api/settings').then(function (r) { return r.json(); }).then(function (s) {
+        storePhone = s.contact_phone || '';
+        // The card was drawn before this fetch resolved, so if the number is
+        // still missing and the user is still on the waiting view, redraw it
+        // now that the store phone is known.
+        var live = content.querySelector('.wait-badge');
+        if (storePhone && live && !content.querySelector('.call-note')) {
+          setContent(waitingHtml());
+        }
+      }).catch(function () {});
       pollInterval = setInterval(function () {
         attempts++;
         if (attempts > maxAttempts) {
