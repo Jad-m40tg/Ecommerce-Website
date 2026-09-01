@@ -90,7 +90,9 @@
   <script>
     (function () {
       function t(key, params) { return (window.i18n) ? window.i18n(key.trim(), params) : key.trim(); }
+      var pollInterval = null;
       function boot() {
+      if (pollInterval) clearInterval(pollInterval);
       var params = new URLSearchParams(window.location.search);
       var orderId = params.get('order_id');
       var code = params.get('code');
@@ -125,7 +127,7 @@
         (storePhone ? '<div class="call-note">' + t('customer:payment_page.questions_call') + ' <a href="' + phoneHref(storePhone) + '">' + storePhone + '</a></div>' : '') +
         '<div class="success-actions"><a href="products.html" class="btn btn-primary">' + t('customer:payment_page.continue_shopping') + '</a></div>');
 
-      var pollInterval = setInterval(function () {
+      pollInterval = setInterval(function () {
         attempts++;
         if (attempts > maxAttempts) {
           clearInterval(pollInterval);
@@ -167,6 +169,7 @@
       }
       if (window.i18n) boot();
       else window.addEventListener('i18n:ready', function () { boot(); }, { once: true });
+      window.addEventListener('i18n:changed', function () { boot(); });
     })();
   </script>
   <script src="js/language.js?v=23"></script>

@@ -90,7 +90,9 @@
   <script>
     (function () {
       function t(key, params) { return (window.i18n) ? window.i18n(key.trim(), params) : key.trim(); }
+      var pollInterval = null;
       function boot() {
+      if (pollInterval) clearInterval(pollInterval);
       var params = new URLSearchParams(window.location.search);
       var orderId = params.get('order_id');
       var content = document.getElementById('successContent');
@@ -141,7 +143,7 @@
         }
       }
 
-      var pollInterval = setInterval(function () {
+      pollInterval = setInterval(function () {
         if (Date.now() >= deadline) {
           stopPolling();
           showTimeoutNote();
@@ -220,6 +222,7 @@
       }
       if (window.i18n) boot();
       else window.addEventListener('i18n:ready', function () { boot(); }, { once: true });
+      window.addEventListener('i18n:changed', function () { boot(); });
     })();
   </script>
   <script src="js/language.js?v=23"></script>

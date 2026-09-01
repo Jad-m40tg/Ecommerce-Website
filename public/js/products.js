@@ -49,7 +49,9 @@ function setupPriceSlider() {
 
 /* Format the price-slider max label in DZD */
 function sliderLabel(dzd) {
-  return Number(dzd).toLocaleString('en-US') + ' DA';
+  var lang = (window.BoularasI18n && typeof window.BoularasI18n.getLang === 'function') ? window.BoularasI18n.getLang() : 'en';
+  var loc = { en: 'en-US', fr: 'fr-FR', ar: 'ar-DZ' }[lang] || 'en-US';
+  return Number(dzd).toLocaleString(loc) + ' DA';
 }
 
 /* Render the "Up to X DA" price label with i18n */

@@ -647,7 +647,7 @@ function renderProduct(p) {
   if (cBtn) {
     var out2 = !(p.stock > 0);
     cBtn.disabled = out2;
-    cBtn.textContent = out2 ? 'Out of Stock' : 'Confirm Order';
+    cBtn.textContent = out2 ? window.i18n('customer:product_detail.out_of_stock') : window.i18n('customer:product_detail.confirm_order');
     cBtn.setAttribute('aria-disabled', out2 ? 'true' : 'false');
   }
   if (typeof initLazyImages === 'function') initLazyImages();

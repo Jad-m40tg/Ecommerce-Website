@@ -102,19 +102,26 @@ router.get('/status/:id', authenticateToken, requireAdmin, async (req, res) => {
 
 // GET /api/payments/public-status/:id — Public. Check payment status for an order.
 // Same lookup/sync as the admin route but returns only minimal, non-sensitive
-// fields (no order_id, no lookup_code, and critically NO NOEST tracking code,
-// which could be used to correlate/track shipments).
+// fields (no order_id, no lookup_code). The carrier/tracking code is surfaced
+// ONLY after the payment is confirmed (paid), because the customer waits on this
+// endpoint to "receive the NOEST code" and then track their shipment on the
+// payment-success page. Pre-payment the code stays hidden.
 router.get('/public-status/:id', publicStatusLimiter, async (req, res) => {
   try {
     const result = await lookupAndSyncOrder(req.params.id);
 
     if (!result) return res.status(404).json({ error: 'Order not found' });
 
+    const tracking_code = (result.order.payment_status === 'paid')
+      ? (result.order.noest_tracking || result.order.tracking_code || null)
+      : null;
+
     res.json({
       checkout_status: result.checkout ? result.checkout.status : null,
       payment_status: result.order.payment_status,
       order_status: result.order.order_status,
-      noest_status: result.order.noest_status || null
+      noest_status: result.order.noest_status || null,
+      tracking_code
     });
   } catch (err) {
     console.error('Payment status error:', err);

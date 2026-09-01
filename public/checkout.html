@@ -73,9 +73,9 @@
         <span class="sep">/</span>
         <a href="products.html" data-i18n="customer:nav.shop">Shop</a>
         <span class="sep">/</span>
-        <a href="cart.html">Cart</a>
+        <a href="cart.html" data-i18n="customer:nav.cart">Cart</a>
         <span class="sep">/</span>
-        <span class="current">Checkout</span>
+        <span class="current" data-i18n="customer:checkout.title_h1">Checkout</span>
       </nav>
     </div>
 
@@ -102,7 +102,7 @@
             <div class="form-row full">
               <div class="field">
                 <label for="email"><span data-i18n="customer:checkout.email">Email</span> <span class="required">*</span></label>
-                <span class="input-wrap"><input type="email" id="email" placeholder="you@example.com" required />
+                <span class="input-wrap"><input type="email" id="email" placeholder="you@example.com" data-i18n-attr="placeholder:customer:checkout.email" required />
                 <i class="fa-solid fa-circle-check validation-icon"></i></span>
                 <div class="error-msg" id="emailError" role="alert" data-i18n="customer:checkout.err_email">Please enter a valid email.</div>
               </div>
@@ -110,7 +110,7 @@
             <div class="form-row">
               <div class="field">
                 <label for="phone"><span data-i18n="customer:checkout.phone">Phone</span> <span class="required">*</span></label>
-                <span class="input-wrap"><input type="tel" id="phone" placeholder="0555 12 34 56" />
+                <span class="input-wrap"><input type="tel" id="phone" placeholder="0555 12 34 56" data-i18n-attr="placeholder:customer:checkout.phone" />
                 <i class="fa-solid fa-circle-check validation-icon"></i></span>
                 <div class="error-msg" id="phoneError" role="alert"></div>
               </div>
@@ -123,13 +123,13 @@
             <div class="form-row">
               <div class="field">
                 <label for="firstName"><span data-i18n="customer:checkout.first_name">First Name</span> <span class="required">*</span></label>
-                <span class="input-wrap"><input type="text" id="firstName" placeholder="Jane" required />
+                <span class="input-wrap"><input type="text" id="firstName" placeholder="Jane" data-i18n-attr="placeholder:customer:checkout.first_name" required />
                 <i class="fa-solid fa-circle-check validation-icon"></i></span>
                 <div class="error-msg" id="firstNameError" role="alert" data-i18n="customer:checkout.required">Required.</div>
               </div>
               <div class="field">
                 <label for="lastName"><span data-i18n="customer:checkout.last_name">Last Name</span> <span class="required">*</span></label>
-                <span class="input-wrap"><input type="text" id="lastName" placeholder="Doe" required />
+                <span class="input-wrap"><input type="text" id="lastName" placeholder="Doe" data-i18n-attr="placeholder:customer:checkout.last_name" required />
                 <i class="fa-solid fa-circle-check validation-icon"></i></span>
                 <div class="error-msg" id="lastNameError" role="alert" data-i18n="customer:checkout.required">Required.</div>
               </div>
@@ -137,7 +137,7 @@
             <div class="form-row full">
               <div class="field">
                 <label for="address"><span data-i18n="customer:checkout.address">Address</span> <span class="required">*</span></label>
-                <span class="input-wrap"><input type="text" id="address" placeholder="Rue Didouche Mourad" required />
+                <span class="input-wrap"><input type="text" id="address" placeholder="Rue Didouche Mourad" data-i18n-attr="placeholder:customer:checkout.address" required />
                 <i class="fa-solid fa-circle-check validation-icon"></i></span>
                 <div class="error-msg" id="addressError" role="alert" data-i18n="customer:checkout.required">Required.</div>
               </div>
@@ -145,13 +145,13 @@
             <div class="form-row full">
               <div class="field">
                 <label for="apt" data-i18n="customer:checkout.apt">Apartment, suite, etc. (optional)</label>
-                <input type="text" id="apt" placeholder="Appartement (optionnel)" />
+                <input type="text" id="apt" placeholder="Appartement (optionnel)" data-i18n-attr="placeholder:customer:checkout.apt" />
               </div>
             </div>
             <div class="form-row full">
               <div class="field">
                 <label for="city"><span data-i18n="customer:checkout.city_wilaya">City (Wilaya)</span> <span class="required">*</span></label>
-                <span class="input-wrap"><input type="text" id="city" placeholder="Algiers" required />
+                <span class="input-wrap"><input type="text" id="city" placeholder="Algiers" data-i18n-attr="placeholder:customer:checkout.city_wilaya" required />
                 <i class="fa-solid fa-circle-check validation-icon"></i></span>
                 <div class="error-msg" id="cityError" role="alert" data-i18n="customer:checkout.required">Required.</div>
               </div>
