@@ -51,12 +51,12 @@
   .section { padding: 44px 0; }
 }
 
-/* 520px — product/promo/category grids stay at 2 cols (1 col only on very
-   small screens, handled per-page) */
+/* 520px — product/category grids stay at 2 cols (1 col only on very
+   small screens, handled per-page). promo-grid (Why choose us?) is
+   excluded on purpose: it flips to 1 col on phones in offers.css. */
 @media (max-width: 520px) {
   .product-grid,
   .results-grid,
-  .promo-grid,
   .categories-grid { grid-template-columns: repeat(2, 1fr); }
   .search-bar { flex-direction: column; }
   .section { padding: 40px 0; }

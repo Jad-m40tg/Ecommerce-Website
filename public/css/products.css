@@ -345,7 +345,9 @@
   .card-price-row { gap: 10px; padding: 6px 14px 14px; flex-wrap: wrap; }
 }
 
-@media (max-width: 380px) {
+/* 2-up stays down to 320px (phones ~360px incl. Kiwi). Below that,
+   single wide column so cards never get crushed. */
+@media (max-width: 320px) {
   .product-grid { grid-template-columns: 1fr; gap: 18px; }
   .product-grid .product-card .card-body { padding: 16px 18px 10px; }
   .product-grid .product-card .card-title { font-size: 15.5px; }

@@ -280,11 +280,29 @@
 }
 
 @media (max-width: 520px) {
-  .promo-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .card-price { font-size: 15px; white-space: normal; overflow-wrap: anywhere; }
-  .card-price s { font-size: 11.5px; }
-  .card-price-row { gap: 10px; padding: 6px 14px 14px; flex-wrap: wrap; }
-  .card-rating { display: none; }
+  /* Why choose us? cards (promo-card) go back to a single column on
+     phones — they are info blocks, not product cards, and read much
+     better full-width than squeezed 2-up (regression from 75bba68). */
+  .promo-grid { grid-template-columns: 1fr; gap: 16px; }
+  /* Sale product cards: horizontal carousel -> 2-col grid on phones, so
+     offers cards render 2-per-row like shop/categories down to 320px
+     (this fixes the "1 per row" the user sees in Kiwi at ~360px). */
+  .product-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .product-row .product-card {
+    flex: none;
+    scroll-snap-align: none;
+  }
+  .product-row .product-card .card-title { font-size: 15px; }
+  .product-row .product-card .card-price { font-size: 15px; white-space: normal; overflow-wrap: anywhere; }
+  .product-row .product-card .card-price s { font-size: 11.5px; }
+  .product-row .product-card .card-price-row { gap: 10px; padding: 6px 14px 14px; flex-wrap: wrap; }
+  .product-row .product-card .card-rating { display: none; }
+  .product-row .product-card .card-add,
+  .product-row .product-card .card-added { font-size: 13px; padding: 9px 12px; }
 }
 
 @media (max-width: 500px) {
@@ -343,10 +361,11 @@
   .offer-media img { height: 180px; }
 }
 
-@media (max-width: 380px) {
-  .promo-grid { grid-template-columns: 1fr; gap: 16px; }
-  .card-rating { display: block; }
-  .card-price-row { flex-wrap: nowrap; }
+@media (max-width: 320px) {
+  .promo-grid { gap: 16px; }
+  .product-row { grid-template-columns: 1fr; }
+  .product-row .product-card .card-rating { display: block; }
+  .product-row .product-card .card-price-row { flex-wrap: nowrap; }
 }
 
 /* Promo cards are keyboard-focusable; match product-card focus treatment */

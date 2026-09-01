@@ -113,10 +113,15 @@
 /* ---- ARABIC GLYPH COVERAGE — Tajawal (all widths) ----
    Inter/Playfair have no Arabic letterforms. When lang is ar, route
    glyphs through Tajawal — a modern geometric Arabic font that matches
-   Inter — so Arabic reads like EN/FR. dir stays ltr; font swap only. */
+   Inter — so Arabic reads like EN/FR. dir stays ltr; font swap only.
+
+   unicode-bidi: plaintext auto-detects each element's text base
+   direction (Arabic -> RTL paragraph), fixing sentence-end punctuation
+   (. ! ? % …) and trailing numbers in a forced-ltr doc. Layout stays ltr. */
 html[lang="ar"] body,
 html[lang="ar"] body * {
   font-family: 'Inter', 'Tajawal', sans-serif !important;
+  unicode-bidi: plaintext;
 }
 html[lang="ar"] h1,
 html[lang="ar"] h2,

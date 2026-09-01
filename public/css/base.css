@@ -84,10 +84,17 @@ button { font-family: inherit; cursor: pointer; }
    script through Tajawal — a modern geometric Arabic font that
    visually matches Inter — so Arabic reads like EN/FR.
    dir stays ltr; this only swaps the font, never the layout.
+
+   unicode-bidi: plaintext = each element's inline text auto-detects
+   its own base direction from the first strong character (Arabic ->
+   RTL paragraph), so sentence-ending punctuation (. ! ? % …) and
+   trailing numbers land on the CORRECT side in a forced-ltr doc.
+   It does NOT flip the element layout — only the text ordering.
    ============================================================ */
 html[lang="ar"] body,
 html[lang="ar"] body * {
   font-family: 'Inter', 'Tajawal', sans-serif !important;
+  unicode-bidi: plaintext;
 }
 html[lang="ar"] h1,
 html[lang="ar"] h2,
