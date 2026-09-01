@@ -36,7 +36,7 @@
     .track-input-wrap input::placeholder{text-transform:none;letter-spacing:normal}
     .track-input-wrap input.valid{border:2px solid var(--sage) !important}
     .track-input-wrap input.invalid{border:2px solid #e41a1a !important;box-shadow:0 0 8px rgba(218,29,29,.31)}
-    .validation-icon{position:absolute;right:14px;top:16px;color:var(--sage);font-size:18px;opacity:0;pointer-events:none;transition:opacity .3s ease}
+    .validation-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--sage);font-size:18px;width:18px;height:18px;display:grid;place-items:center;line-height:1;opacity:0;pointer-events:none;transition:opacity .3s ease}
     .track-input-wrap input.valid + .validation-icon{opacity:1}
     .track-result{display:none}
     .track-result.visible{display:block}
