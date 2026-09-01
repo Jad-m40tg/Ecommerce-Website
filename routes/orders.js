@@ -96,6 +96,34 @@ function cancelAndRestoreStock(orderId, order, extraUpdates, extraValues) {
   })();
 }
 
+// Shared transaction: refund an order and restore its stock.
+// Used by the admin PATCH /:id route when payment_status is set to 'refunded'.
+// Idempotent + atomic like cancelAndRestoreStock: the conditional UPDATE only
+// flips to refunded when the order isn't already refunded and hasn't been
+// cancelled (a cancellation already restored the stock), so repeated or
+// concurrent refund calls can never restore the same order's stock twice.
+function refundAndRestoreStock(orderId, order, extraUpdates, extraValues) {
+  return db.transaction(() => {
+    let sql = "UPDATE orders SET payment_status = 'refunded', updated_at = CURRENT_TIMESTAMP";
+    const params = [];
+    if (extraUpdates && extraUpdates.length) {
+      sql += ', ' + extraUpdates.join(', ');
+      params.push(...extraValues);
+    }
+    sql += " WHERE id = ? AND order_status != 'cancelled' AND payment_status != 'refunded'";
+    params.push(orderId);
+    const result = db.prepare(sql).run(...params);
+    if (result.changes === 0) return false;
+    const items = JSON.parse(order.items);
+    const stockStmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
+    for (const item of items) {
+      stockStmt.run(item.quantity, item.product_id);
+    }
+    console.log('[STOCK] Refund restored ' + items.reduce((s, i) => s + i.quantity, 0) + ' stock for order #' + orderId);
+    return true;
+  })();
+}
+
 // Builds the idempotent duplicate response for a retried checkout (same nonce).
 // Shared by the nonce pre-check and the UNIQUE-constraint race fallback.
 async function duplicateOrderResponse(existingOrder) {
@@ -407,6 +435,36 @@ router.patch('/:id', (req, res) => {
       console.error('[STOCK] Failed to re-deduct stock for order #' + req.params.id, e);
       return res.status(500).json({ error: 'Failed to update order' });
     }
+  } else if (
+    payment_status === 'refunded' &&
+    order.order_status !== 'cancelled' &&
+    !(status === 'cancelled')
+  ) {
+    // Refund flow: another transactional stock restoration path. Skips orders
+    // that are already cancelled (the cancel path above already restored their
+    // stock) and requests that cancel in the same call. The conditional UPDATE
+    // inside also refuses already-refunded orders, so a repeated refund can
+    // never double-restore stock.
+    const extraUpdates = [];
+    const extraValues = [];
+    if (status) {
+      if (!VALID_ORDER_STATUSES.includes(status)) {
+        return res.status(400).json({ error: `Invalid order status. Must be one of: ${VALID_ORDER_STATUSES.join(', ')}` });
+      }
+      extraUpdates.push('order_status = ?');
+      extraValues.push(status);
+    }
+    if (tracking_number !== undefined) { extraUpdates.push('tracking_number = ?'); extraValues.push(String(tracking_number).slice(0, 200)); }
+    if (carrier !== undefined) { extraUpdates.push('carrier = ?'); extraValues.push(String(carrier).slice(0, 100)); }
+    if (tracking_url !== undefined) { extraUpdates.push('tracking_url = ?'); extraValues.push(String(tracking_url).slice(0, 500)); }
+    if (noest_tracking !== undefined) { extraUpdates.push('noest_tracking = ?'); extraValues.push(String(noest_tracking).slice(0, 100)); }
+    if (noest_status !== undefined) { extraUpdates.push('noest_status = ?'); extraValues.push(String(noest_status).slice(0, 50)); }
+    try {
+      refundAndRestoreStock(req.params.id, order, extraUpdates, extraValues);
+    } catch (e) {
+      console.error('[STOCK] Failed to restore stock on refund for order #' + req.params.id, e);
+      return res.status(500).json({ error: 'Failed to update order' });
+    }
   } else {
     const result = db.prepare(`UPDATE orders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
     if (result.changes === 0) return res.status(404).json({ error: 'Order not found' });
@@ -416,4 +474,5 @@ router.patch('/:id', (req, res) => {
 });
 
 router.cancelAndRestoreStock = cancelAndRestoreStock;
+router.refundAndRestoreStock = refundAndRestoreStock;
 module.exports = router;
