@@ -280,7 +280,7 @@
 }
 
 @media (max-width: 520px) {
-  .promo-grid { grid-template-columns: 1fr; }
+  .promo-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 }
 
 @media (max-width: 500px) {
@@ -337,6 +337,10 @@
   .offer-empty-icon { width: 40px; height: 40px; }
   .offer-empty-icon svg { width: 18px; height: 18px; }
   .offer-media img { height: 180px; }
+}
+
+@media (max-width: 380px) {
+  .promo-grid { grid-template-columns: 1fr; gap: 16px; }
 }
 
 /* Promo cards are keyboard-focusable; match product-card focus treatment */

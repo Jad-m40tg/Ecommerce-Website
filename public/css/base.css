@@ -79,22 +79,22 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 /* ============================================================
-   ARABIC GLYPH COVERAGE — Cairo
-   Inter/Playfair have no Arabic letterforms. When the document
-   lang is ar, route every glyph through Cairo (which also carries
-   Latin). Latin (en/fr) stays on Inter/Playfair untouched.
+   ARABIC GLYPH COVERAGE — Inter / Playfair Display
+   Arabic users want the same fonts as EN/FR, so we route the Arabic
+   script through Inter (body) and Playfair Display (headings) with a
+   Cairo fallback for any glyphs those don't yet include.
    dir stays ltr; this only swaps the font, never the layout.
    ============================================================ */
 html[lang="ar"] body,
 html[lang="ar"] body * {
-  font-family: 'Cairo', 'Inter', sans-serif !important;
+  font-family: 'Inter', 'Cairo', sans-serif !important;
 }
 html[lang="ar"] h1,
 html[lang="ar"] h2,
 html[lang="ar"] h3 {
-  font-family: 'Cairo', 'Playfair Display', serif !important;
+  font-family: 'Playfair Display', 'Cairo', serif !important;
 }
-/* Keep icon fonts and monospace intact — Cairo/Inter have no icon glyphs
+/* Keep icon fonts and monospace intact — Inter/Cairo have no icon glyphs
    and must NOT replace the Material Symbols / Font Awesome / mono fonts. */
 html[lang="ar"] .material-symbols-outlined,
 html[lang="ar"] .material-symbols-outlined * {
@@ -103,6 +103,13 @@ html[lang="ar"] .material-symbols-outlined * {
 html[lang="ar"] i[class*="fa-"] {
   font-family: 'Font Awesome 6 Free' !important;
   font-weight: 900;
+}
+/* fa-brands icons (TikTok / Instagram / Facebook in the footer) live in the
+   Brands family at weight 400 — the Free-900 rule above breaks them in
+   Arabic, so restore them. */
+html[lang="ar"] i[class*="fa-brands"] {
+  font-family: 'Font Awesome 6 Brands' !important;
+  font-weight: 400;
 }
 html[lang="ar"] code,
 html[lang="ar"] pre,

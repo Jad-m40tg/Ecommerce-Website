@@ -51,12 +51,13 @@
   .section { padding: 44px 0; }
 }
 
-/* 520px — grids to 1 column */
+/* 520px — product/promo/category grids stay at 2 cols (1 col only on very
+   small screens, handled per-page) */
 @media (max-width: 520px) {
   .product-grid,
-  .results-grid { grid-template-columns: repeat(2, 1fr); }
-  .categories-grid,
-  .promo-grid { grid-template-columns: 1fr; }
+  .results-grid,
+  .promo-grid,
+  .categories-grid { grid-template-columns: repeat(2, 1fr); }
   .search-bar { flex-direction: column; }
   .section { padding: 40px 0; }
   .section-head { margin-bottom: 28px; }
