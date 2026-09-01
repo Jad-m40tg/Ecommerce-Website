@@ -1,7 +1,6 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const db = require('../db');
-const config = require('../config');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { createCheckout, getCheckout } = require('../services/payment');
 const { activeSalesMap, buildOrderItems, computeTotals } = require('../services/pricing');
@@ -239,7 +238,12 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
           orderId: id,
           customerEmail: customer_email,
           customerName: customer_name,
-          baseUrl: config.APP_URL
+          // Callback URLs must point back to whatever origin the customer is
+          // actually browsing (localhost, LAN IP, or ngrok tunnel). Deriving
+          // from the request keeps Chargily's success/failure redirect working
+          // in every case. trust proxy is set, so req.protocol is https behind
+          // an ngrok/HTTPS reverse proxy.
+          baseUrl: req.protocol + '://' + req.get('host')
         });
 
         db.prepare("UPDATE orders SET payment_reference = ? WHERE id = ?").run(checkout.id, id);
