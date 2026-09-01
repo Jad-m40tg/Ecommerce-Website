@@ -100,11 +100,11 @@
 
       function setContent(html) {
         content.innerHTML = html;
-        var heading = content.querySelector('h1, h2, h3');
-        if (heading) {
-          heading.setAttribute('tabindex', '-1');
-          heading.focus();
-        }
+        // Note: we intentionally do NOT call .focus() on the heading here.
+        // iOS/Safari draws a visible focus ring around the heading that
+        // overlaps the card border (the "doubled border" look). The container
+        // (#successContent) already has role="status" + aria-live="polite", so
+        // screen readers announce the update without us moving focus.
       }
 
       if (!orderId) {
