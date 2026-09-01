@@ -9,6 +9,7 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { PORT, CORS_ORIGIN } = require('./config');
 const ordersRouter = require('./routes/orders');
+const { getCheckout } = require('./services/payment');
 const { sendProductPage } = require('./services/seo');
 
 const app = express();
@@ -194,17 +195,46 @@ app.listen(PORT, () => {
 // ============================================================
 const db = require('./db');
 
-function cleanupAbandonedOrders() {
+async function cleanupAbandonedOrders() {
   try {
     const staleOrders = db.prepare(
-      "SELECT id, items FROM orders WHERE payment_method = 'card' AND payment_status = 'pending' AND order_status NOT IN ('cancelled', 'delivered') AND created_at < datetime('now', '-30 minutes')"
+      "SELECT id, items, payment_reference FROM orders WHERE payment_method = 'card' AND payment_status = 'pending' AND order_status NOT IN ('cancelled', 'delivered') AND created_at < datetime('now', '-30 minutes')"
     ).all();
     for (const order of staleOrders) {
       try {
+        // Confirm with Chargily that the checkout was never paid BEFORE auto-
+        // cancelling. If both the success-page poll and the webhook missed the
+        // event (no webhook URL configured, customer closed the tab), the DB
+        // still says 'pending' but the customer DID pay — auto-cancelling would
+        // bounce a real order and put its stock back on the shelf for a second
+        // sale (overselling).
+        if (order.payment_reference) {
+          let checkout = null;
+          try {
+            checkout = await getCheckout(order.payment_reference);
+          } catch (e) {
+            console.error('[CLEANUP] Chargily lookup failed for order #' + order.id + ':', e.message);
+            continue; // can't confirm it wasn't paid — leave the order alone
+          }
+          if (checkout && checkout.status === 'paid') {
+            db.prepare("UPDATE orders SET payment_status = 'paid', paid_at = CURRENT_TIMESTAMP WHERE id = ? AND payment_status NOT IN ('paid', 'refunded')").run(order.id);
+            console.log('[CLEANUP] Order #' + order.id + ' was already paid — marked paid instead of cancelling');
+            continue;
+          }
+          if (checkout && checkout.status !== 'pending') {
+            // Chargily says failed/canceled/expired — release the reserved stock.
+            ordersRouter.cancelAndRestoreStock(order.id, order);
+            console.log('[CLEANUP] Auto-cancelled abandoned order #' + order.id + ' (Chargily status: ' + checkout.status + ')');
+            continue;
+          }
+        }
+        // No checkout reference (Chargily checkout creation failed at order
+        // time) or Chargily still lists the checkout as pending after 30 min
+        // (customer abandoned the payment page) — release the stock.
         ordersRouter.cancelAndRestoreStock(order.id, order);
-        console.log(`[CLEANUP] Auto-cancelled abandoned order #${order.id}`);
+        console.log('[CLEANUP] Auto-cancelled abandoned order #' + order.id);
       } catch (err) {
-        console.error(`[CLEANUP] Failed to cancel abandoned order #${order.id}:`, err);
+        console.error('[CLEANUP] Failed to cancel abandoned order #' + order.id + ':', err);
       }
     }
   } catch (err) {

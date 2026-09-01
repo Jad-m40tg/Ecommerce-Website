@@ -70,22 +70,29 @@ router.get('/track', trackLimiter, (req, res) => {
 // Used by both the PATCH /:id admin route and the abandoned-order cleanup job.
 // extraUpdates/extraValues allow additional SET clauses (e.g. carrier) alongside the cancel.
 function cancelAndRestoreStock(orderId, order, extraUpdates, extraValues) {
-  db.transaction(() => {
+  // Idempotent + atomic: the conditional UPDATE only flips the order to
+  // cancelled if it isn't already, so concurrent cancels (webhook, payment
+  // status sync, abandoned-order cleanup, admin PATCH) can never restore the
+  // same order's stock twice. A double restore would inflate inventory and
+  // enable overselling the same units again.
+  return db.transaction(() => {
     let sql = "UPDATE orders SET order_status = 'cancelled', updated_at = CURRENT_TIMESTAMP";
     const params = [];
     if (extraUpdates && extraUpdates.length) {
       sql += ', ' + extraUpdates.join(', ');
       params.push(...extraValues);
     }
-    sql += ' WHERE id = ?';
+    sql += " WHERE id = ? AND order_status != 'cancelled'";
     params.push(orderId);
-    db.prepare(sql).run(...params);
+    const result = db.prepare(sql).run(...params);
+    if (result.changes === 0) return false;
     const items = JSON.parse(order.items);
     const stockStmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
     for (const item of items) {
       stockStmt.run(item.quantity, item.product_id);
     }
     console.log('[STOCK] Restored ' + items.reduce((s, i) => s + i.quantity, 0) + ' stock for order #' + orderId);
+    return true;
   })();
 }
 
