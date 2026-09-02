@@ -1,5 +1,43 @@
 ﻿/* checkout.js â€” checkout.html specific logic */
 
+/* ---------- 0.5. AUTO-FILL SHIPPING FROM product.html ---------- */
+var CHECKOUT_DRAFT_KEY = 'boularas_checkout_draft';
+function fillFromDraft() {
+  var raw = null;
+  try { raw = JSON.parse(localStorage.getItem(CHECKOUT_DRAFT_KEY)) || null; } catch (e) { raw = null; }
+  if (!raw || typeof raw !== 'object') return;
+
+  /* Split the full name at the FIRST space: "John Doe Alex" -> first="John", last="Doe Alex" */
+  var fullName = (raw.full_name || '').trim();
+  var first = fullName;
+  var last = '';
+  var sp = fullName.indexOf(' ');
+  if (sp !== -1) { first = fullName.slice(0, sp).trim(); last = fullName.slice(sp + 1).trim(); }
+
+  var email = document.getElementById('email');
+  var phone = document.getElementById('phone');
+  var fn = document.getElementById('firstName');
+  var ln = document.getElementById('lastName');
+  var address = document.getElementById('address');
+  var city = document.getElementById('city');
+  if (email && raw.email && !email.value) { email.value = raw.email; email._draftFilled = true; }
+  if (phone && raw.phone && !phone.value) { phone.value = raw.phone; phone._draftFilled = true; }
+  if (fn && !fn.value && first) { fn.value = first; fn._draftFilled = true; }
+  if (ln && !ln.value && last) { ln.value = last; ln._draftFilled = true; }
+  if (address && raw.address && !address.value) { address.value = raw.address; address._draftFilled = true; }
+  if (city && raw.city && !city.value) { city.value = raw.city; city._draftFilled = true; }
+
+  /* Run the same validators that are attached to each field so the check
+     icons render for the auto-filled values too (they normally only appear
+     on user input). Only the fields we actually filled are validated. */
+  if (email && email._draftFilled) validateField('email', 'emailError', emailTest);
+  if (phone && phone._draftFilled) validateField('phone', 'phoneError', phoneTest);
+  if (fn && fn._draftFilled) validateField('firstName', 'firstNameError', firstNameTest);
+  if (ln && ln._draftFilled) validateField('lastName', 'lastNameError', lastNameTest);
+  if (address && address._draftFilled) validateField('address', 'addressError', addressTest);
+  if (city && city._draftFilled) validateField('city', 'cityError', cityTest);
+}
+
 /* ---------- 2. TOTALS MATH ---------- */
 var SHIPPING_FLAT   = 999;    // default, overridden by API
 var FREE_SHIP_OVER  = 9999;   // default, overridden by API
@@ -257,6 +295,7 @@ document.addEventListener('click', function (event) {
     var trackingCode = (data.order && data.order.tracking_code) || data.tracking_code || '';
 
     localStorage.removeItem('boularas_order_nonce');
+    localStorage.removeItem(CHECKOUT_DRAFT_KEY);
 
     if (data.duplicate === true && data.payment_url) {
       window.location.href = data.payment_url;
@@ -332,6 +371,7 @@ function showToast(message) {
 /* Init */
 function bootCheckout() {
   updateCartCount();
+  fillFromDraft();
   renderSummary();
 }
 

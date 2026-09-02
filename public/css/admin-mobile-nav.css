@@ -123,6 +123,16 @@ html[lang="ar"] body * {
   font-family: 'Inter', 'Tajawal', sans-serif !important;
   unicode-bidi: plaintext;
 }
+/* Layout containers must NOT get plaintext: it flips flex/grid main axes
+   (e.g. .page-head with justify-content:space-between gets its content
+   pushed to the center/right in Arabic). Reset them to a deterministic
+   LTR layout; the text inside still keeps plaintext for punctuation. */
+html[lang="ar"] .page-head,
+html[lang="ar"] .page-head > div {
+  unicode-bidi: normal;
+  direction: ltr;
+  text-align: left;
+}
 html[lang="ar"] h1,
 html[lang="ar"] h2,
 html[lang="ar"] h3 {

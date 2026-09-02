@@ -1113,6 +1113,19 @@ document.getElementById('orderForm').addEventListener('submit', function (event)
   if (currentProduct.stock <= 0) { showToast(window.i18n('customer:product_detail.product_unavailable')); return; }
 
   addToCart(currentProduct, { qty: selection.qty, color: selection.color, size: selection.size });
+
+  /* Save the shipping form so checkout.html can auto-fill the same data */
+  try {
+    localStorage.setItem('boularas_checkout_draft', JSON.stringify({
+      full_name: document.getElementById('fName').value.trim(),
+      email: document.getElementById('fEmail').value.trim(),
+      phone: document.getElementById('fPhone').value.trim(),
+      address: document.getElementById('fAddress').value.trim(),
+      city: document.getElementById('fCity').value.trim(),
+      notes: document.getElementById('fNotes').value.trim()
+    }));
+  } catch (e) {}
+
   showToast(window.i18n('customer:product_detail.redirecting_checkout'));
   setTimeout(function () { window.location.href = 'checkout.html'; }, 800);
 });
