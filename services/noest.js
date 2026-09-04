@@ -4,6 +4,7 @@
 const { NOEST_API_TOKEN, NOEST_USER_GUID, ENABLE_NOEST_VALIDATION } = require('../config');
 
 const BASE_URL = 'https://app.noest-dz.com';
+const REQUEST_TIMEOUT_MS = 15000;
 
 function isConfigured() {
   return !!(NOEST_API_TOKEN && NOEST_USER_GUID);
@@ -18,11 +19,23 @@ async function noestRequest(endpoint, options) {
 
   console.log('[NOEST] ' + (options.method || 'GET') + ' ' + url);
 
-  const response = await fetch(url, {
-    method: options.method || 'GET',
-    headers,
-    body: options.body ? JSON.stringify(options.body) : undefined
-  });
+  // Abort the request if NOEST does not respond within REQUEST_TIMEOUT_MS so a
+  // hung upstream cannot leave an admin/cleanup request hanging indefinitely.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let response;
+  try {
+    response = await fetch(url, {
+      method: options.method || 'GET',
+      headers,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal
+    });
+  } catch (e) {
+    clearTimeout(timeout);
+    throw new Error('NOEST request timed out or failed: ' + (e && e.message ? e.message : String(e)));
+  }
+  clearTimeout(timeout);
 
   const text = await response.text();
   let data;

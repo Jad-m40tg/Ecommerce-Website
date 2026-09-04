@@ -195,7 +195,13 @@ app.listen(PORT, () => {
 // ============================================================
 const db = require('./db');
 
+let cleanupRunning = false;
+
 async function cleanupAbandonedOrders() {
+  // Guard against overlapping sweeps: a slow Chargily lookup (or large backlog)
+  // can outlive the 5-minute interval. Only one sweep runs at a time.
+  if (cleanupRunning) return;
+  cleanupRunning = true;
   try {
     const staleOrders = db.prepare(
       "SELECT id, items, payment_reference, stock_deducted FROM orders WHERE payment_method = 'card' AND payment_status = 'pending' AND order_status NOT IN ('cancelled', 'delivered') AND created_at < datetime('now', '-30 minutes')"
@@ -242,6 +248,8 @@ async function cleanupAbandonedOrders() {
     }
   } catch (err) {
     console.error('[CLEANUP] Error fetching abandoned orders:', err);
+  } finally {
+    cleanupRunning = false;
   }
 }
 
@@ -263,5 +271,11 @@ runBackup();
 setInterval(runBackup, 6 * 60 * 60 * 1000); // every 6 hours
 
 // Process crash handlers — log fatal errors instead of dying silently.
-process.on('uncaughtException', (err) => { console.error('[FATAL] uncaughtException:', err); });
+// For uncaughtException, the Node docs warn not to continue after one (state may
+// be corrupted), so we log and exit (exit code 1) and let the process manager
+// (PM2/systemd) restart the app, rather than keeping a broken process "up".
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] uncaughtException:', err);
+  process.exit(1);
+});
 process.on('unhandledRejection', (reason) => { console.error('[FATAL] unhandledRejection:', reason); });

@@ -47,6 +47,16 @@ function generateTrackingCode() {
   return code;
 }
 
+// True only when v is a positive whole number (accepts a number or a numeric
+// string like "3", rejects "3.5", "abc", "", NaN, Infinity, and values < 1).
+// Used to validate client-supplied product_id and quantity before they hit the
+// DB, so stock can never be decremented by a fractional/negative/abused value.
+function isPositiveInt(v) {
+  if (typeof v === 'string' && v.trim() === '') return false;
+  const n = typeof v === 'string' ? Number(v) : v;
+  return Number.isInteger(n) && n >= 1 && String(n) !== 'Infinity';
+}
+
 // Accepts either an internal tracking code (8 chars A-Z/0-9) or a NOEST code
 // (WPY-XX-XXXXXXXX shape). Deliberately prefix-agnostic so a future NOEST
 // prefix change can never block customer tracking.
@@ -59,7 +69,11 @@ router.get('/track', trackLimiter, (req, res) => {
     return res.status(400).json({ error: 'Please provide a valid tracking code' });
   }
   const codeU = code.trim().toUpperCase();
-  const order = db.prepare('SELECT id, order_status, payment_status, payment_method, tracking_number, carrier, tracking_url, tracking_code, noest_tracking, noest_status, created_at, updated_at, items, total_cents FROM orders WHERE tracking_code = ? OR noest_tracking = ?').get(codeU, codeU);
+  // Note: `items` (the itemized line-by-line breakdown) is intentionally NOT
+  // returned here — the public tracking page doesn't render it, so exposing it
+  // to anyone holding the 8-char code would leak order contents. Only the
+  // status/tracking fields the page actually needs are returned.
+  const order = db.prepare('SELECT id, order_status, payment_status, payment_method, tracking_number, carrier, tracking_url, tracking_code, noest_tracking, noest_status, created_at, updated_at, total_cents FROM orders WHERE tracking_code = ? OR noest_tracking = ?').get(codeU, codeU);
   if (!order) return res.status(404).json({ error: 'Order not found. Please check your tracking code.' });
   // Surface the real carrier tracking code once the order is shipped
   order.tracking_code = order.noest_tracking || order.tracking_code;
@@ -210,6 +224,17 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
     if (customer_city.length > MAX_CITY_LEN) return res.status(400).json({ error: `customer_city must be ${MAX_CITY_LEN} characters or fewer` });
     if (notes && notes.length > MAX_NOTES_LEN) return res.status(400).json({ error: `notes must be ${MAX_NOTES_LEN} characters or fewer` });
 
+    // Reject non-string customer fields (arrays/objects/numbers would otherwise
+    // pass the length checks and be written straight into the DB as malformed data).
+    for (const field of ['customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city']) {
+      if (typeof req.body[field] !== 'string') {
+        return res.status(400).json({ error: `${field} must be a string` });
+      }
+    }
+    if (notes !== undefined && notes !== null && typeof notes !== 'string') {
+      return res.status(400).json({ error: 'notes must be a string' });
+    }
+
     // Optional idempotency key — retrying a checkout with the same nonce
     // returns the existing order instead of creating a duplicate.
     if (nonce !== undefined && (typeof nonce !== 'string' || nonce.length > 100)) {
@@ -240,8 +265,17 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
     }
 
     for (const item of items) {
-      if (!item.product_id || !item.quantity || item.quantity < 1) {
-        return res.status(400).json({ error: 'Each item must have product_id and quantity >= 1' });
+      if (!item || typeof item !== 'object') {
+        return res.status(400).json({ error: 'Each item must be an object' });
+      }
+      // product_id must be a positive integer string/number; quantity must be a
+      // positive integer. Rejecting fractional/NaN/negative values prevents a
+      // client from driving fractional or negative stock deductions.
+      if (!isPositiveInt(item.product_id)) {
+        return res.status(400).json({ error: 'Each item must have a valid integer product_id' });
+      }
+      if (!isPositiveInt(item.quantity)) {
+        return res.status(400).json({ error: 'Each item must have an integer quantity >= 1' });
       }
     }
 
@@ -265,12 +299,20 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
         saleMap
       });
 
-      const { discount_cents, shipping_cents, total_cents } = computeTotals({
+      const { discount_cents, shipping_cents, total_cents: rawTotal } = computeTotals({
         subtotal_cents,
         appliedPromo,
         deliveryFeeCents: delivery_fee,
         freeDeliveryThresholdCents: free_delivery_threshold
       });
+
+      // Round the final total to a whole number of dinars (multiple of 100
+      // cents) so the exact amount stored in the DB always equals the exact
+      // amount sent to the Chargily/DZD gateway — a non-round cent total (e.g.
+      // 9605c = 96.05 DA) could not otherwise be represented as a whole-DA
+      // charge, causing a silent discrepancy between what is charged and the
+      // order's recorded total.
+      const total_cents = Math.round(rawTotal / 100) * 100;
 
       const stmt = db.prepare(`
         INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, customer_city, items, subtotal_cents, delivery_fee_cents, total_cents, payment_method, payment_status, order_status, notes, tracking_code, nonce, stock_deducted)

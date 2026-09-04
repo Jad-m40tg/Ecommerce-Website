@@ -15,7 +15,11 @@ router.use(authenticateToken, requireAdmin);
 router.get('/overview', (req, res) => {
   // Optional ?days=N filters revenue/order totals to the last N days.
   // Without the param, all-time stats are returned (backward compatible).
-  const days = Number(req.query.days) || 0;
+  // Clamp days to a finite, positive, bounded window — a huge/Infinity value
+  // (e.g. ?days=1e999) would otherwise produce a NULL date filter that silently
+  // returns all-time data regardless of the requested range.
+  const rawDays = Number(req.query.days);
+  const days = Number.isFinite(rawDays) && rawDays >= 1 ? Math.min(Math.floor(rawDays), 3650) : 0;
   const inRange = days >= 1;
   const rangeFilter = inRange ? `created_at >= date('now', 'localtime', '-' || ${days} || ' days')` : null;
 
@@ -42,7 +46,6 @@ router.get('/overview', (req, res) => {
 router.get('/revenue', (req, res) => {
   const { period = 'daily' } = req.query;
   // Optional ?days=N selects the range: 7/30 → daily, 90 → weekly (84 days), 365 → monthly.
-  const days = Number(req.query.days) || 0;
 
   let sql;
   if (period === 'weekly') {
@@ -58,7 +61,8 @@ router.get('/revenue', (req, res) => {
            GROUP BY period ORDER BY period`;
   } else {
     // Daily buckets: ?days=7 → last 7 days; default (or ?days=30) → last 30 days
-    const dailyDays = days >= 1 ? days : 30;
+    const rawDaily = Number(req.query.days);
+    const dailyDays = Number.isFinite(rawDaily) && rawDaily >= 1 ? Math.min(Math.floor(rawDaily), 3650) : 30;
     sql = `SELECT date(created_at, 'localtime') as period, SUM(total_cents) as revenue_cents, COUNT(*) as order_count
            FROM orders WHERE payment_status = 'paid' AND created_at >= date('now', 'localtime', '-' || ${dailyDays} || ' days')
            GROUP BY period ORDER BY period`;

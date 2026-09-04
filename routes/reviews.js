@@ -36,9 +36,13 @@ router.get('/', (req, res) => {
     'SELECT id, product_id, customer_name, rating, comment, created_at, customer_email FROM reviews WHERE product_id = ? ORDER BY created_at DESC'
   ).all(id);
 
+  // Compute the 12h edit/delete cutoff ONCE instead of inside the per-row loop
+  // (avoids N+1 DB queries on a public, high-traffic endpoint).
+  const cutoff = db.prepare("SELECT datetime('now','-12 hours') AS t").get().t;
+
   const reviews = rows.map((r) => {
     const isMine = emailQuery.length > 0 && r.customer_email && r.customer_email.trim().toLowerCase() === emailQuery;
-    const isExpired = !!r.created_at && r.created_at < db.prepare("SELECT datetime('now','-12 hours') AS t").get().t;
+    const isExpired = !!r.created_at && r.created_at < cutoff;
     return {
       id: r.id,
       product_id: r.product_id,

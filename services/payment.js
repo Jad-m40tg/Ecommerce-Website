@@ -11,16 +11,28 @@ const BASE_URL = CHARGILY_ENV === 'test'
   ? 'https://pay.chargily.net/test/api/v2'
   : 'https://pay.chargily.net/api/v2';
 
+// Guard a Chargily SDK call with a timeout so a hung upstream never leaves a
+// checkout/cleanup request hanging indefinitely.
+function withTimeout(promise, ms, label) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(label + ' timed out after ' + ms + 'ms')), ms);
+    promise.then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); reject(e); }
+    );
+  });
+}
+
 async function createCheckout({ amount, orderId, customerEmail, customerName, baseUrl }) {
   const host = baseUrl || APP_URL;
-  const checkout = await client.createCheckout({
+  const checkout = await withTimeout(client.createCheckout({
     amount: amount,
     currency: 'dzd',
     success_url: host + '/payment-success.html?order_id=' + orderId,
     failure_url: host + '/payment-failed.html?order_id=' + orderId,
     metadata: { order_id: String(orderId) },
     description: 'Order #' + orderId
-  });
+  }), 15000, 'Chargily createCheckout');
 
   if (checkout.checkout_url) {
     checkout.checkout_url = checkout.checkout_url.replace('http://', 'https://');
@@ -30,8 +42,7 @@ async function createCheckout({ amount, orderId, customerEmail, customerName, ba
 }
 
 async function getCheckout(checkoutId) {
-  const checkout = await client.getCheckout(checkoutId);
-  return checkout;
+  return withTimeout(client.getCheckout(checkoutId), 15000, 'Chargily getCheckout');
 }
 
 function verifyWebhookSignature(rawBody, signature) {
