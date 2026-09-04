@@ -198,7 +198,7 @@ const db = require('./db');
 async function cleanupAbandonedOrders() {
   try {
     const staleOrders = db.prepare(
-      "SELECT id, items, payment_reference FROM orders WHERE payment_method = 'card' AND payment_status = 'pending' AND order_status NOT IN ('cancelled', 'delivered') AND created_at < datetime('now', '-30 minutes')"
+      "SELECT id, items, payment_reference, stock_deducted FROM orders WHERE payment_method = 'card' AND payment_status = 'pending' AND order_status NOT IN ('cancelled', 'delivered') AND created_at < datetime('now', '-30 minutes')"
     ).all();
     for (const order of staleOrders) {
       try {
@@ -219,10 +219,13 @@ async function cleanupAbandonedOrders() {
           if (checkout && checkout.status === 'paid') {
             db.prepare("UPDATE orders SET payment_status = 'paid', paid_at = CURRENT_TIMESTAMP WHERE id = ? AND payment_status NOT IN ('paid', 'refunded')").run(order.id);
             console.log('[CLEANUP] Order #' + order.id + ' was already paid — marked paid instead of cancelling');
+            // Payment confirmed → deduct the deferred stock (idempotent).
+            try { ordersRouter.deductStockForPaidOrder(order.id, order); }
+            catch (e) { console.error('[CLEANUP] Failed to deduct stock for paid order #' + order.id + ':', e); }
             continue;
           }
           if (checkout && checkout.status !== 'pending') {
-            // Chargily says failed/canceled/expired — release the reserved stock.
+            // Chargily says failed/canceled/expired — cancel (stock-aware restore).
             ordersRouter.cancelAndRestoreStock(order.id, order);
             console.log('[CLEANUP] Auto-cancelled abandoned order #' + order.id + ' (Chargily status: ' + checkout.status + ')');
             continue;
@@ -230,7 +233,7 @@ async function cleanupAbandonedOrders() {
         }
         // No checkout reference (Chargily checkout creation failed at order
         // time) or Chargily still lists the checkout as pending after 30 min
-        // (customer abandoned the payment page) — release the stock.
+        // (customer abandoned the payment page) — cancel (stock-aware restore).
         ordersRouter.cancelAndRestoreStock(order.id, order);
         console.log('[CLEANUP] Auto-cancelled abandoned order #' + order.id);
       } catch (err) {
@@ -247,6 +250,17 @@ cleanupAbandonedOrders();
 
 // Then every 5 minutes
 setInterval(cleanupAbandonedOrders, 300000);
+
+// Automatic backups — use the safe online backup API (works while live).
+// Backs up on startup and every 6 hours; old backups are pruned automatically.
+const { createBackup } = require('./db/backup');
+function runBackup() {
+  createBackup()
+    .then((file) => console.log('[BACKUP] ' + file))
+    .catch((e) => console.error('[BACKUP] failed:', e.message));
+}
+runBackup();
+setInterval(runBackup, 6 * 60 * 60 * 1000); // every 6 hours
 
 // Process crash handlers — log fatal errors instead of dying silently.
 process.on('uncaughtException', (err) => { console.error('[FATAL] uncaughtException:', err); });

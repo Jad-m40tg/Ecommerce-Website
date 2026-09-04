@@ -67,14 +67,17 @@ router.get('/track', trackLimiter, (req, res) => {
 });
 
 // Shared transaction: cancel an order and restore its stock.
-// Used by both the PATCH /:id admin route and the abandoned-order cleanup job.
-// extraUpdates/extraValues allow additional SET clauses (e.g. carrier) alongside the cancel.
+// Used by the PATCH /:id admin route, the abandoned-order cleanup job, and the
+// payment failure paths (webhook + status sync). Stock-aware: stock is only
+// restored when the order actually had stock deducted (orders.stock_deducted=1).
+//                 COD orders -> deducted at creation.
+//                 paid card orders -> deducted when payment succeeded.
+//                 pending/failed card orders -> never deducted -> nothing to restore.
+// stock_deducted is a permanent record (never reset to 0) so that un-cancel and
+// refund paths can still tell whether stock was originally taken.
+// The conditional UPDATE only flips the order to cancelled if it isn't already,
+// so concurrent cancels can never restore the same order's stock twice.
 function cancelAndRestoreStock(orderId, order, extraUpdates, extraValues) {
-  // Idempotent + atomic: the conditional UPDATE only flips the order to
-  // cancelled if it isn't already, so concurrent cancels (webhook, payment
-  // status sync, abandoned-order cleanup, admin PATCH) can never restore the
-  // same order's stock twice. A double restore would inflate inventory and
-  // enable overselling the same units again.
   return db.transaction(() => {
     let sql = "UPDATE orders SET order_status = 'cancelled', updated_at = CURRENT_TIMESTAMP";
     const params = [];
@@ -86,12 +89,16 @@ function cancelAndRestoreStock(orderId, order, extraUpdates, extraValues) {
     params.push(orderId);
     const result = db.prepare(sql).run(...params);
     if (result.changes === 0) return false;
-    const items = JSON.parse(order.items);
-    const stockStmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
-    for (const item of items) {
-      stockStmt.run(item.quantity, item.product_id);
+    if (order.stock_deducted) {
+      const items = JSON.parse(order.items);
+      const stockStmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
+      for (const item of items) {
+        stockStmt.run(item.quantity, item.product_id);
+      }
+      console.log('[STOCK] Restored ' + items.reduce((s, i) => s + i.quantity, 0) + ' stock for order #' + orderId);
+    } else {
+      console.log('[STOCK] Order #' + orderId + ' had no deducted stock — nothing to restore on cancel');
     }
-    console.log('[STOCK] Restored ' + items.reduce((s, i) => s + i.quantity, 0) + ' stock for order #' + orderId);
     return true;
   })();
 }
@@ -102,6 +109,8 @@ function cancelAndRestoreStock(orderId, order, extraUpdates, extraValues) {
 // flips to refunded when the order isn't already refunded and hasn't been
 // cancelled (a cancellation already restored the stock), so repeated or
 // concurrent refund calls can never restore the same order's stock twice.
+// Stock-aware: only restores if the order had stock deducted (so refunding an
+// order that lost stock (never deducted) won't inflate inventory).
 function refundAndRestoreStock(orderId, order, extraUpdates, extraValues) {
   return db.transaction(() => {
     let sql = "UPDATE orders SET payment_status = 'refunded', updated_at = CURRENT_TIMESTAMP";
@@ -114,12 +123,36 @@ function refundAndRestoreStock(orderId, order, extraUpdates, extraValues) {
     params.push(orderId);
     const result = db.prepare(sql).run(...params);
     if (result.changes === 0) return false;
+    if (order.stock_deducted) {
+      const items = JSON.parse(order.items);
+      const stockStmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
+      for (const item of items) {
+        stockStmt.run(item.quantity, item.product_id);
+      }
+      console.log('[STOCK] Refund restored ' + items.reduce((s, i) => s + i.quantity, 0) + ' stock for order #' + orderId);
+    } else {
+      console.log('[STOCK] Order #' + orderId + ' had no deducted stock — nothing to restore on refund');
+    }
+    return true;
+  })();
+}
+
+// Shared transaction: deduct stock once an order's payment is confirmed paid.
+// Used by the payment-success paths (webhook, status sync, cleanup). Only
+// deducts if the order hasn't had stock deducted yet, so webhook + poll + cleanup
+// racing to mark the same order paid can never double-deduct.
+function deductStockForPaidOrder(orderId, order) {
+  return db.transaction(() => {
+    const updated = db.prepare(
+      "UPDATE orders SET stock_deducted = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND stock_deducted = 0"
+    ).run(orderId);
+    if (updated.changes === 0) return false;
     const items = JSON.parse(order.items);
-    const stockStmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
+    const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
     for (const item of items) {
       stockStmt.run(item.quantity, item.product_id);
     }
-    console.log('[STOCK] Refund restored ' + items.reduce((s, i) => s + i.quantity, 0) + ' stock for order #' + orderId);
+    console.log('[STOCK] Deducted ' + items.reduce((s, i) => s + i.quantity, 0) + ' stock for paid order #' + orderId);
     return true;
   })();
 }
@@ -240,16 +273,26 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
       });
 
       const stmt = db.prepare(`
-        INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, customer_city, items, subtotal_cents, delivery_fee_cents, total_cents, payment_method, payment_status, order_status, notes, tracking_code, nonce)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
+        INSERT INTO orders (customer_name, customer_email, customer_phone, customer_address, customer_city, items, subtotal_cents, delivery_fee_cents, total_cents, payment_method, payment_status, order_status, notes, tracking_code, nonce, stock_deducted)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
       `);
       const result = stmt.run(customer_name, customer_email, customer_phone, customer_address, customer_city,
         JSON.stringify(resolvedItems), subtotal_cents, shipping_cents, total_cents,
-        payment_method || 'cash_on_delivery', orderStatus, notes || '', trackingCode, nonce || null);
+        payment_method || 'cash_on_delivery', orderStatus, notes || '', trackingCode, nonce || null,
+        // Cash-on-delivery commits the sale immediately (stock leaves the shelf
+        // at order time). Online (card) payments do NOT deduct stock yet — it is
+        // released on the shelf until the payment is actually confirmed paid.
+        isOnlinePayment ? 0 : 1);
 
-      const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
-      for (const item of resolvedItems) {
-        stockStmt.run(item.quantity, item.product_id);
+      // Only cash-on-delivery deducts stock at creation. Online payments defer
+      // the deduction until payments.js / the cleanup confirm the payment is
+      // 'paid' (via webhook or status sync). So an abandoned/failed card checkout
+      // never removes stock from the shelf.
+      if (!isOnlinePayment) {
+        const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
+        for (const item of resolvedItems) {
+          stockStmt.run(item.quantity, item.product_id);
+        }
       }
 
       return { id: result.lastInsertRowid, resolvedItems, subtotal_cents, actual_shipping: shipping_cents, total_cents };
@@ -349,7 +392,7 @@ router.get('/:id', (req, res) => {
 router.patch('/:id', (req, res) => {
   const { status, payment_status, tracking_number, carrier, tracking_url, noest_tracking, noest_status } = req.body;
 
-  const order = db.prepare('SELECT order_status, items FROM orders WHERE id = ?').get(req.params.id);
+  const order = db.prepare('SELECT order_status, items, stock_deducted FROM orders WHERE id = ?').get(req.params.id);
   if (!order) return res.status(404).json({ error: 'Order not found' });
 
   const updates = [];
@@ -407,22 +450,30 @@ router.patch('/:id', (req, res) => {
     }
   } else if (status && status !== 'cancelled' && order.order_status === 'cancelled') {
     const unCancelAndUpdate = db.transaction(() => {
-      const items = JSON.parse(order.items);
-      const stockCheckStmt = db.prepare('SELECT id, name, stock FROM products WHERE id = ?');
-      for (const item of items) {
-        const product = stockCheckStmt.get(item.product_id);
-        if (!product || product.stock < item.quantity) {
-          const productName = product ? product.name : `#${item.product_id}`;
-          throw new Error(`INSUFFICIENT_STOCK:${productName}`);
+      // Only re-deduct / stock-check when this order originally had stock taken.
+      // A cancelled-but-never-paid card order never deducted stock, so un-cancelling
+      // it must NOT remove stock from the shelf.
+      if (order.stock_deducted) {
+        const items = JSON.parse(order.items);
+        const stockCheckStmt = db.prepare('SELECT id, name, stock FROM products WHERE id = ?');
+        for (const item of items) {
+          const product = stockCheckStmt.get(item.product_id);
+          if (!product || product.stock < item.quantity) {
+            const productName = product ? product.name : `#${item.product_id}`;
+            throw new Error(`INSUFFICIENT_STOCK:${productName}`);
+          }
         }
       }
       const result = db.prepare(`UPDATE orders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
       if (result.changes === 0) throw new Error('NOT_FOUND');
-      const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
-      for (const item of items) {
-        stockStmt.run(item.quantity, item.product_id);
+      if (order.stock_deducted) {
+        const items = JSON.parse(order.items);
+        const stockStmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
+        for (const item of items) {
+          stockStmt.run(item.quantity, item.product_id);
+        }
+        console.log(`[STOCK] Re-deducted ${items.reduce((s, i) => s + i.quantity, 0)} stock for un-cancelled order #${req.params.id}`);
       }
-      console.log(`[STOCK] Re-deducted ${items.reduce((s, i) => s + i.quantity, 0)} stock for un-cancelled order #${req.params.id}`);
     });
     try {
       unCancelAndUpdate();
@@ -468,6 +519,12 @@ router.patch('/:id', (req, res) => {
   } else {
     const result = db.prepare(`UPDATE orders SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(...values);
     if (result.changes === 0) return res.status(404).json({ error: 'Order not found' });
+    // If the admin is manually marking a never-deducted order as paid (e.g. a
+    // card payment confirmed offline), deduct its stock now. Idempotent.
+    if (payment_status === 'paid' && !order.stock_deducted) {
+      const fresh = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
+      if (fresh) deductStockForPaidOrder(req.params.id, fresh);
+    }
   }
 
   res.json({ success: true });
@@ -475,4 +532,5 @@ router.patch('/:id', (req, res) => {
 
 router.cancelAndRestoreStock = cancelAndRestoreStock;
 router.refundAndRestoreStock = refundAndRestoreStock;
+router.deductStockForPaidOrder = deductStockForPaidOrder;
 module.exports = router;

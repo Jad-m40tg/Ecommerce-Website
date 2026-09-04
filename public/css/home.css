@@ -413,3 +413,34 @@
   .hero p { font-size: 16px; }
   .section { padding: 28px 0; }
 }
+
+/* ============================================================
+   ARABIC: force the CTA (Limited Offer) text to a deterministic
+   LTR layout, mirroring the dashboard .page-head fix.
+   base.css sets `unicode-bidi: plaintext` on body * for Arabic,
+   which auto-flips the flex main axis of .offer-text/.offer-sale
+   and pushes the heading/description right. Reset just these to
+   normal LTR so the text sits left; inline text keeps plaintext.
+   ============================================================ */
+html[lang="ar"] .offer-text,
+html[lang="ar"] .offer-sale,
+html[lang="ar"] .offer-empty {
+  unicode-bidi: normal;
+  direction: ltr;
+  text-align: left;
+}
+
+/* ============================================================
+   ARABIC: make the product-row SECTION HEADERS (Best Sellers /
+   Trending Now / Newly Added) lay out exactly like the dashboard
+   .page-head headers. The flex row with justify-content:space-between
+   gets its main axis flipped by base.css's `unicode-bidi: plaintext`
+   in Arabic, leaving a gap at the end of the sentence. Reset the
+   row and its text block to a deterministic LTR layout / left-align.
+   ============================================================ */
+html[lang="ar"] .row-header,
+html[lang="ar"] .row-header > div {
+  unicode-bidi: normal;
+  direction: ltr;
+  text-align: left;
+}

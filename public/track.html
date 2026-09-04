@@ -303,17 +303,26 @@
 
       window.addEventListener('i18n:changed', function () {
         if (currentCode && !fetching) fetchTrack(currentCode, true);
+        renderContactHelp();
       });
+      if (window.i18n) renderContactHelp();
+      else window.addEventListener('i18n:ready', renderContactHelp, { once: true });
 
+      var contactPhone = '';
+      function renderContactHelp() {
+        var el = document.getElementById('contactHelp');
+        if (!el) return;
+        if (!window.i18n || !contactPhone) { el.style.display = 'none'; return; }
+        el.innerHTML = '<i class="fa-solid fa-phone"></i> ' + window.i18n('customer:track.contact_help', { phone: escapeHtml(contactPhone) });
+        el.style.display = 'flex';
+      }
       fetch('/api/settings')
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (settings) {
           var phone = settings && settings.contact_phone;
           if (!phone || !String(phone).trim()) return;
-          var p = String(phone).trim();
-          var el = document.getElementById('contactHelp');
-          el.innerHTML = '<i class="fa-solid fa-phone"></i> ' + window.i18n('customer:track.contact_help', { phone: escapeHtml(p) });
-          el.style.display = 'flex';
+          contactPhone = String(phone).trim();
+          renderContactHelp();
         })
         .catch(function () {});
 
@@ -341,8 +350,16 @@
         TRACK_STEPS.forEach(function (step, i) {
           var state = i < currentIdx ? 'done' : (i === currentIdx ? 'active' : 'pending');
           var labelKey = step === 'pending' ? 'order_placed' : (step === 'confirmed' ? 'order_confirmed' : (step === 'processing' ? 'processing' : (step === 'shipped' ? 'shipped' : 'delivered')));
+          var icon;
+          if (state === 'done') icon = 'check';
+          else if (state === 'active') {
+            icon = (step === 'processing') ? 'progress_activity' :
+                   (step === 'confirmed' || step === 'pending') ? 'progress_activity' :
+                   (step === 'shipped') ? 'local_shipping' :
+                   'inventory_2';
+          } else icon = 'circle';
           html += '<div class="tl-step ' + state + '">' +
-            '<div class="tl-dot"><span class="material-symbols-outlined">' + (state === 'done' ? 'check' : (state === 'active' ? 'radio_button_checked' : 'circle')) + '</span></div>' +
+            '<div class="tl-dot"><span class="material-symbols-outlined">' + icon + '</span></div>' +
             '<div class="tl-content">' +
               '<div class="tl-label">' + window.i18n('customer:track.' + labelKey) + '</div>' +
               (state === 'done' || state === 'active' ? '<div class="tl-date">' + (state === 'active' ? window.i18n('customer:track.current') : window.i18n('customer:track.completed')) + '</div>' : '') +

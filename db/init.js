@@ -2,13 +2,67 @@
 // Run with: npm run db:init
 // Drops all existing tables, recreates them, and inserts sample data.
 // WARNING: This destroys all existing data — only use during development setup.
+//
+// SAFETY: before dropping anything, this script writes a full backup to
+// ./backups/ (so a mistaken `db:init` can always be undone) and then asks for
+// interactive confirmation before it wipes the live data.
 
 require('dotenv').config();
 const db = require('./index.js');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const readline = require('readline');
 
+// Count existing rows to decide whether a confirmation is warranted.
+let existingOrders = 0;
+let existingProducts = 0;
 try {
+  existingOrders = db.prepare('SELECT COUNT(*) AS c FROM orders').get().c || 0;
+  existingProducts = db.prepare('SELECT COUNT(*) AS c FROM products').get().c || 0;
+} catch (e) { /* tables may not exist yet on a first run */ }
+
+const hasData = existingOrders > 0 || existingProducts > 0;
+
+if (hasData) {
+  // Back up the current live data BEFORE dropping anything.
+  const { createBackup } = require('./backup.js');
+  createBackup()
+    .then((file) => {
+      console.log('[db:init] Auto-backup written before wipe: ' + file);
+      confirmAndRun();
+    })
+    .catch((err) => {
+      console.error('[db:init] Backup before wipe FAILED — aborting to protect your data.');
+      console.error(err.message);
+      process.exit(1);
+    });
+} else {
+  sealAndRun();
+}
+
+function confirmAndRun() {
+  if (process.env.DB_INIT_YES === '1') {
+    wipeAndSeed();
+    return;
+  }
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  rl.question(`Type "WIPE" to permanently DELETE ${existingOrders} order(s) and ${existingProducts} product(s) and re-seed sample data: `, (ans) => {
+    rl.close();
+    if (ans && ans.trim().toUpperCase() === 'WIPE') {
+      wipeAndSeed();
+    } else {
+      console.log('Aborted. No data was changed. Run `npm run db:backup` to create a manual backup.');
+      process.exit(0);
+    }
+  });
+}
+
+function sealAndRun() {
+  wipeAndSeed();
+}
+
+function wipeAndSeed() {
+  try {
   // Drop existing tables in reverse dependency order (foreign keys reference admins).
   // This ensures a clean slate every time the command runs.
   db.exec(`
@@ -96,6 +150,7 @@ try {
       payment_reference TEXT DEFAULT '',
       payment_payload TEXT DEFAULT '',
       paid_at TEXT,
+      stock_deducted INTEGER DEFAULT 0,
       order_status TEXT DEFAULT 'pending',
       notes TEXT DEFAULT '',
       tracking_number TEXT DEFAULT '',
@@ -414,4 +469,5 @@ try {
 } catch (err) {
   console.error('Database initialization failed:', err.message);
   process.exit(1);
+}
 }

@@ -5,8 +5,9 @@
   "main": "server.js",
   "scripts": {
     "test": "node --test",
-    "start": "node server.js",
+    "start": "node server.js && npm run db:backup",
     "dev": "nodemon server.js",
+    "db:backup": "node db/backup.js",
     "db:init": "node db/init.js"
   },
   "keywords": [],

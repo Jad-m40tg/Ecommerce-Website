@@ -49,7 +49,11 @@ const orderMigrations = {
   noest_tracking: "ALTER TABLE orders ADD COLUMN noest_tracking TEXT DEFAULT ''",
   noest_status: "ALTER TABLE orders ADD COLUMN noest_status TEXT DEFAULT ''",
   noest_payload: "ALTER TABLE orders ADD COLUMN noest_payload TEXT DEFAULT ''",
-  nonce: "ALTER TABLE orders ADD COLUMN nonce TEXT"
+  nonce: "ALTER TABLE orders ADD COLUMN nonce TEXT",
+  // 1 = stock was deducted against products.stock, 0 = not yet deducted.
+  // Defaults to 1 so pre-existing orders (which were all deducted at creation)
+  // keep behaving correctly; new card orders are explicitly created with 0.
+  stock_deducted: "ALTER TABLE orders ADD COLUMN stock_deducted INTEGER DEFAULT 1"
 };
 for (const [name, sql] of Object.entries(orderMigrations)) {
   if (!orderColumns.includes(name)) {

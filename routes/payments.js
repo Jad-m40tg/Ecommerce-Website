@@ -63,13 +63,20 @@ async function lookupAndSyncOrder(param) {
     ).run(checkout.id, JSON.stringify(checkout), order.id);
     if (result.changes > 0) {
       order.payment_status = 'paid';
+      // Payment confirmed via status sync → now deduct the deferred stock.
+      try {
+        const ordersRouter = require('./orders');
+        ordersRouter.deductStockForPaidOrder(order.id, order);
+      } catch (e) {
+        console.error('[SYNC] Failed to deduct stock for paid order #' + order.id, e);
+      }
     }
   } else if (checkout && (checkout.status === 'failed' || checkout.status === 'canceled' || checkout.status === 'cancelled' || checkout.status === 'expired') && order.order_status !== 'cancelled' && order.payment_status !== 'paid' && order.payment_status !== 'refunded') {
     try {
       const ordersRouter = require('./orders');
       ordersRouter.cancelAndRestoreStock(order.id, order);
       order.order_status = 'cancelled';
-      console.log('[SYNC] Order #' + order.id + ' auto-cancelled (checkout ' + checkout.status + ') — stock restored');
+      console.log('[SYNC] Order #' + order.id + ' auto-cancelled (checkout ' + checkout.status + ')');
     } catch (e) {
       console.error('[SYNC] Failed to auto-cancel order #' + order.id, e);
     }
@@ -156,16 +163,27 @@ router.post('/webhook', (req, res) => {
         ).run(checkout.id || checkout.checkout_id || '', JSON.stringify(checkout), orderId);
         if (result.changes > 0) {
           console.log('[WEBHOOK] Order #' + orderId + ' transitioned to paid');
+          // Payment confirmed → now deduct the reserved stock (deferred for card).
+          try {
+            const fresh = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
+            const ordersRouter = require('./orders');
+            if (fresh) ordersRouter.deductStockForPaidOrder(orderId, fresh);
+          } catch (e) {
+            console.error('[WEBHOOK] Failed to deduct stock for paid order #' + orderId, e);
+          }
         }
       }
     } else if (event.type === 'checkout.failed' || event.type === 'checkout.canceled' || event.type === 'checkout.cancelled' || (checkout && (checkout.status === 'failed' || checkout.status === 'canceled' || checkout.status === 'cancelled' || checkout.status === 'expired'))) {
       if (orderId) {
-        const order = db.prepare('SELECT id, items, order_status, payment_status FROM orders WHERE id = ?').get(orderId);
+        const order = db.prepare('SELECT id, items, order_status, payment_status, stock_deducted FROM orders WHERE id = ?').get(orderId);
         if (order && order.order_status !== 'cancelled' && order.payment_status !== 'paid' && order.payment_status !== 'refunded') {
           try {
+            // cancelAndRestoreStock is stock-aware: a never-deducted card order is
+            // cancelled without touching stock; only a previously-deducted order
+            // gets its stock restored.
             const ordersRouter = require('./orders');
             ordersRouter.cancelAndRestoreStock(order.id, order);
-            console.log('[WEBHOOK] Order #' + orderId + ' auto-cancelled (checkout ' + (checkout.status || event.type) + ') — stock restored');
+            console.log('[WEBHOOK] Order #' + orderId + ' auto-cancelled (checkout ' + (checkout.status || event.type) + ')');
           } catch (e) {
             console.error('[WEBHOOK] Failed to auto-cancel order #' + orderId, e);
           }
