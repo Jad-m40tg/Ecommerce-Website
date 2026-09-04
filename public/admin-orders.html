@@ -264,7 +264,7 @@
             '</tr>';
           }).join('');
         }
-        document.getElementById('resultCount').innerHTML = '<strong>' + escapeHtml(String(total)) + '</strong> ' + escapeHtml(t('admin:orders.order_' + (total === 1 ? 'one' : 'other'), { count: total }));
+        document.getElementById('resultCount').innerHTML = '<strong>' + escapeHtml(String(total)) + '</strong> ' + escapeHtml(t('admin:orders.order_' + (total === 1 ? 'one' : 'other')));
         document.getElementById('rangeLabel').textContent = total === 0 ? '' : t('admin:orders.showing_range', { start: start + 1, end: start + rows.length, total: total });
         renderPager(pages);
         if (pendingHighlight) {
