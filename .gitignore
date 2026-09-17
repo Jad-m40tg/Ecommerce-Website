@@ -9,3 +9,15 @@ uploads/*
 .DS_Store
 server.*.log
 unused/
+.opencode/
+
+# k6 load test outputs (very large, never commit — they live in unused/ if needed)
+results*.json
+k6-summary*.txt
+repro-*.txt
+loadtest.js
+staircase*.js
+spike*.js
+reproduce-*.js
+generate-*.js
+report*.html
