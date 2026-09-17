@@ -4,11 +4,53 @@
 
 const db = require('../db');
 
+// Sales-map cache — isolates the dominant per-request cost seen in the
+// 0→50 VU test (avg 29→110ms). TTL: 15s (kept at 15s, not increased).
+// Stampede fix: single-flight + stale-while-revalidate. Only the first
+// caller after expiry triggers a background refresh; concurrent callers
+// during that refresh window serve the stale rows instead of all
+// re-querying at once. Cold start still does a synchronous fetch.
+const SALES_CACHE_TTL_MS = 15 * 1000;
+let cachedSalesRows = null;
+let cachedSalesAt = 0;
+let isRefreshing = false;
+
 // Build a map of product_id -> active sale row at the given epoch ms.
 // `now` is REQUIRED so an entire order is priced against one consistent
 // timestamp. Never call Date.now() inside this module.
 function activeSalesMap(now) {
-  const rows = db.prepare('SELECT product_id, original_price_cents, sale_price_cents, start_at, end_at FROM sales').all();
+  const nowWall = Date.now();
+  const isFresh = cachedSalesRows !== null && nowWall - cachedSalesAt < SALES_CACHE_TTL_MS;
+  let rows;
+  if (isFresh) {
+    rows = cachedSalesRows;
+  } else if (cachedSalesRows !== null && isRefreshing) {
+    // Stampede window: another refresh is already in flight — serve stale
+    // while it completes, instead of N callers all hitting SQLite.
+    rows = cachedSalesRows;
+  } else if (cachedSalesRows === null) {
+    // Cold start — must fetch synchronously (no stale to serve)
+    rows = db.prepare('SELECT product_id, original_price_cents, sale_price_cents, start_at, end_at FROM sales').all();
+    cachedSalesRows = rows;
+    cachedSalesAt = nowWall;
+  } else {
+    // Stale and no refresh in flight — trigger single-flight background
+    // refresh, serve stale immediately. Next requests in this window
+    // will hit the `isRefreshing` branch above.
+    isRefreshing = true;
+    setImmediate(() => {
+      try {
+        const freshRows = db.prepare('SELECT product_id, original_price_cents, sale_price_cents, start_at, end_at FROM sales').all();
+        cachedSalesRows = freshRows;
+        cachedSalesAt = Date.now();
+      } catch (e) {
+        // Keep stale on failure — next caller will retry
+      } finally {
+        isRefreshing = false;
+      }
+    });
+    rows = cachedSalesRows;
+  }
   const map = {};
   for (const s of rows) {
     const start = new Date(s.start_at).getTime();
@@ -22,9 +64,18 @@ function activeSalesMap(now) {
 
 // Overlay an active sale onto a product (display shape used by storefront pages):
 // price_cents becomes the sale price, old/compare-at carry the original price.
+// When no active sale exists, explicitly clear stale on_sale/old_price so a
+// product with DB on_sale=1 doesn't show a "Sale" pill when sales table is empty.
 function withSalePrice(product, saleMap) {
   const sale = saleMap && saleMap[product.id];
-  if (!sale) return product;
+  if (!sale) {
+    if (!product.on_sale && !product.old_price_cents && !product.compare_at_price_cents) return product;
+    return Object.assign({}, product, {
+      on_sale: 0,
+      old_price_cents: null,
+      compare_at_price_cents: null
+    });
+  }
   return Object.assign({}, product, {
     price_cents: sale.sale_price_cents,
     old_price_cents: sale.original_price_cents,

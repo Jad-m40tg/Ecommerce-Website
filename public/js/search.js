@@ -19,14 +19,31 @@ function getProductCategory(product) {
   return (product.category || product.category_name || 'uncategorized');
 }
 
+function isNewBadge(p){
+  if(!p) return false;
+  if(p.new_arrival_until){
+    var until = new Date(p.new_arrival_until).getTime();
+    if(!isNaN(until)) return Date.now() <= until;
+  }
+  var days = parseInt(p.new_arrival_days, 10);
+  if(isNaN(days)) days = 1;
+  if(days <= 0) return false;
+  if(!p.created_at) return false;
+  var t = new Date(p.created_at).getTime();
+  if(isNaN(t)) t = new Date(String(p.created_at).replace(' ','T')).getTime();
+  if(isNaN(t)) return false;
+  return Date.now() - t <= days*86400000;
+}
+
 /* ---------- PRODUCT CARD HTML ---------- */
 function productCardHTML(product) {
   var img = getProductImage(product);
   var cat = getProductCategory(product);
-  var isSale = product.on_sale || product.on_sale === 1;
+  var isSale = product.on_sale && product.old_price_cents;
   var oldPrice = product.old_price_cents ? product.old_price_cents : null;
   var badge = '';
   if (isSale && oldPrice) badge = '<span class="card-badge sale">' + window.i18n('customer:product.sale') + '</span>';
+  else if (isNewBadge(product)) badge = '<span class="card-badge new">' + window.i18n('customer:product.new') + '</span>';
   if (!(product.stock > 0)) {
     var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">' + window.i18n('customer:product.unavailable') + '</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;

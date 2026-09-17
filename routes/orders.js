@@ -10,6 +10,39 @@ const router = express.Router();
 const VALID_ORDER_STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 const VALID_PAYMENT_STATUSES = ['pending', 'paid', 'refunded'];
 
+// Dedicated write queue — serializes the synchronous checkout transaction
+// without blocking reads. Before, every POST ran db.transaction() directly
+// on the main thread, so concurrent checkouts contended for the SQLite
+// write lock and blocked reads queued behind them. Now writes are enqueued
+// and processed one-by-one, yielding via setImmediate between them so reads
+// can interleave. Tradeoff: under burst, order confirmation latency grows
+// by queue wait time (tens of ms), but throughput rises and no SQLITE_BUSY
+// or event-loop starvation occurs.
+const writeQueue = [];
+let writeInProgress = false;
+function enqueueWrite(fn) {
+  return new Promise((resolve, reject) => {
+    writeQueue.push({ fn, resolve, reject });
+    drainWriteQueue();
+  });
+}
+async function drainWriteQueue() {
+  if (writeInProgress) return;
+  writeInProgress = true;
+  while (writeQueue.length) {
+    const { fn, resolve, reject } = writeQueue.shift();
+    try {
+      const result = fn();
+      resolve(result);
+    } catch (e) {
+      reject(e);
+    }
+    // Yield to event loop so reads can be served between writes
+    await new Promise((r) => setImmediate(r));
+  }
+  writeInProgress = false;
+}
+
 const checkoutLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -340,7 +373,7 @@ router.post('/', checkoutLimiter, async (req, res, next) => {
       return { id: result.lastInsertRowid, resolvedItems, subtotal_cents, actual_shipping: shipping_cents, total_cents };
     });
 
-    const { id, resolvedItems, subtotal_cents, actual_shipping, total_cents } = createOrder();
+    const { id, resolvedItems, subtotal_cents, actual_shipping, total_cents } = await enqueueWrite(createOrder);
 
     const orderData = {
       id, customer_name, customer_email, items: resolvedItems,

@@ -42,12 +42,29 @@ function renderPromotions() {
   for (var ri = 0; ri < promoCards.length; ri++) revealObserver.observe(promoCards[ri]);
 }
 
+function isNewBadge(p){
+  if(!p) return false;
+  if(p.new_arrival_until){
+    var until = new Date(p.new_arrival_until).getTime();
+    if(!isNaN(until)) return Date.now() <= until;
+  }
+  var days = parseInt(p.new_arrival_days, 10);
+  if(isNaN(days)) days = 1;
+  if(days <= 0) return false;
+  if(!p.created_at) return false;
+  var t = new Date(p.created_at).getTime();
+  if(isNaN(t)) t = new Date(String(p.created_at).replace(' ','T')).getTime();
+  if(isNaN(t)) return false;
+  return Date.now() - t <= days*86400000;
+}
+
 /* ---------- PRODUCT CARDS ---------- */
 function productCardHTML(product) {
   var stars = '\u2605'.repeat(Math.round(product.rating || 0));
+  var isSale = product.badge === 'sale' && product.on_sale && product.old_price_cents;
   var badge = '';
-  if (product.badge === 'sale') badge = '<span class="card-badge sale">' + window.i18n('customer:product.sale') + '</span>';
-  if (product.badge === 'new')  badge = '<span class="card-badge">' + window.i18n('customer:product.new') + '</span>';
+  if (isSale) badge = '<span class="card-badge sale">' + window.i18n('customer:product.sale') + '</span>';
+  else if (product.badge === 'new' && isNewBadge(product)) badge = '<span class="card-badge">' + window.i18n('customer:product.new') + '</span>';
   if (!(product.stock > 0)) {
     var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">' + window.i18n('customer:product.unavailable') + '</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;

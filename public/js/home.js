@@ -27,12 +27,20 @@ function showToast(msg) {
 }
 
 function isNewBadge(p){
-  if(!p || !p.featured) return false;
-  if(!p.created_at) return true;
+  if(!p) return false;
+  // Respect explicit new-arrival window if present (admin can set custom until)
+  if(p.new_arrival_until){
+    var until = new Date(p.new_arrival_until).getTime();
+    if(!isNaN(until)) return Date.now() <= until;
+  }
+  var days = parseInt(p.new_arrival_days, 10);
+  if(isNaN(days)) days = 1; // 24h default — "new" only for products listed within last 24h
+  if(days <= 0) return false;
+  if(!p.created_at) return false;
   var t = new Date(p.created_at).getTime();
   if(isNaN(t)) t = new Date(String(p.created_at).replace(' ','T')).getTime();
   if(isNaN(t)) return false;
-  return Date.now() - t <= 7*86400000;
+  return Date.now() - t <= days*86400000;
 }
 /* ---------- PRODUCT CARD HTML ---------- */
 function productCardHTML(product) {
@@ -41,8 +49,9 @@ function productCardHTML(product) {
   var stars = '';
   for (var i = 0; i < Math.round(rating); i++) stars += '\u2605';
 
+  var isSale = product.badge === 'sale' && product.on_sale && product.old_price_cents;
   var badge = '';
-  if (product.badge === 'sale') badge = '<span class="card-badge sale">' + window.i18n('customer:product.sale') + '</span>';
+  if (isSale) badge = '<span class="card-badge sale">' + window.i18n('customer:product.sale') + '</span>';
   else if (product.badge === 'new' && isNewBadge(product)) badge = '<span class="card-badge new">' + window.i18n('customer:product.new') + '</span>';
   if (!(product.stock > 0)) {
     var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">' + window.i18n('customer:product.unavailable') + '</span>';
@@ -137,7 +146,7 @@ function loadHomeProducts() {
         if (!isNaN(until)) return Date.now() <= until;
       }
       var days = parseInt(p.new_arrival_days, 10);
-      if (isNaN(days)) days = 3; // default at least 3 days
+      if (isNaN(days)) days = 1; // 24h default — matches pill "new" window
       if (days <= 0) return false;
       if (!p.created_at) return false;
       var created = new Date(p.created_at).getTime();
@@ -228,15 +237,21 @@ function loadTestimonials() {
     var section = document.getElementById('testimonials');
     if (!grid || !section) return;
     if (reviews.length === 0) {
-      section.style.display = 'none';
+      section.style.display = '';
+      var msg = window.i18n ? window.i18n('customer:home.test_empty') : 'There are no comments yet';
+      grid.innerHTML = '<p style="text-align:center;color:var(--gray);padding:32px 16px;font-size:15px">' + escapeHtml(msg) + '</p>';
       return;
     }
     section.style.display = '';
     grid.innerHTML = reviews.slice(0, 3).map(testimonialCardHTML).join('');
     document.querySelectorAll('#testimonialGrid .reveal').forEach(function (el) { revealObserver.observe(el); });
   }).catch(function () {
+    var grid = document.getElementById('testimonialGrid');
     var section = document.getElementById('testimonials');
-    if (section) section.style.display = 'none';
+    if (!grid || !section) return;
+    section.style.display = '';
+    var msg2 = window.i18n ? window.i18n('customer:home.test_empty') : 'There are no comments yet';
+    grid.innerHTML = '<p style="text-align:center;color:var(--gray);padding:32px 16px;font-size:15px">' + escapeHtml(msg2) + '</p>';
   });
 }
 

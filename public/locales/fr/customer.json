@@ -370,6 +370,7 @@
     "empty_p": "Revenez plus tard pour nos offres exclusives et promotions spéciales.",
     "test_eyebrow": "De nos clients",
     "test_h2": "Ce que nos clients disent de nous",
+    "test_empty": "Il n'y a pas encore de commentaires",
     "on_product": "sur {{name}}",
     "on_sale_now": "En promo maintenant : économisez jusqu’à {{percent}} %",
     "sale_desc": "Achetez les articles sélectionnés tant que le stock dure. L’offre se termine à la fin du compte à rebours.",

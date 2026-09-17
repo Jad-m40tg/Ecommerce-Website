@@ -370,6 +370,7 @@
     "empty_p": "Check back later for our exclusive deals and special offers.",
     "test_eyebrow": "From our customers",
     "test_h2": "What Our Customers Say About Us",
+    "test_empty": "There are no comments yet",
     "on_product": "on {{name}}",
     "on_sale_now": "On Sale Now: Save up to {{percent}}%",
     "sale_desc": "Shop selected products while stock lasts. The deal ends when the timer runs out.",

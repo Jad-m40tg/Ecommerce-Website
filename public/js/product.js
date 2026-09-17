@@ -26,6 +26,22 @@ function getProductImage(product) {
   return fallbackImage(product.category);
 }
 
+function isNewBadge(p){
+  if(!p) return false;
+  if(p.new_arrival_until){
+    var until = new Date(p.new_arrival_until).getTime();
+    if(!isNaN(until)) return Date.now() <= until;
+  }
+  var days = parseInt(p.new_arrival_days, 10);
+  if(isNaN(days)) days = 1;
+  if(days <= 0) return false;
+  if(!p.created_at) return false;
+  var t = new Date(p.created_at).getTime();
+  if(isNaN(t)) t = new Date(String(p.created_at).replace(' ','T')).getTime();
+  if(isNaN(t)) return false;
+  return Date.now() - t <= days*86400000;
+}
+
 /* ---------- CATEGORY LABELS ---------- */
 var CATEGORY_LABELS = {};
 function getCategoryLabel(slug) {
@@ -460,9 +476,10 @@ function renderProduct(p) {
     '<span class="sep">/</span>' +
     '<span class="current">' + escapeHtml(p.name) + '</span>';
 
+  var isSale = p.on_sale && p.old_price_cents;
   var badgeHTML = '';
-  if (p.on_sale) badgeHTML = '<span class="gallery-badge sale">' + window.i18n('customer:product.sale') + '</span>';
-  else if (p.featured) badgeHTML = '<span class="gallery-badge">' + window.i18n('customer:product.new') + '</span>';
+  if (isSale) badgeHTML = '<span class="gallery-badge sale">' + window.i18n('customer:product.sale') + '</span>';
+  else if (isNewBadge(p)) badgeHTML = '<span class="gallery-badge">' + window.i18n('customer:product.new') + '</span>';
 
   var oldPriceHTML = oldPriceDollars ? '<s>' + price(oldPriceDollars * 100) + '</s>' : '';
   var saveHTML = oldPriceDollars ? '<span class="save">' + window.i18n('customer:product.save_amount', { amount: price((oldPriceDollars - priceDollars) * 100) }) + '</span>' : '';
@@ -1143,9 +1160,10 @@ document.addEventListener('keydown', function (event) {
 /* ---------- RELATED PRODUCTS ---------- */
 function relatedProductCard(p) {
   var img = getProductImage(p);
+  var isSale = p.on_sale && p.old_price_cents;
   var badge = '';
-  if (p.on_sale) badge = '<span class="card-badge sale">' + window.i18n('customer:product.sale') + '</span>';
-  else if (p.featured) badge = '<span class="card-badge">' + window.i18n('customer:product.new') + '</span>';
+  if (isSale) badge = '<span class="card-badge sale">' + window.i18n('customer:product.sale') + '</span>';
+  else if (isNewBadge(p)) badge = '<span class="card-badge">' + window.i18n('customer:product.new') + '</span>';
   if (!(p.stock > 0)) {
     var outBadge = '<span class="card-badge" style="background:#e41a1a;color:#fff;">' + window.i18n('customer:product.unavailable') + '</span>';
     badge = badge ? badge + ' ' + outBadge : outBadge;

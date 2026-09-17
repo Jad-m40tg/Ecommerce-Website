@@ -41,10 +41,63 @@ app.use(helmet({
 
 // Cross-Origin Resource Sharing — restricts who can call this API.
 // 'credentials: true' allows the Authorization header for admin JWT tokens.
+// Allow both the configured CORS_ORIGIN and local dev origins so the same
+// server works from localhost, 127.0.0.1, and the LAN IP (e.g. 192.168.x.x)
+// without needing to edit .env per device. Same-origin requests (no Origin
+// header, e.g. curl) are always allowed.
+const allowedOrigins = new Set(
+  [CORS_ORIGIN, 'http://localhost:5000', 'http://127.0.0.1:5000'].filter(Boolean)
+);
 app.use(cors({
-  origin: CORS_ORIGIN,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    // Allow any 192.168.x.x:5000 LAN origin as well (phone/laptop on same WiFi)
+    if (/^http:\/\/192\.168\.\d+\.\d+:5000$/.test(origin)) return callback(null, true);
+    return callback(null, false);
+  },
   credentials: true
 }));
+
+// Backlog guard — read/write separated so cheap reads (health, test,
+// cached browse) don't share budget with the blocking write path.
+// Before: single global 120 cap shed reads and writes equally, causing
+// /health and /api/test to 503 under spike and orders_post to still fail
+// with 452 5xx (all 503s, not 500 crashes). Now: reads get higher budget,
+// writes are throttled lower, health is exempt.
+let activeReads = 0;
+let activeWrites = 0;
+const MAX_CONCURRENT_READS = 200;
+const MAX_CONCURRENT_WRITES = 30;
+const BYPASS_CAP = new Set(['/api/health', '/api/test']);
+app.use((req, res, next) => {
+  const isHealth = BYPASS_CAP.has(req.path);
+  if (isHealth) return next();
+
+  const isWrite = req.method === 'POST' && req.path.startsWith('/api/orders');
+  if (isWrite) {
+    if (activeWrites >= MAX_CONCURRENT_WRITES) {
+      res.setHeader('Retry-After', '1');
+      return res.status(503).json({ error: 'Server busy, try again' });
+    }
+    activeWrites++;
+    let done = false;
+    const release = () => { if (!done) { done = true; activeWrites = Math.max(0, activeWrites - 1); } };
+    res.on('finish', release);
+    res.on('close', release);
+    return next();
+  }
+  // All other reads (including cached browse/category/settings)
+  if (activeReads >= MAX_CONCURRENT_READS) {
+    res.setHeader('Retry-After', '1');
+    return res.status(503).json({ error: 'Server busy, try again' });
+  }
+  activeReads++;
+  let done = false;
+  const release = () => { if (!done) { done = true; activeReads = Math.max(0, activeReads - 1); } };
+  res.on('finish', release);
+  res.on('close', release);
+  next();
+});
 
 // Body parsing — JSON and URL-encoded form data.
 // 1MB limit prevents memory exhaustion from oversized payloads.
